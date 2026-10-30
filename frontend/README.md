@@ -37,6 +37,9 @@ Fonts: Sora for headings, Inter for text.
 - Money fields are strings (`"10000.00"`), so they are `string` in interfaces.
 - Times are ISO strings (`"2026-10-30T17:49:52.600009Z"`).
 - Lists are arrays; `me` and `wallet` are single objects.
-- A `401` means the access token expired: get a new one from
-  `POST /api/token/refresh` with the refresh token.
+- Use `apiFetch` from `lib/api.ts`. On a `401` it gets a new access token from
+  `POST /api/token/refresh` and retries once. If that fails it clears the tokens
+  and throws `ApiError`, so `error.status === 401` means "send to login".
+- Tokens live in `localStorage` for now. Phase 5 moves the refresh token to an
+  httpOnly cookie.
 - Show "Demo mode · LC has no cash value" wherever a balance is shown.
