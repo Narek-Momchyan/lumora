@@ -13,6 +13,7 @@ interface ControlBarProps {
   canRaise: boolean
   winText: string | null
   isPlaying: boolean
+  awaitingSpin: boolean
   inBonus: boolean
   multiplier: number
   speed: SpeedMode
@@ -25,7 +26,6 @@ interface ControlBarProps {
   onRaise: () => void
   onSpeed: (speed: SpeedMode) => void
   onSpin: () => void
-  onSkip: () => void
   onBuyBonus: () => void
   onAutoStart: (spins: number) => void
   onAutoStop: () => void
@@ -160,13 +160,13 @@ export default function ControlBar(props: ControlBarProps) {
           type="button"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.975 }}
-          onClick={isPlaying ? props.onSkip : props.onSpin}
+          onClick={props.onSpin}
           disabled={autoLeft > 0 && !isPlaying}
           className={`col-span-2 rounded-xl px-4 py-3 font-heading disabled:opacity-60 sm:col-span-1 ${
             inBonus ? 'zeus-btn-bonus' : 'zeus-btn-spin'
           }`}
         >
-          {isPlaying ? labels.skip : labels.spin}
+          {isPlaying && !props.awaitingSpin ? labels.skip : labels.spin}
         </motion.button>
       </div>
     </section>

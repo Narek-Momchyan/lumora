@@ -1,12 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { GAME_ROUTES } from '@/lib/games'
 import type { Game, LobbyPageLabels } from '@/types/game'
-
-// A playable game opens its page; a new game needs its route added here.
-const GAME_ROUTES: Record<string, string> = {
-  'neon-crash': '/crash',
-  'zeus-legacy': '/zeus-legacy',
-}
 
 interface GameCardProps {
   game: Game
@@ -20,7 +15,7 @@ export default function GameCard({ game, categoryLabel, labels }: GameCardProps)
   const card = (
     <>
       <div className="relative aspect-video bg-linear-to-br from-magenta/40 via-surface2 to-cyan">
-        {game.image && <Image src={game.image} alt="" fill unoptimized className="object-cover" />}
+        {game.image && <Image src={game.image} alt="" fill unoptimized className="object-cover object-top" />}
         {!game.is_playable && (
           <span className="absolute top-3 right-3 rounded-full bg-bg/80 px-3 py-1 text-xs font-semibold text-lime">
             {labels.soon_badge}

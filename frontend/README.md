@@ -55,7 +55,9 @@ language: show their `detail` and field messages as they are.
 
 The page at `/zeus-legacy` only animates. `POST /api/slot_spins` returns the whole round,
 and `components/zeus/useZeusRound.ts` plays its spins and tumbles step by step; nothing is
-calculated or rolled in the browser. The balance on the page changes to the `balance` of
+calculated or rolled in the browser. The player starts each free spin with the Spin button
+(autoplay goes on by itself), although the backend has already settled them all. The balance
+on the page changes to the `balance` of
 that response when the round ends. Animations use `motion` (`motion/react`) with the same
 settings as the original Zeus Legacy, and `app/(site)/zeus-legacy/zeus.css` holds its CSS
 keyframes. Normal speed matches the original; `SPEEDS` in `lib/zeus.ts` makes turbo and

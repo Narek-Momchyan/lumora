@@ -60,6 +60,7 @@ export default function ZeusGame({ game, symbols, sounds, pools, spins, balance,
   const round = useZeusRound({
     sounds: audio,
     speed,
+    autoplay: autoLeft > 0,
     fallbackError: labels.server_unreachable,
     onPools: setPoolAmounts,
     onBalance: setWallet,
@@ -73,13 +74,14 @@ export default function ZeusGame({ game, symbols, sounds, pools, spins, balance,
   const scale = SPEEDS[speed].overlay
   const pressSpin = useRef(() => {})
 
-  function playOrSkip() {
-    if (round.isPlaying) round.skip()
+  function pressSpinButton() {
+    if (round.awaitingSpin) round.startFreeSpin()
+    else if (round.isPlaying) round.skip()
     else if (autoLeft === 0) round.spin(amount, { manual: true })
   }
 
   useEffect(() => {
-    pressSpin.current = playOrSkip
+    pressSpin.current = pressSpinButton
   })
 
   useEffect(() => {
@@ -207,6 +209,7 @@ export default function ZeusGame({ game, symbols, sounds, pools, spins, balance,
           canRaise={betIndex < betSteps.length - 1}
           winText={round.isPlaying ? liveWin : lastWin}
           isPlaying={round.isPlaying}
+          awaitingSpin={round.awaitingSpin}
           inBonus={round.inBonus}
           multiplier={round.multiplier}
           speed={speed}
@@ -218,8 +221,7 @@ export default function ZeusGame({ game, symbols, sounds, pools, spins, balance,
           onLower={() => setBetIndex(betIndex - 1)}
           onRaise={() => setBetIndex(betIndex + 1)}
           onSpeed={setSpeed}
-          onSpin={() => round.spin(amount, { manual: true })}
-          onSkip={round.skip}
+          onSpin={pressSpinButton}
           onBuyBonus={() => setAskBuy(true)}
           onAutoStart={setAutoLeft}
           onAutoStop={() => setAutoLeft(0)}

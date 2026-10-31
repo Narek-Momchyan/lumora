@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ApiError, apiFetch, errorDetail } from '@/lib/api'
 import {
   BIG_WIN_PAY,
@@ -27,6 +27,7 @@ type NewOverlay = ZeusOverlay extends infer Overlay ? (Overlay extends ZeusOverl
 interface RoundOptions {
   sounds: SlotSoundPlayer
   speed: SpeedMode
+  autoplay: boolean
   fallbackError: string
   onPools: (pools: Record<string, string>) => void
   onBalance: (balance: string) => void
@@ -38,7 +39,7 @@ function pause(ms: number) {
 
 // Plays a round the backend has already settled. Nothing here decides a result: every grid,
 // win and multiplier comes from the response, this hook only shows them one after another.
-export default function useZeusRound({ sounds, speed, fallbackError, onPools, onBalance }: RoundOptions) {
+export default function useZeusRound({ sounds, speed, autoplay, fallbackError, onPools, onBalance }: RoundOptions) {
   const router = useRouter()
   const [grid, setGrid] = useState<string[][] | null>(FIRST_GRID)
   const [gridId, setGridId] = useState(0)
@@ -46,6 +47,7 @@ export default function useZeusRound({ sounds, speed, fallbackError, onPools, on
   const [teaser, setTeaser] = useState(false)
   const [tumble, setTumble] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [awaitingSpin, setAwaitingSpin] = useState(false)
   const [inBonus, setInBonus] = useState(false)
   const [freeSpinsLeft, setFreeSpinsLeft] = useState(0)
   const [collected, setCollected] = useState<number[]>([])
@@ -65,6 +67,12 @@ export default function useZeusRound({ sounds, speed, fallbackError, onPools, on
   const themePlaying = useRef(false)
   const overlayCount = useRef(0)
   const closeOverlayRef = useRef<() => void>(() => {})
+  const pressSpinRef = useRef<() => void>(() => {})
+  const autoplayRef = useRef(autoplay)
+
+  useEffect(() => {
+    autoplayRef.current = autoplay
+  })
 
   async function wait(ms: number) {
     const end = Date.now() + ms
@@ -116,6 +124,7 @@ export default function useZeusRound({ sounds, speed, fallbackError, onPools, on
     const [first] = spin.steps
     const teases = speed === 'normal' && !response.bonus_buy && !spin.is_free_spin
 
+    skipping.current = false
     setTumble(0)
     setWinningCells([])
     setTeaser(teases)
@@ -140,7 +149,7 @@ export default function useZeusRound({ sounds, speed, fallbackError, onPools, on
     await strikeMultipliers(spin.collected_multipliers)
     setMultiplier(spin.global_multiplier)
     setRoundPay(paidBefore + spin.win)
-    await wait(timing.end)
+    await wait(spin.win > 0 ? timing.win : timing.end) // the win stays on screen before anything else starts
     setFreeSpinsLeft(spin.free_spins_left)
 
     if (spin.win >= BIG_WIN_PAY) {
@@ -155,6 +164,22 @@ export default function useZeusRound({ sounds, speed, fallbackError, onPools, on
     }
   }
 
+  // The backend has settled the whole round, but the player starts each free spin, like in the
+  // original game. Autoplay goes on by itself.
+  async function waitForSpinPress() {
+    if (autoplayRef.current) {
+      await pause(SPEEDS[speed].next)
+      return
+    }
+
+    lastRoundEnd.current = Date.now()
+    setAwaitingSpin(true)
+    await new Promise<void>((resolve) => {
+      pressSpinRef.current = resolve
+    })
+    setAwaitingSpin(false)
+  }
+
   function endBonus() {
     setInBonus(false)
     sounds.stop('free_spins_theme')
@@ -164,6 +189,7 @@ export default function useZeusRound({ sounds, speed, fallbackError, onPools, on
   async function playRound(response: SlotSpinResponse) {
     let paid = 0
     for (const spin of response.result.spins) {
+      if (spin.is_free_spin) await waitForSpinPress()
       await playSpin(spin, paid, response)
       paid += spin.win
     }
@@ -232,6 +258,7 @@ export default function useZeusRound({ sounds, speed, fallbackError, onPools, on
     teaser,
     tumble,
     isPlaying,
+    awaitingSpin,
     inBonus,
     freeSpinsLeft,
     collected,
@@ -249,5 +276,8 @@ export default function useZeusRound({ sounds, speed, fallbackError, onPools, on
       if (resultShown.current) skipping.current = true
     },
     closeOverlay: () => closeOverlayRef.current(),
+    startFreeSpin: () => {
+      if (Date.now() - lastRoundEnd.current >= SPIN_COOLDOWN_MS) pressSpinRef.current()
+    },
   }
 }

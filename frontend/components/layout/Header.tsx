@@ -22,9 +22,7 @@ export default function Header({ logo, labels, wallet, me, languages, lang }: He
         <Logo logo={logo} />
       </div>
 
-      <div className="order-last w-full lg:order-none lg:flex-1">
-        <SearchBox placeholder={labels.search_placeholder} />
-      </div>
+      <SearchBox placeholder={labels.search_placeholder} />
 
       <div className="ml-auto flex items-center gap-3">
         <span className="hidden rounded-full bg-lime/10 px-3 py-1.5 text-xs font-semibold whitespace-nowrap text-lime sm:inline">
