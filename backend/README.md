@@ -9,6 +9,8 @@ deposits, withdrawals or real-money features.
 - Python 3.12 or newer
 - Pipenv (`pip install pipenv`)
 - PostgreSQL 16 or newer
+- Redis on port 6379 for the live Neon Crash feed. On Windows that is
+  [Memurai](https://www.memurai.com/), which runs as a Windows service.
 
 ## Create the database (once)
 
@@ -39,6 +41,24 @@ python manage.py runserver
 
 - API: http://127.0.0.1:8000/api/
 - Admin: http://127.0.0.1:8000/admin/
+- Live Neon Crash feed: ws://127.0.0.1:8000/ws/crash
+
+## Running Neon Crash
+
+Rounds run only while `run_crash` runs. Three things must be up:
+
+1. **Memurai**: the Windows service starts with Windows. To check it, run
+   `Get-Service Memurai` in PowerShell. Its address is `CHANNEL_REDIS_URL` in `.env`.
+2. **The server**, in one terminal: `python manage.py runserver`. With `daphne` in
+   `INSTALLED_APPS` it serves HTTP and the WebSocket.
+3. **The rounds**, in a second terminal: `python manage.py run_crash`.
+
+A second `run_crash` refuses to start: the first one holds a PostgreSQL advisory lock,
+which is freed as soon as its process ends. After Ctrl+C or a crash, start it again:
+it continues the round it finds in the database.
+
+Without `run_crash` there are no new rounds, and bets answer `round_closed`. Without
+Redis the REST API and the money keep working, but the WebSocket stays quiet.
 
 Run `pipenv shell` in every new terminal (in Git Bash use `cp` instead of
 `copy`). The environment lives in `backend/.venv`; to keep it there, set the
@@ -68,7 +88,7 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 
 - `/api/<name>`, with or without a trailing slash.
 - Lists are plain JSON arrays without pagination. Feeds return only the newest
-  rows: `transactions` the last 100, `crash_bets` and `seeds` the last 50.
+  rows: `transactions` the last 100, `crash_bets`, `crash_rounds` and `seeds` the last 50.
 - `me` and `wallet` return a single object.
 - Filters are query parameters: `games` (`slug`, `category`), `transactions`
   (`kind`, `game`). An unknown value returns `[]` with status 200, not 404.
@@ -84,7 +104,8 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
   `logout`, `games`, `leaderboard`, `error_messages` and the site content: `logos`,
   `languages`, `sidebar_items`, `header_labels`, `login_page_labels`,
   `lobby_page_labels`, `game_categories`, `slot_symbols`, `slot_symbol_names`,
-  `slot_sounds`, `jackpot_pools` and `zeus_page_labels`.
+  `slot_sounds`, `jackpot_pools`, `zeus_page_labels`, `crash_rounds` and
+  `crash_page_labels`.
 - The JWTs live only in httpOnly cookies, never in a response body and never in an
   `Authorization` header. `register` and `token` set `lumora_access` (30 minutes)
   and `lumora_refresh` (7 days), both `SameSite=Lax`, and `Secure` when
@@ -114,8 +135,12 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 | GET | `/api/transactions` | cookie | the player's ledger, newest first |
 | POST | `/api/bonus` | cookie | daily bonus of 5,000 LC; `409` with `available_at` if claimed in the last 24 hours |
 | GET | `/api/games` | – | active games, with `image` and `is_playable`; a game that isn't playable is coming soon |
-| GET | `/api/crash_bets` | cookie | the player's Neon Crash rounds, newest first |
-| POST | `/api/crash_bets` | cookie | `{amount, target}` → plays one round at once (auto cash-out at `target`) |
+| GET | `/api/crash_bets` | cookie | the player's Neon Crash bets, newest first |
+| POST | `/api/crash_bets` | cookie | `{amount, target?}` → `201`, a bet on the open round with `balance`; `target` is the auto cash-out |
+| POST | `/api/crash_bets/cash_out` | cookie | cashes out the player's bet at the server's multiplier → the bet with `balance` |
+| GET | `/api/crash_rounds` | – | the last 50 crashed rounds with `seed`, `seed_hash`, `position` and `commitment` |
+| GET | `/api/crash_rounds/<number>` | – | one crashed round; `404` until it has crashed |
+| GET | `/api/crash_page_labels` | – | every text of the Neon Crash page; `?lang=` |
 | GET | `/api/seeds` | cookie | the player's provably fair seed pairs, the active one first |
 | POST | `/api/seeds` | cookie | `{client_seed?}` → reveals the active server seed and starts a new pair: `{revealed, active}` |
 | GET | `/api/leaderboard` | – | top 20 of the last 7 days by net game result |
@@ -135,6 +160,7 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 | GET | `/api/jackpot_pools` | – | the current amount of each jackpot tier |
 | GET | `/api/zeus_page_labels` | – | every text of the Zeus Legacy page; `?lang=` |
 | GET | `/api/error_messages` | – | error texts; `?lang=`, `?code=` |
+| WS | `/ws/crash` | – | the live round, read-only, see [Neon Crash](#neon-crash) |
 
 `bonus_available_at` is `null` before the first bonus; a time in the past means
 the bonus can be claimed now.
@@ -191,14 +217,8 @@ test checks that each one has a text in every language. In our code, raise
 Every result comes from `HMAC_SHA256(server_seed, "client_seed:nonce:cursor")`.
 Before playing, the player sees only `server_seed_hash`. Each bet uses the next
 nonce (0, 1, 2 ...) and stores the hash, client seed and nonce. After
-`POST /api/seeds` the old `server_seed` is revealed, and anyone can check a
-Neon Crash round:
-
-1. `sha256(server_seed) == server_seed_hash` of the bet;
-2. `crash.engine.crash_point(fairness.rng.first_float(server_seed, client_seed, nonce))`
-   equals the bet's `crash_point`.
-
-A revealed pair was used for nonces `0` to `nonce - 1`.
+`POST /api/seeds` the old `server_seed` is revealed. A revealed pair was used for
+nonces `0` to `nonce - 1`.
 
 A slot round uses one nonce for everything, free spins included. To check one:
 
@@ -211,6 +231,106 @@ result = slots.engine.play_round(stream, bonus_buy=bonus_buy)
 `result` equals the saved one, and `tier` equals `jackpot_tier`. The seeds prove only the
 jackpot **tier**, not its amount: a pool is shared by all players and grows with their
 stakes, so the amount that was paid is saved in `jackpot_win`.
+
+### Verifying a Neon Crash round
+
+A Neon Crash round is shared by everyone, so it can't use one player's seeds. It uses a
+**hash chain** instead: every round's seed is the SHA-256 of the next round's seed. The
+server makes the chain backwards from a secret last seed, then plays it forwards, so
+a revealed seed says nothing about the next one.
+
+Before the bets, every client gets `seed_hash`, the SHA-256 of the round's secret seed.
+After the crash the `seed` is revealed. Take a round from `/api/crash_rounds` and check:
+
+1. `sha256(seed) == seed_hash`: this is the seed promised before the bets.
+2. `sha256(seed)` equals the `seed` of the round before, so the promise was already
+   public. Hashing `seed` `position + 1` times gives `commitment`, the hash of the
+   chain's first seed, so the whole chain was fixed when it was made.
+3. The crash point comes out the same when you compute it again:
+
+```python
+import hashlib, hmac
+from decimal import Decimal, ROUND_FLOOR
+
+digest = hmac.new(seed.encode(), b"neon-crash:0:0", hashlib.sha256).digest()
+r = (int.from_bytes(digest[:8], "big") >> 12) / 2**52
+point = (Decimal("97") / (1 - Decimal(r))).to_integral_value(rounding=ROUND_FLOOR) / 100
+point = min(max(point, Decimal("1")), Decimal("1000000"))
+```
+
+In this repo that is `crash.services.round_result(seed)`. Hashes are of the seed's
+64-character hex text, not of its bytes.
+
+The seeds prove that a result was fixed before the bets and that it wasn't changed for
+anyone. They can't prove how the server chose the chain: it could have thrown away
+chains it disliked, because no outside randomness goes in. For a demo-coin project
+that is fine, and it is the honest limit of this design.
+
+## Neon Crash
+
+One shared round at a time. `crash/engine.py` holds the maths and `crash/runner.py` is
+the only code that moves a round:
+
+1. `betting`: 7 seconds. `POST /api/crash_bets`, one bet per round.
+2. `flying`: the multiplier grows from 1.00x, `POST /api/crash_bets/cash_out`.
+3. `crashed`: the flight reached the crash point. Unpaid bets are lost and the seed is revealed.
+4. A pause of 3 seconds, then the next round.
+
+The multiplier is a formula of the time since `started_at`, in milliseconds:
+
+```
+multiplier = floor(100 * e^(0.00006 * ms)) / 100
+```
+
+So 2x comes after about 11.6 s and 10x after about 38 s. The frontend draws with the same
+formula, so nothing is sent per tick. It should work out its clock offset from
+`server_time`, which every round event carries.
+
+**Cash-out.** The server computes the multiplier from its own clock. If that has reached
+the crash point the answer is `too_late`, even when the round has not ended yet. A bet
+with a `target` pays exactly `amount * target` when the flight reaches it, even if a
+manual cash-out arrives later. A target equal to the crash point wins; a manual cash-out
+at that moment is too late, so manual play can reach at most 0.01x below it.
+
+**The race.** `place_bet`, `cash_out`, `pay_auto_cash_outs` and `crash_round` all start by
+locking the round's row, always in the order round, bet, wallet. So a cash-out and the
+crash run one after the other, and the second sees what the first did. Debits and
+credits carry the idempotency keys `crash:<round>:bet` and `crash:<round>:win`.
+
+The crash point is at most 1,000,000x, the highest target, which changes no player's RTP.
+
+| Error | Status | When |
+| --- | --- | --- |
+| `round_closed` | 409 | a bet outside the betting window |
+| `already_bet` | 409 | a second bet on the round |
+| `not_flying` | 409 | a cash-out during betting |
+| `too_late` | 409 | a cash-out at or after the crash point |
+| `no_bet` | 409 | a cash-out without a bet on the round |
+| `already_cashed_out` | 409 | a second cash-out |
+
+### WebSocket
+
+`/ws/crash` needs no login and is read-only: whatever a client sends is ignored. The
+`Origin` header must be one of `CSRF_TRUSTED_ORIGINS`. A new client first gets a snapshot,
+then every event. All of them are JSON with a `type`.
+
+| `type` | Fields |
+| --- | --- |
+| `snapshot` | `round` (`null` before the first one), `history` (the last 20 as `{number, crash_point}`, newest first), `bets`, `server_time` |
+| `round.betting`, `round.flying`, `round.crashed` | `number`, `status`, `seed_hash`, `betting_ends_at`, `started_at`, `server_time`; after the crash also `crash_point`, `seed`, `crashed_at` |
+| `bet.placed`, `bet.cashed_out` | `id`, `round`, `player`, `amount`, `multiplier`, `payout`, `is_bot` |
+
+`round` in a snapshot has the fields of a round event, and `bets` those of `bet.placed`.
+`multiplier` is `null` until the bet is cashed out. A live round's `seed` and `crash_point`
+are never sent, and only `crash/feed.py` decides what the feed shows.
+
+### Demo bots
+
+The bots keep the feed alive: admin → Crash bot settings sets on/off, how many bet in a
+round (at most one per name), their bet range and their names. They live in `CrashBotBet`
+with no user, so they can't reach a wallet, the ledger or the leaderboard, and they are
+marked `is_bot`. A bot's target is drawn before the flight, so it knows nothing about
+the crash point. Only the current round's rows are kept. `load_sample` doesn't touch them.
 
 ## Zeus Legacy
 
@@ -280,7 +400,7 @@ doesn't touch them. The codes are:
 | `wallet` | `Wallet`, append-only `Transaction` ledger, `JackpotPool`, `services.py` (the only code that moves money), daily bonus |
 | `fairness` | provably fair RNG (`rng.py`), `SeedPair`, `services.py` (next nonce, seed rotation) |
 | `games` | `Game` catalogue, `GameCategory`, `LobbyPageLabel` |
-| `crash` | Neon Crash: `engine.py` (pure maths), `services.py` (plays a round), `CrashBet` |
+| `crash` | Live Neon Crash: `engine.py` (pure maths), `services.py` (bets, cash-outs, round changes), `runner.py` and `run_crash` (the loop), `bots.py`, `feed.py` and `consumers.py` (WebSocket), `CrashChain`, `CrashRound`, `RoundBet`, `CrashBotBet`, `CrashBotSettings`, `CrashPageLabel` |
 | `roulette` | European roulette `engine.py` (maths only, the API comes in phase 3) |
 | `slots` | Zeus Legacy: `engine.py` (pure maths), `services.py` (plays a round), `simulation.py`, `SlotSpin`, `SlotSymbol`, `SlotSymbolName`, `SlotSound`, `ZeusPageLabel` |
 | `leaderboard` | weekly leaderboard from the ledger |
@@ -294,20 +414,23 @@ media URLs (`serializers.py`, `renderers.py`), `ImagePreviewMixin` and `load_sam
 ## Tests
 
 ```bash
-python manage.py test              # everything except the slow tests, about 10 s
+python manage.py test              # everything except the slow tests, about 50 s
 python manage.py test --tag slow   # only the 1,000,000-round Zeus Legacy simulation, about 3 min
 ```
 
 Every app has its tests in `tests.py`. They run on a temporary PostgreSQL
 database (`test_lumora`), so your data is not touched. They check the money
 rules (ledger always equals balance, no overspending, idempotency keys, daily
-bonus), a 200,000-round simulation that Neon Crash pays back about 97%, the
-exact roulette RTP of 36/37, that a round can be verified after the seed is
-revealed, the API rules, CORS and that every admin page opens. `ApiContractTests`
+bonus), two 200,000-round simulations that Neon Crash pays back about 97%, one of
+them on a real hash chain, the exact roulette RTP of 36/37, that a round can be
+verified after the seed is revealed, the API rules, CORS and that every admin page
+opens. The tests need no Redis: `base.test_runner` swaps in `InMemoryChannelLayer`. `ApiContractTests`
 checks that every collection in `base/sample_db.json` has an endpoint that returns
 exactly the sample in every language, with and without a trailing slash.
 `WalletConcurrencyTests` sends 30 bets of 500 LC at the same moment on real
-PostgreSQL connections to a 10,000 LC wallet: exactly 20 must succeed. A test tagged
+PostgreSQL connections to a 10,000 LC wallet: exactly 20 must succeed.
+`CashOutRaceTests` runs cash-outs against the crash the same way, and `WebSocketTests`
+follows a round through `WebsocketCommunicator`. A test tagged
 `slow` is skipped by `base.test_runner.SkipSlowTestsRunner` unless `--tag slow` asks
 for it. Run the slow tests after changing `slots/engine.py`.
 
@@ -315,8 +438,9 @@ for it. Run the slow tests after changing `slots/engine.py`.
 
 Set `DEBUG=False`, a real `SECRET_KEY`, `ALLOWED_HOSTS`,
 `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS`, `PUBLIC_BASE_URL` and `EMAIL_BACKEND`
-in `.env`. `/media/` must be served by the web server, because Django serves it only
-in `DEBUG`.
+and `CHANNEL_REDIS_URL` in `.env`. `/media/` must be served by the web server, because
+Django serves it only in `DEBUG`. Serve the site with `daphne base.asgi:application`,
+because WSGI has no WebSocket, and keep one `python manage.py run_crash` running.
 With `DEBUG=False` the browsable API is turned off and HTTPS, secure cookies
 and HSTS are enabled. Run `python manage.py check --deploy` and
 `python manage.py collectstatic` before deploying.

@@ -1,23 +1,33 @@
 from rest_framework import serializers
 
-from .models import CrashBet
+from base.serializers import ModelSerializer
+from .models import CrashPageLabel, CrashRound, RoundBet
 
 
-class CrashBetSerializer(serializers.ModelSerializer):
-    won = serializers.BooleanField(read_only=True)
+class BetRequestSerializer(serializers.Serializer):
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+    target = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True)
+
+
+class RoundBetSerializer(serializers.ModelSerializer):
+    round = serializers.IntegerField(source="round.number")
 
     class Meta:
-        model = CrashBet
-        fields = [
-            "id",
-            "amount",
-            "target",
-            "crash_point",
-            "payout",
-            "won",
-            "server_seed_hash",
-            "client_seed",
-            "nonce",
-            "created_at",
-        ]
-        read_only_fields = ["crash_point", "payout", "server_seed_hash", "client_seed", "nonce", "created_at"]
+        model = RoundBet
+        fields = ["id", "round", "amount", "target", "status", "multiplier", "payout", "created_at"]
+
+
+class CrashRoundSerializer(serializers.ModelSerializer):
+    """Only for crashed rounds: this is where the seed is public."""
+
+    commitment = serializers.CharField(source="chain.commitment")
+
+    class Meta:
+        model = CrashRound
+        fields = ["number", "crash_point", "seed", "seed_hash", "position", "commitment", "started_at", "crashed_at"]
+
+
+class CrashPageLabelSerializer(ModelSerializer):
+    class Meta:
+        model = CrashPageLabel
+        fields = "__all__"

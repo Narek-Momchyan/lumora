@@ -13,7 +13,8 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from accounts.models import LoginPageLabel, User
-from crash.services import play
+from crash.models import CrashPageLabel
+from crash.services import crash_round, open_round, place_bet, start_flight
 from errors.codes import ERROR_CODES
 from errors.models import ErrorMessage
 from fairness.services import rotate_seeds
@@ -158,7 +159,7 @@ class ApiContractTests(TestCase):
                 self.assertEqual(len({tuple(sorted(re.findall(r"\{\w+\}", text))) for text in texts}), 1)
 
     def test_no_label_is_empty(self):
-        for model in [LoginPageLabel, LobbyPageLabel, HeaderLabel, ZeusPageLabel]:
+        for model in [LoginPageLabel, LobbyPageLabel, HeaderLabel, ZeusPageLabel, CrashPageLabel]:
             self.assertEqual(model.objects.count(), len(LANGS))
             for label in model.objects.all():
                 for field in label._meta.concrete_fields:
@@ -179,6 +180,16 @@ class ApiContractTests(TestCase):
                 self.assertIn("{count}", label.free_spins_won)
                 self.assertIn("{count}", label.auto_spins_left)
                 self.assertIn("{amount}", label.buy_bonus_text)
+
+    def test_crash_placeholders_are_in_every_language(self):
+        for label in CrashPageLabel.objects.all():
+            with self.subTest(lang=label.lang):
+                self.assertIn("{multiplier}", label.cashed_out)
+                self.assertIn("{multiplier}", label.crashed_status)
+                self.assertIn("{seconds}", label.betting_status)
+                self.assertIn("{count}", label.players_count)
+                self.assertIn("{number}", label.round_number)
+                self.assertIn("{value}", label.house_edge)
 
     def test_every_engine_symbol_has_a_row_and_a_name_in_every_language(self):
         codes = [row["code"] for row in self.client.get("/api/slot_symbols").json()]
@@ -336,7 +347,10 @@ class AdminTests(TestCase):
         load_sample(read_sample())
         wallet = open_wallet(self.admin)
         claim_daily_bonus(wallet)
-        play(self.admin, "10", "2.00")
+        current = open_round()
+        place_bet(self.admin, "10", "2.00")
+        start_flight(current.pk)
+        crash_round(current.pk)
         rotate_seeds(self.admin)
 
     def test_every_admin_page_opens(self):
@@ -357,7 +371,7 @@ class AdminTests(TestCase):
     def test_money_and_history_are_read_only_in_the_admin(self):
         request = RequestFactory().get("/admin/")
         request.user = self.admin
-        for model_name in ["wallet", "transaction", "jackpotpool", "seedpair", "crashbet", "slotspin"]:
+        for model_name in ["wallet", "transaction", "jackpotpool", "seedpair", "crashround", "roundbet", "slotspin"]:
             model_admin = next(a for m, a in admin.site._registry.items() if m._meta.model_name == model_name)
             with self.subTest(model=model_name):
                 self.assertFalse(model_admin.has_add_permission(request))

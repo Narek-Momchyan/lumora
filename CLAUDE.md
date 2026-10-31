@@ -33,6 +33,8 @@ wagered stats), leave it out and list it for Narek instead of faking it.
 - `backend/` Django 6.1, Django REST Framework, SimpleJWT, django-cors-headers,
   python-decouple, PostgreSQL (installed on Windows, no Docker). Pipenv manages the
   environment in `backend/.venv`; `requirements.txt` is generated from `Pipfile.lock`.
+- Live game: Django Channels with Redis (Memurai on Windows, 127.0.0.1:6379,
+  `CHANNEL_REDIS_URL`); tests use `InMemoryChannelLayer`. Daphne serves ASGI.
 - `frontend/` Next.js 16 (App Router, React Compiler), TypeScript, Tailwind CSS 4,
   native `fetch`.
 - Later: `mobile/` React Native (Expo) on the same API.
@@ -47,8 +49,9 @@ pipenv shell                               # every new terminal
 pipenv install <package>                   # add a package, then:
 pipenv requirements > requirements.txt
 python manage.py migrate
-python manage.py runserver
-python manage.py test                      # all fast tests, ~10 s, needs PostgreSQL
+python manage.py runserver                 # HTTP and the WebSocket (Daphne)
+python manage.py run_crash                 # second terminal: the live Neon Crash rounds, needs Memurai
+python manage.py test                      # all fast tests, ~50 s, needs PostgreSQL
 python manage.py test --tag slow           # Zeus Legacy's 1,000,000-round RTP test, ~3 min
 python manage.py makemigrations
 # without the shell: pipenv run python manage.py test
@@ -132,11 +135,14 @@ npm run build
 3. **Decimal, never float, for money**, quantised to 0.01.
 4. **Game results come only from `fairness/rng.py`**, with the player's active
    `SeedPair` and the nonce from `fairness.services.next_nonce`. Never use `random`.
-   Store `server_seed_hash`, `client_seed` and `nonce` on every bet.
+   Store `server_seed_hash`, `client_seed` and `nonce` on every bet. Live Neon Crash is
+   the one exception: its round is shared, so its seeds come from a hash chain
+   (`fairness.rng.walk_chain`) and live on `CrashRound`, not on the bet.
 5. **Game maths lives in a pure `engine.py`** (no Django, no database).
    `services.py` glues engine + wallet + fairness.
 6. **Bet and settle in one database transaction.** If anything fails, nothing is
-   charged and the nonce is not used.
+   charged and the nonce is not used. Live Neon Crash has them apart by nature: each
+   step is its own transaction that first locks the round's row (order: round, bet, wallet).
 7. **Every game ships with an RTP simulation test** (at least 200,000 rounds) that
    asserts its RTP. A test too slow for `python manage.py test` is tagged `slow` and
    runs with `python manage.py test --tag slow`; run it after changing that game's maths.
@@ -185,10 +191,13 @@ Each phase ends with something that works and can be shown.
       Wallet, Leaderboard (Figma 01–04), language switcher
 
 ### Phase 2 — Live Neon Crash (multiplayer)
-- [ ] Round loop: betting window (7 s) → flight → crash, run by a background task
-- [ ] Hash-chain seeds for shared rounds (each round's seed = SHA-256 of the next)
-- [ ] Django Channels + Redis: broadcast ticks, bets and cash-outs over WebSocket
-- [ ] Manual cash-out with server-side time checks
+- [x] Round loop: betting window (7 s) → flight → crash → pause, run by `run_crash`
+      (one runner at a time, PostgreSQL advisory lock)
+- [x] Hash-chain seeds for shared rounds (each round's seed = SHA-256 of the next)
+- [x] Django Channels + Redis: round state, bets and cash-outs over `/ws/crash`
+      (no ticks: the multiplier is a formula of time, the frontend draws the same one)
+- [x] Manual cash-out with server-side time checks, auto cash-out, row lock against the crash
+- [x] Demo bots set in the admin, solo crash removed, `CrashPageLabel`
 - [ ] Live bets panel and round history in the UI (Figma 03)
 - [ ] Load test with 200 simulated players
 

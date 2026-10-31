@@ -6,6 +6,7 @@ from rest_framework.test import APIClient
 from accounts.models import User
 from base.sample import load_sample, read_sample
 from crash.engine import MAX_TARGET, MIN_TARGET
+from crash.services import open_round
 from games.models import Game
 from wallet.services import open_wallet
 from .handlers import fill
@@ -137,6 +138,7 @@ class ErrorTranslationTests(TestCase):
         user = User.objects.create_user(username="p@lumora.dev", email="p@lumora.dev")
         wallet = open_wallet(user)
         Game.objects.filter(slug="neon-crash").update(max_bet=wallet.balance + 1)
+        open_round()
         self.client.force_authenticate(user)
         self.client.cookies["lang"] = "am"
 

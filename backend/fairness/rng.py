@@ -8,6 +8,11 @@
    and check that the seed matches the hash shown before the bets.
 
 Seeds come from the `secrets` module. Never use `random` for anything that decides a result.
+
+A round shared by all players cannot use one player's seeds, so it uses a hash chain instead:
+every round's seed is the SHA-256 of the next round's seed. The chain is made backwards from a
+secret last seed, and the rounds play it forwards. Revealing one seed gives nothing away about
+the next one, and anyone can hash a revealed seed to get the seed of the round before it.
 """
 
 import hashlib
@@ -44,3 +49,10 @@ def float_stream(server_seed, client_seed, nonce):
 
 def first_float(server_seed, client_seed, nonce):
     return next(float_stream(server_seed, client_seed, nonce))
+
+
+def walk_chain(seed, steps):
+    """Hash a seed `steps` times, which moves that many rounds back in a hash chain."""
+    for _ in range(steps):
+        seed = hash_seed(seed)
+    return seed

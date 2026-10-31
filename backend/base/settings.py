@@ -32,6 +32,7 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",  # first, so that runserver serves ASGI and the WebSocket
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -40,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "corsheaders",
     "rest_framework",
+    "channels",
     "base",
     "accounts",
     "wallet",
@@ -95,6 +97,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "base.wsgi.application"
+ASGI_APPLICATION = "base.asgi.application"
+
+# The live game feed. Tests use the in-memory layer, see base.test_runner.
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [config("CHANNEL_REDIS_URL", default="redis://127.0.0.1:6379/0")]},
+    },
+}
 
 TEST_RUNNER = "base.test_runner.SkipSlowTestsRunner"
 

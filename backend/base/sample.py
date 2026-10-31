@@ -6,6 +6,7 @@ from django.core.management.color import no_style
 from django.db import connection, models
 
 from accounts.models import LoginPageLabel
+from crash.models import CrashPageLabel
 from errors.models import ErrorMessage
 from games.models import GameCategory, LobbyPageLabel
 from header.models import HeaderLabel, Language, Logo, SidebarItem
@@ -26,6 +27,7 @@ COLLECTIONS = {
     "slot_symbols": SlotSymbol,
     "slot_symbol_names": SlotSymbolName,
     "zeus_page_labels": ZeusPageLabel,
+    "crash_page_labels": CrashPageLabel,
     "error_messages": ErrorMessage,
 }
 

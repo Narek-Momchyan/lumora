@@ -1114,6 +1114,116 @@
       "jackpot_icon_grand": "👑"
     }
   ],
+  "crash_page_labels": [
+    {
+      "id": 1,
+      "lang": "en",
+      "page_title": "Neon Crash · Lumora",
+      "page_description": "A live crash game with demo coins: cash out before the rocket crashes.",
+      "game_title": "Neon Crash",
+      "tab_manual": "Manual",
+      "tab_auto": "Auto",
+      "bet_amount": "Bet amount (LC)",
+      "bet_half": "½",
+      "bet_double": "2×",
+      "bet_plus": "+100",
+      "bet_max": "Max",
+      "auto_cash_out_at": "Auto cash out at",
+      "place_bet": "Place bet",
+      "bet_placed": "Bet placed",
+      "cash_out": "Cash out",
+      "cashed_out": "Cashed out at {multiplier}x",
+      "betting_status": "Next round in {seconds} s",
+      "flying_status": "Flying... cash out before it crashes",
+      "crashed_status": "Crashed at {multiplier}x",
+      "waiting_status": "Waiting for the next round...",
+      "live_bets": "Live bets",
+      "players_count": "{count} players",
+      "bet_lost": "Lost",
+      "bot_badge": "Bot",
+      "history_title": "Round history",
+      "round_number": "Round #{number}",
+      "provably_fair": "Provably fair",
+      "house_edge": "House edge {value}%",
+      "seed_label": "Seed",
+      "seed_hash_label": "Seed hash",
+      "commitment_label": "Chain commitment",
+      "connecting": "Connecting...",
+      "server_unreachable": "Can't reach the server. Trying again..."
+    },
+    {
+      "id": 2,
+      "lang": "am",
+      "page_title": "Neon Crash · Lumora",
+      "page_description": "Կենդանի crash խաղ դեմո մետաղադրամներով՝ վերցրու շահումը, մինչև հրթիռը պայթի։",
+      "game_title": "Neon Crash",
+      "tab_manual": "Ձեռքով",
+      "tab_auto": "Ավտո",
+      "bet_amount": "Խաղադրույք (LC)",
+      "bet_half": "½",
+      "bet_double": "2×",
+      "bet_plus": "+100",
+      "bet_max": "Մաքս",
+      "auto_cash_out_at": "Ավտո cash out-ը՝",
+      "place_bet": "Կատարել խաղադրույք",
+      "bet_placed": "Խաղադրույքն ընդունված է",
+      "cash_out": "Վերցնել",
+      "cashed_out": "Վերցրիր {multiplier}x-ով",
+      "betting_status": "Հաջորդ ռաունդը {seconds} վ-ից",
+      "flying_status": "Թռչում է... վերցրու, մինչև պայթելը",
+      "crashed_status": "Պայթեց {multiplier}x-ի վրա",
+      "waiting_status": "Սպասում ենք հաջորդ ռաունդին...",
+      "live_bets": "Կենդանի խաղադրույքներ",
+      "players_count": "{count} խաղացող",
+      "bet_lost": "Պարտվեց",
+      "bot_badge": "Բոտ",
+      "history_title": "Ռաունդների պատմություն",
+      "round_number": "Ռաունդ #{number}",
+      "provably_fair": "Ապացուցելիորեն արդար",
+      "house_edge": "Կազինոյի առավելություն՝ {value}%",
+      "seed_label": "Seed",
+      "seed_hash_label": "Seed-ի հեշ",
+      "commitment_label": "Շղթայի commitment",
+      "connecting": "Միանում ենք...",
+      "server_unreachable": "Սերվերը հասանելի չէ։ Նորից ենք փորձում..."
+    },
+    {
+      "id": 3,
+      "lang": "ru",
+      "page_title": "Neon Crash · Lumora",
+      "page_description": "Живая crash-игра на демо-монетах: заберите выигрыш, пока ракета не взорвалась.",
+      "game_title": "Neon Crash",
+      "tab_manual": "Вручную",
+      "tab_auto": "Авто",
+      "bet_amount": "Ставка (LC)",
+      "bet_half": "½",
+      "bet_double": "2×",
+      "bet_plus": "+100",
+      "bet_max": "Макс",
+      "auto_cash_out_at": "Автовывод при",
+      "place_bet": "Сделать ставку",
+      "bet_placed": "Ставка принята",
+      "cash_out": "Забрать",
+      "cashed_out": "Забрано на {multiplier}x",
+      "betting_status": "Следующий раунд через {seconds} с",
+      "flying_status": "Летит... заберите, пока не взорвалось",
+      "crashed_status": "Взрыв на {multiplier}x",
+      "waiting_status": "Ждём следующий раунд...",
+      "live_bets": "Живые ставки",
+      "players_count": "Игроков: {count}",
+      "bet_lost": "Проигрыш",
+      "bot_badge": "Бот",
+      "history_title": "История раундов",
+      "round_number": "Раунд №{number}",
+      "provably_fair": "Доказуемо честно",
+      "house_edge": "Преимущество казино {value}%",
+      "seed_label": "Seed",
+      "seed_hash_label": "Хеш seed",
+      "commitment_label": "Commitment цепочки",
+      "connecting": "Подключение...",
+      "server_unreachable": "Сервер недоступен. Пробуем снова..."
+    }
+  ],
   "error_messages": [
     {
       "id": 1,
@@ -1690,6 +1800,114 @@
       "code": "game_not_found",
       "lang": "ru",
       "text": "Такой игры нет."
+    },
+    {
+      "id": 97,
+      "code": "round_closed",
+      "lang": "en",
+      "text": "Betting for this round is closed."
+    },
+    {
+      "id": 98,
+      "code": "round_closed",
+      "lang": "am",
+      "text": "Այս ռաունդի խաղադրույքներն արդեն փակ են։"
+    },
+    {
+      "id": 99,
+      "code": "round_closed",
+      "lang": "ru",
+      "text": "Ставки на этот раунд закрыты."
+    },
+    {
+      "id": 100,
+      "code": "already_bet",
+      "lang": "en",
+      "text": "You already have a bet on this round."
+    },
+    {
+      "id": 101,
+      "code": "already_bet",
+      "lang": "am",
+      "text": "Այս ռաունդում արդեն խաղադրույք ունես։"
+    },
+    {
+      "id": 102,
+      "code": "already_bet",
+      "lang": "ru",
+      "text": "У вас уже есть ставка на этот раунд."
+    },
+    {
+      "id": 103,
+      "code": "too_late",
+      "lang": "en",
+      "text": "Too late, the round has crashed."
+    },
+    {
+      "id": 104,
+      "code": "too_late",
+      "lang": "am",
+      "text": "Ուշ է, ռաունդն արդեն պայթել է։"
+    },
+    {
+      "id": 105,
+      "code": "too_late",
+      "lang": "ru",
+      "text": "Слишком поздно, раунд уже завершился взрывом."
+    },
+    {
+      "id": 106,
+      "code": "not_flying",
+      "lang": "en",
+      "text": "The round has not started yet."
+    },
+    {
+      "id": 107,
+      "code": "not_flying",
+      "lang": "am",
+      "text": "Ռաունդը դեռ չի սկսվել։"
+    },
+    {
+      "id": 108,
+      "code": "not_flying",
+      "lang": "ru",
+      "text": "Раунд ещё не начался."
+    },
+    {
+      "id": 109,
+      "code": "no_bet",
+      "lang": "en",
+      "text": "You have no bet on this round."
+    },
+    {
+      "id": 110,
+      "code": "no_bet",
+      "lang": "am",
+      "text": "Այս ռաունդում խաղադրույք չունես։"
+    },
+    {
+      "id": 111,
+      "code": "no_bet",
+      "lang": "ru",
+      "text": "У вас нет ставки на этот раунд."
+    },
+    {
+      "id": 112,
+      "code": "already_cashed_out",
+      "lang": "en",
+      "text": "This bet is already cashed out."
+    },
+    {
+      "id": 113,
+      "code": "already_cashed_out",
+      "lang": "am",
+      "text": "Այս խաղադրույքի շահումն արդեն վերցրել ես։"
+    },
+    {
+      "id": 114,
+      "code": "already_cashed_out",
+      "lang": "ru",
+      "text": "Выигрыш по этой ставке уже получен."
     }
   ]
 }

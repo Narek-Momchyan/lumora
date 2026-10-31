@@ -10,5 +10,7 @@ djangorestframework-simplejwt = "*"
 django-cors-headers = "*"
 python-decouple = "*"
 psycopg = {extras = ["binary"], version = "*"}
+channels = {extras = ["daphne"], version = "*"}
+channels-redis = "*"
 
 [dev-packages]

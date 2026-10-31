@@ -16,6 +16,12 @@ GAME_CODES = [
     "target_out_of_range",
     "game_unavailable",
     "game_not_found",
+    "round_closed",
+    "already_bet",
+    "too_late",
+    "not_flying",
+    "no_bet",
+    "already_cashed_out",
 ]
 
 FIELD_CODES = [
