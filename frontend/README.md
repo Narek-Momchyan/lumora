@@ -4,9 +4,10 @@ Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS 4. All data comes
 from the Django API (`../backend`) through native `fetch`.
 
 ```text
-app/      routes: pages and layouts
-lib/      the API fetcher: base URL from NEXT_PUBLIC_API_URL, JWT header, errors
-types/    TypeScript interfaces for the API responses (they mirror the backend serializers)
+app/         routes: pages and layouts
+components/ shared components, `auth/` holds the login page parts
+lib/         the API fetcher: base URL from NEXT_PUBLIC_API_URL, JWT header, errors
+types/       TypeScript interfaces for the API responses (they mirror the backend serializers)
 ```
 
 ## Run

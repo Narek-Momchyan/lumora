@@ -1,18 +1,17 @@
+import type { TokenPair } from '@/types/account'
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL
 const ACCESS_KEY = 'lumora.access'
 const REFRESH_KEY = 'lumora.refresh'
 
 type ErrorData = Record<string, unknown> | null
 
+export type FieldErrors = Record<string, string[]>
+
 interface FetchOptions extends Omit<RequestInit, 'body'> {
   body?: unknown
   // false for login and register: their 401 is a wrong password, not an expired token
   auth?: boolean
-}
-
-interface TokenPair {
-  access: string
-  refresh: string
 }
 
 // status 0 means the server could not be reached. `data` keeps the whole error
@@ -27,6 +26,15 @@ export class ApiError extends Error {
     this.status = status
     this.data = data
   }
+}
+
+// {"email": ["..."], "detail": "..."} -> {email: ["..."]}
+export function fieldErrors(error: ApiError) {
+  const errors: FieldErrors = {}
+  for (const [field, value] of Object.entries(error.data ?? {})) {
+    if (Array.isArray(value)) errors[field] = value.map(String)
+  }
+  return errors
 }
 
 // Tokens exist only in the browser, so on the server these return null and

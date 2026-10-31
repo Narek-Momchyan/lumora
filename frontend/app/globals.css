@@ -17,3 +17,9 @@
   --color-lime: #b6ff3b;
   --color-danger: #ff4d6d;
 }
+
+/* Fonts from next/font in app/layout.tsx: font-sans (Inter), font-heading (Sora). */
+@theme inline {
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-sora);
+}
