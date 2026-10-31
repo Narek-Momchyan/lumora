@@ -118,7 +118,9 @@ npm run build
 
 - JWT lives **only in httpOnly cookies** set by the backend (`/api/token`,
   `/api/register`, `/api/token/refresh`, `/api/logout`); never in localStorage or JS.
-- The browser talks only to the Next app: `next.config.ts` rewrites `/api/*` and
+- The one exception is the public, cookie-free `/ws/crash`: the browser connects to
+  Django directly at `NEXT_PUBLIC_WS_URL`.
+- Everything else in the browser talks only to the Next app: `next.config.ts` rewrites `/api/*` and
   `/media/*` to Django, so the cookies are first-party and no CORS is needed. Unsafe
   requests send Django's CSRF token in the `X-CSRFToken` header.
 - `frontend/proxy.ts` sends every page except `/login` to `/login` when there is no
@@ -198,7 +200,7 @@ Each phase ends with something that works and can be shown.
       (no ticks: the multiplier is a formula of time, the frontend draws the same one)
 - [x] Manual cash-out with server-side time checks, auto cash-out, row lock against the crash
 - [x] Demo bots set in the admin, solo crash removed, `CrashPageLabel`
-- [ ] Live bets panel and round history in the UI (Figma 03)
+- [x] Live bets panel and round history in the UI (Figma 03)
 - [ ] Load test with 200 simulated players
 
 ### Phase 3 — Lumora Roulette

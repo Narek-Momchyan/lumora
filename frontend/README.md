@@ -28,7 +28,9 @@ npm run dev
 `.env.local` holds `BACKEND_URL=http://127.0.0.1:8000`, which is private to the
 Next server, and the auth cookie names that `proxy.ts` reads. Use `127.0.0.1`, not `localhost` (Node.js may resolve `localhost` to
 IPv6). `next.config.ts` rewrites `/api/*` and `/media/*` to Django, so open the site
-at <http://localhost:3000> and the browser only ever talks to Next.
+at <http://localhost:3000> and the browser talks to Next. The one exception is the public
+Neon Crash feed: the browser connects to Django at `NEXT_PUBLIC_WS_URL`, so restart
+`npm run dev` after changing it.
 
 Scripts: `npm run dev`, `npm run build`, `npm run start`, `npm run lint`.
 

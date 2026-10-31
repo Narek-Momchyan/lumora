@@ -79,9 +79,11 @@ Django. In `frontend/.env.local` (copied from `frontend/.env.example`):
 
 ```
 BACKEND_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_WS_URL=ws://127.0.0.1:8000/ws/crash
 ```
 
-Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
+The WebSocket is the one exception: it is public and needs no cookies, so the browser
+connects to Django directly. Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 (`::1`), while `runserver` listens on IPv4 only.
 
 ## API rules

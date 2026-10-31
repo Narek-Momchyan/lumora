@@ -1,4 +1,5 @@
 import type { LoginPageLabels, Player } from '@/types/account'
+import type { CrashBet, CrashPageLabels } from '@/types/crash'
 import type { Game, GameCategory, LobbyPageLabels } from '@/types/game'
 import type { HeaderLabels, Language, Logo, SidebarItem } from '@/types/header'
 import type { Wallet } from '@/types/wallet'
@@ -75,6 +76,14 @@ export function getJackpotPools() {
 
 export function getSlotSpins() {
   return fetchOrNull<SlotSpinRecord[]>('/slot_spins')
+}
+
+export function getCrashBets() {
+  return fetchOrNull<CrashBet[]>('/crash_bets')
+}
+
+export function getCrashPageLabels(lang: string) {
+  return firstRow<CrashPageLabels>(`/crash_page_labels?lang=${lang}`)
 }
 
 export function getZeusPageLabels(lang: string) {
