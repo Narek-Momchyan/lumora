@@ -1,0 +1,56 @@
+import json
+from pathlib import Path
+
+from django.conf import settings
+from django.core.management.color import no_style
+from django.db import connection, models
+
+from accounts.models import LoginPageLabel
+from errors.models import ErrorMessage
+from header.models import Language, Logo
+from .language import LANG_CODES
+
+SAMPLE_DB = Path(settings.BASE_DIR) / "base" / "sample_db.json"
+LANGS = LANG_CODES
+
+COLLECTIONS = {
+    "logos": Logo,
+    "languages": Language,
+    "login_page_labels": LoginPageLabel,
+    "error_messages": ErrorMessage,
+}
+
+
+def to_file_names(model, values):
+    """FileFields store paths relative to MEDIA_ROOT: "/media/images/x.png" -> "images/x.png"."""
+    for field in model._meta.concrete_fields:
+        value = values.get(field.name)
+        if isinstance(field, models.FileField) and isinstance(value, str) and value.startswith(settings.MEDIA_URL):
+            values[field.name] = value[len(settings.MEDIA_URL) :]
+    return values
+
+
+def load_sample(data):
+    """Fill the content tables from the sample structure. Expects empty tables."""
+    for name, model in COLLECTIONS.items():
+        rows = data[name]
+        if isinstance(rows, dict):
+            rows = [rows]
+        for row in rows:
+            model.objects.create(**to_file_names(model, dict(row)))
+
+
+def clear_sample():
+    for model in COLLECTIONS.values():
+        model.objects.all().delete()
+
+
+def reset_sequences():
+    statements = connection.ops.sequence_reset_sql(no_style(), list(COLLECTIONS.values()))
+    with connection.cursor() as cursor:
+        for statement in statements:
+            cursor.execute(statement)
+
+
+def read_sample(path=SAMPLE_DB):
+    return json.loads(Path(path).read_text(encoding="utf-8"))

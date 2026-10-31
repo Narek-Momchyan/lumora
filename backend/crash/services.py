@@ -20,14 +20,17 @@ GAME_SLUG = "neon-crash"
 
 
 class CrashError(Exception):
-    pass
+    def __init__(self, code, text, **params):
+        super().__init__(text)
+        self.code = code
+        self.params = params
 
 
 def _decimal(value, field):
     try:
         return Decimal(str(value)).quantize(Decimal("0.01"))
     except (InvalidOperation, ValueError) as exc:
-        raise CrashError(f"Invalid {field}") from exc
+        raise CrashError("invalid", f"Invalid {field}") from exc
 
 
 def play(user, amount, target):
@@ -36,11 +39,21 @@ def play(user, amount, target):
     target = _decimal(target, "target")
     game = Game.objects.filter(slug=GAME_SLUG, is_active=True).first()
     if game is None:
-        raise CrashError("Neon Crash is not available right now.")
+        raise CrashError("game_unavailable", "This game is not available right now.")
     if not game.min_bet <= amount <= game.max_bet:
-        raise CrashError(f"Bet must be between {game.min_bet} and {game.max_bet} LC.")
+        raise CrashError(
+            "bet_out_of_range",
+            f"Bet must be between {game.min_bet} and {game.max_bet} LC.",
+            min=game.min_bet,
+            max=game.max_bet,
+        )
     if not engine.MIN_TARGET <= target <= engine.MAX_TARGET:
-        raise CrashError(f"Target must be between {engine.MIN_TARGET}x and {engine.MAX_TARGET}x.")
+        raise CrashError(
+            "target_out_of_range",
+            f"Target must be between {engine.MIN_TARGET}x and {engine.MAX_TARGET}x.",
+            min=engine.MIN_TARGET,
+            max=engine.MAX_TARGET,
+        )
 
     wallet = wallet_services.open_wallet(user)
     with transaction.atomic():

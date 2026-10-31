@@ -1,13 +1,16 @@
 from django.conf import settings
 from rest_framework.authentication import SessionAuthentication
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken
 
 
 def enforce_csrf(request):
     """Same check as the admin session: unsafe methods need a matching X-CSRFToken."""
-    SessionAuthentication().enforce_csrf(request)
+    try:
+        SessionAuthentication().enforce_csrf(request)
+    except PermissionDenied as exc:
+        raise PermissionDenied(str(exc.detail), code="csrf_failed") from exc
 
 
 class CookieJWTAuthentication(JWTAuthentication):

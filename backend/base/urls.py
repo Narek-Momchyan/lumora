@@ -15,6 +15,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 from rest_framework.permissions import AllowAny
@@ -22,8 +24,10 @@ from rest_framework.routers import APIRootView, DefaultRouter
 
 from accounts.urls import accounts_router
 from crash.urls import crash_router
+from errors.urls import errors_router
 from fairness.urls import fairness_router
 from games.urls import games_router
+from header.urls import header_router
 from leaderboard.urls import leaderboard_router
 from wallet.urls import wallet_router
 
@@ -48,8 +52,10 @@ router.registry.extend(fairness_router.registry)
 router.registry.extend(games_router.registry)
 router.registry.extend(crash_router.registry)
 router.registry.extend(leaderboard_router.registry)
+router.registry.extend(header_router.registry)
+router.registry.extend(errors_router.registry)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

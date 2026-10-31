@@ -6,3 +6,11 @@ CURRENCY = "LC"
 SIGNUP_BONUS = Decimal("10000.00")
 DAILY_BONUS = Decimal("5000.00")
 DAILY_BONUS_COOLDOWN = timedelta(hours=24)
+
+# `am` is our code for Armenian; the HTML lang attribute is `hy`.
+LANG_CHOICES = [
+    ("en", "English"),
+    ("am", "Հայերեն"),
+    ("ru", "Русский"),
+]
+DEFAULT_LANG = "en"

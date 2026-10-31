@@ -7,11 +7,12 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.serializers import TokenObtainSerializer, TokenRefreshSerializer
 
-from base.views import SingleObjectViewSet
+from base.views import LangFilteredViewSet, SingleObjectViewSet
+from errors.handlers import coded_body
 from .authentication import CookieJWTAuthentication, enforce_csrf
 from .cookies import clear_auth_cookies, set_access_cookie, set_auth_cookies
-from .models import User
-from .serializers import MeSerializer, RegisterSerializer
+from .models import LoginPageLabel, User
+from .serializers import LoginPageLabelSerializer, MeSerializer, RegisterSerializer
 
 
 def logged_in_response(request, user, status_code):
@@ -57,7 +58,8 @@ class TokenViewSet(viewsets.GenericViewSet):
         try:
             serializer.is_valid(raise_exception=True)
         except (TokenError, ValidationError, AuthenticationFailed, User.DoesNotExist):
-            response = Response({"detail": "Session expired. Log in again."}, status=status.HTTP_401_UNAUTHORIZED)
+            body = coded_body(request, "session_expired", "Session expired. Log in again.")
+            response = Response(body, status=status.HTTP_401_UNAUTHORIZED)
             clear_auth_cookies(response)
             return response
 
@@ -84,3 +86,8 @@ class MeViewSet(SingleObjectViewSet):
 
     def get_object(self):
         return self.request.user
+
+
+class LoginPageLabelViewSet(LangFilteredViewSet):
+    queryset = LoginPageLabel.objects.all()
+    serializer_class = LoginPageLabelSerializer

@@ -2,6 +2,7 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 
 from base.views import FilteredReadOnlyViewSet, SingleObjectViewSet
+from errors.exceptions import CodedError
 from . import services
 from .models import Transaction
 from .serializers import TransactionSerializer, WalletSerializer
@@ -36,8 +37,10 @@ class BonusViewSet(viewsets.GenericViewSet):
         try:
             tx = services.claim_daily_bonus(wallet)
         except services.BonusNotReady as exc:
-            return Response(
-                {"detail": "Daily bonus already claimed.", "available_at": exc.available_at},
-                status=status.HTTP_409_CONFLICT,
-            )
+            raise CodedError(
+                "bonus_already_claimed",
+                "Daily bonus already claimed.",
+                status_code=status.HTTP_409_CONFLICT,
+                extra={"available_at": exc.available_at},
+            ) from exc
         return Response(self.get_serializer(tx).data, status=status.HTTP_201_CREATED)

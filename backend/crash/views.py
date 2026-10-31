@@ -2,6 +2,7 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from base.views import FilteredReadOnlyViewSet
+from errors.exceptions import CodedError
 from wallet.services import InsufficientFunds
 from . import services
 from .models import CrashBet
@@ -23,8 +24,8 @@ class CrashBetViewSet(FilteredReadOnlyViewSet):
         serializer.is_valid(raise_exception=True)
         try:
             bet = services.play(request.user, serializer.validated_data["amount"], serializer.validated_data["target"])
-        except InsufficientFunds:
-            return Response({"detail": "Not enough LC."}, status=status.HTTP_400_BAD_REQUEST)
+        except InsufficientFunds as exc:
+            raise CodedError("not_enough_lc", "Not enough LC.") from exc
         except services.CrashError as exc:
-            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+            raise CodedError(exc.code, str(exc), **exc.params) from exc
         return Response(self.get_serializer(bet).data, status=status.HTTP_201_CREATED)

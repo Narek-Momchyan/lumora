@@ -32,6 +32,7 @@ pipenv install                # creates backend/.venv from Pipfile.lock
 copy .env.example .env        # then set SECRET_KEY and DB_PASSWORD
 pipenv shell
 python manage.py migrate
+python manage.py load_sample
 python manage.py createsuperuser
 python manage.py runserver
 ```
@@ -73,9 +74,15 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
   (`kind`, `game`). An unknown value returns `[]` with status 200, not 404.
 - Money is a string with two decimals (`"10000.00"`), never a number. Times are
   ISO 8601 in UTC.
-- Errors: `{"detail": "..."}`, or `{"<field>": ["..."]}` for a bad field.
+- Errors always have a `code` and a `detail` in the request's language, see
+  [Errors](#errors).
+- The language comes from `?lang=`, then the `lang` cookie, then English. Supported:
+  `en` (default), `am`, `ru`.
+- Images are full URLs that start with `PUBLIC_BASE_URL`, so they load through the
+  Next `/media` rewrite.
 - Every endpoint needs a login except `register`, `token`, `token/refresh`,
-  `logout`, `games` and `leaderboard`.
+  `logout`, `games`, `leaderboard`, `logos`, `languages`, `login_page_labels` and
+  `error_messages`.
 - The JWTs live only in httpOnly cookies, never in a response body and never in an
   `Authorization` header. `register` and `token` set `lumora_access` (30 minutes)
   and `lumora_refresh` (7 days), both `SameSite=Lax`, and `Secure` when
@@ -110,9 +117,61 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 | GET | `/api/seeds` | cookie | the player's provably fair seed pairs, the active one first |
 | POST | `/api/seeds` | cookie | `{client_seed?}` → reveals the active server seed and starts a new pair: `{revealed, active}` |
 | GET | `/api/leaderboard` | – | top 20 of the last 7 days by net game result |
+| GET | `/api/logos` | – | the logo as one object, `{}` before one is added |
+| GET | `/api/languages` | – | languages for the language switcher, in `order` |
+| GET | `/api/login_page_labels` | – | every text of the login page; `?lang=` |
+| GET | `/api/error_messages` | – | error texts; `?lang=`, `?code=` |
 
 `bonus_available_at` is `null` before the first bonus; a time in the past means
 the bonus can be claimed now.
+
+## Content and languages
+
+Site texts and images are edited in the admin and read from the API, never written
+in the frontend. Content models have a `lang` field (`base.constants.LANG_CHOICES`);
+collections extend `base.views.LangFilteredViewSet`. An unknown `?lang=` returns `[]`
+with 200, like any filter; an unknown `lang` cookie means English.
+
+```bash
+python manage.py load_sample
+```
+
+Fills `logos`, `languages`, `login_page_labels` and `error_messages` from
+`base/sample_db.json` in en, am and ru (`--path` loads another file). It **replaces**
+those four tables, so edits made in the admin are lost; it never touches players,
+wallets, bets or games. To add a collection: add the model, its endpoint, a key in
+`sample_db.json` and a row in `base.sample.COLLECTIONS`.
+
+Images are plain `FileField`s with `base.fields.IMAGE_VALIDATORS`: JPG, PNG, WEBP or
+GIF, 5 MB at most, and the file's first bytes must match a real image. SVG is not
+allowed, because `/media/` is served from the site's own origin and an SVG can carry
+scripts. Files live in `media/`; `runserver` serves them only with `DEBUG=True`.
+
+## Errors
+
+Every error has a `code` and a `detail`, plus extras like `available_at`:
+
+```json
+{"code": "not_enough_lc", "detail": "Not enough LC."}
+```
+
+A bad field keeps its messages under the field name, with their codes in `field_codes`:
+
+```json
+{
+  "code": "validation_error",
+  "detail": "Check the fields.",
+  "email": ["A player with this email already exists."],
+  "field_codes": {"email": ["email_taken"]}
+}
+```
+
+The text comes from `ErrorMessage` (code + lang, edited in the admin) in the request's
+language. If that translation is missing the English text is used, and if there is
+no row at all, the text written in the code. Texts may use placeholders, such as
+`{min}` and `{max}` in `bet_out_of_range`. `errors/codes.py` lists every code, and a
+test checks that each one has a text in every language. In our code, raise
+`errors.exceptions.CodedError(code, text, **params)`.
 
 ## Provably fair
 
@@ -132,7 +191,9 @@ A revealed pair was used for nonces `0` to `nonce - 1`.
 
 | App | What it owns |
 | --- | --- |
-| `accounts` | `User` (logs in with email), register, me, login, refresh and logout with JWT cookies (`authentication.py`, `cookies.py`) |
+| `accounts` | `User` (logs in with email), register, me, login, refresh and logout with JWT cookies (`authentication.py`, `cookies.py`), `LoginPageLabel` |
+| `header` | `Logo`, `Language` |
+| `errors` | `ErrorMessage`, `CodedError`, the DRF exception handler, the list of codes |
 | `wallet` | `Wallet`, append-only `Transaction` ledger, `services.py` (the only code that moves money), daily bonus |
 | `fairness` | provably fair RNG (`rng.py`), `SeedPair`, `services.py` (next nonce, seed rotation) |
 | `games` | `Game` catalogue |
@@ -142,8 +203,10 @@ A revealed pair was used for nonces `0` to `nonce - 1`.
 | `leaderboard` | weekly leaderboard from the ledger |
 
 `base/` holds the settings, the URLs (`OptionalSlashRouter`),
-`FilteredReadOnlyViewSet`, `SingleObjectViewSet` and the constants (signup
-grant, daily bonus).
+`FilteredReadOnlyViewSet`, `LangFilteredViewSet`, `SingleObjectViewSet`, the constants
+(signup grant, daily bonus, languages), `language.py`, image validation (`fields.py`),
+media URLs (`serializers.py`, `renderers.py`), `ImagePreviewMixin` and `load_sample`
+(`sample.py`, `sample_db.json`).
 
 ## Tests
 
@@ -156,14 +219,18 @@ database (`test_lumora`), so your data is not touched. They check the money
 rules (ledger always equals balance, no overspending, idempotency keys, daily
 bonus), a 200,000-round simulation that Neon Crash pays back about 97%, the
 exact roulette RTP of 36/37, that a round can be verified after the seed is
-revealed, the API rules, CORS and that every admin page opens.
+revealed, the API rules, CORS and that every admin page opens. `ApiContractTests`
+checks that every collection in `base/sample_db.json` has an endpoint that returns
+exactly the sample in every language, with and without a trailing slash.
 `WalletConcurrencyTests` sends 30 bets of 500 LC at the same moment on real
 PostgreSQL connections to a 10,000 LC wallet: exactly 20 must succeed.
 
 ## Production
 
 Set `DEBUG=False`, a real `SECRET_KEY`, `ALLOWED_HOSTS`,
-`CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS` and `EMAIL_BACKEND` in `.env`.
+`CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS`, `PUBLIC_BASE_URL` and `EMAIL_BACKEND`
+in `.env`. `/media/` must be served by the web server, because Django serves it only
+in `DEBUG`.
 With `DEBUG=False` the browsable API is turned off and HTTPS, secure cookies
 and HSTS are enabled. Run `python manage.py check --deploy` and
 `python manage.py collectstatic` before deploying.

@@ -1,0 +1,676 @@
+{
+  "logos": {
+    "id": 1,
+    "name": "Lumora",
+    "image": "/media/images/header/logo.png"
+  },
+  "languages": [
+    {
+      "id": 1,
+      "code": "en",
+      "name": "English",
+      "order": 1
+    },
+    {
+      "id": 2,
+      "code": "am",
+      "name": "Հայերեն",
+      "order": 2
+    },
+    {
+      "id": 3,
+      "code": "ru",
+      "name": "Русский",
+      "order": 3
+    }
+  ],
+  "login_page_labels": [
+    {
+      "id": 1,
+      "lang": "en",
+      "hero_title_line_1": "Play bold.",
+      "hero_title_line_2": "Risk nothing.",
+      "hero_text": "Slots, crash and table games with demo coins only. No deposits, no real money, just the thrill.",
+      "stat_games": "Games",
+      "stat_rtp": "RTP",
+      "stat_real_money": "Real money",
+      "footer_note": "18+ · Demo play only · Lumora coins have no cash value",
+      "tab_login": "Log in",
+      "tab_signup": "Sign up",
+      "login_title": "Welcome back",
+      "login_subtitle": "Log in to claim your daily 5,000 LC bonus.",
+      "signup_title": "Create your account",
+      "signup_subtitle": "Start with 10,000 LC of demo coins.",
+      "email_label": "Email",
+      "email_placeholder": "you@example.com",
+      "password_label": "Password",
+      "display_name_label": "Display name (optional)",
+      "login_button": "Log in",
+      "login_pending": "Logging in...",
+      "signup_button": "Create account",
+      "signup_pending": "Creating account...",
+      "or_text": "or",
+      "create_account_button": "Create a free account",
+      "have_account_button": "I already have an account",
+      "server_unreachable": "Cannot reach the server."
+    },
+    {
+      "id": 2,
+      "lang": "am",
+      "hero_title_line_1": "Խաղա համարձակ։",
+      "hero_title_line_2": "Առանց ռիսկի։",
+      "hero_text": "Սլոթեր, crash և սեղանի խաղեր՝ միայն դեմո մետաղադրամներով։ Ոչ մի ներդրում, ոչ մի իրական գումար, միայն խաղի հաճույքը։",
+      "stat_games": "Խաղեր",
+      "stat_rtp": "RTP",
+      "stat_real_money": "Իրական գումար",
+      "footer_note": "18+ · Միայն դեմո խաղ · Lumora մետաղադրամները դրամական արժեք չունեն",
+      "tab_login": "Մուտք",
+      "tab_signup": "Գրանցում",
+      "login_title": "Բարի վերադարձ",
+      "login_subtitle": "Մուտք գործիր և ստացիր քո օրական 5,000 LC բոնուսը։",
+      "signup_title": "Ստեղծիր քո հաշիվը",
+      "signup_subtitle": "Սկսիր 10,000 LC դեմո մետաղադրամով։",
+      "email_label": "Էլ. փոստ",
+      "email_placeholder": "you@example.com",
+      "password_label": "Գաղտնաբառ",
+      "display_name_label": "Անուն (ըստ ցանկության)",
+      "login_button": "Մուտք գործել",
+      "login_pending": "Մուտք ենք գործում...",
+      "signup_button": "Ստեղծել հաշիվ",
+      "signup_pending": "Հաշիվը ստեղծվում է...",
+      "or_text": "կամ",
+      "create_account_button": "Ստեղծել անվճար հաշիվ",
+      "have_account_button": "Արդեն ունեմ հաշիվ",
+      "server_unreachable": "Սերվերին միանալ չհաջողվեց։"
+    },
+    {
+      "id": 3,
+      "lang": "ru",
+      "hero_title_line_1": "Играй смело.",
+      "hero_title_line_2": "Ничем не рискуя.",
+      "hero_text": "Слоты, краш и настольные игры только на демо-монеты. Никаких депозитов и реальных денег, только азарт.",
+      "stat_games": "Игры",
+      "stat_rtp": "RTP",
+      "stat_real_money": "Реальных денег",
+      "footer_note": "18+ · Только демо-игра · Монеты Lumora не имеют денежной ценности",
+      "tab_login": "Вход",
+      "tab_signup": "Регистрация",
+      "login_title": "С возвращением",
+      "login_subtitle": "Войдите и заберите ежедневный бонус 5 000 LC.",
+      "signup_title": "Создайте аккаунт",
+      "signup_subtitle": "Начните с 10 000 LC демо-монет.",
+      "email_label": "Эл. почта",
+      "email_placeholder": "you@example.com",
+      "password_label": "Пароль",
+      "display_name_label": "Имя (необязательно)",
+      "login_button": "Войти",
+      "login_pending": "Входим...",
+      "signup_button": "Создать аккаунт",
+      "signup_pending": "Создаём аккаунт...",
+      "or_text": "или",
+      "create_account_button": "Создать бесплатный аккаунт",
+      "have_account_button": "У меня уже есть аккаунт",
+      "server_unreachable": "Не удалось связаться с сервером."
+    }
+  ],
+  "error_messages": [
+    {
+      "id": 1,
+      "code": "invalid_credentials",
+      "lang": "en",
+      "text": "Wrong email or password."
+    },
+    {
+      "id": 2,
+      "code": "invalid_credentials",
+      "lang": "am",
+      "text": "Էլ. փոստը կամ գաղտնաբառը սխալ է։"
+    },
+    {
+      "id": 3,
+      "code": "invalid_credentials",
+      "lang": "ru",
+      "text": "Неверная почта или пароль."
+    },
+    {
+      "id": 4,
+      "code": "authentication_failed",
+      "lang": "en",
+      "text": "We could not confirm your login. Log in again."
+    },
+    {
+      "id": 5,
+      "code": "authentication_failed",
+      "lang": "am",
+      "text": "Չհաջողվեց հաստատել մուտքդ։ Մուտք գործիր նորից։"
+    },
+    {
+      "id": 6,
+      "code": "authentication_failed",
+      "lang": "ru",
+      "text": "Не удалось подтвердить вход. Войдите снова."
+    },
+    {
+      "id": 7,
+      "code": "not_authenticated",
+      "lang": "en",
+      "text": "Log in to continue."
+    },
+    {
+      "id": 8,
+      "code": "not_authenticated",
+      "lang": "am",
+      "text": "Շարունակելու համար մուտք գործիր։"
+    },
+    {
+      "id": 9,
+      "code": "not_authenticated",
+      "lang": "ru",
+      "text": "Войдите, чтобы продолжить."
+    },
+    {
+      "id": 10,
+      "code": "session_expired",
+      "lang": "en",
+      "text": "Your session has expired. Log in again."
+    },
+    {
+      "id": 11,
+      "code": "session_expired",
+      "lang": "am",
+      "text": "Քո սեսիան ավարտվել է։ Մուտք գործիր նորից։"
+    },
+    {
+      "id": 12,
+      "code": "session_expired",
+      "lang": "ru",
+      "text": "Сессия истекла. Войдите снова."
+    },
+    {
+      "id": 13,
+      "code": "permission_denied",
+      "lang": "en",
+      "text": "You can't do this."
+    },
+    {
+      "id": 14,
+      "code": "permission_denied",
+      "lang": "am",
+      "text": "Դու չես կարող դա անել։"
+    },
+    {
+      "id": 15,
+      "code": "permission_denied",
+      "lang": "ru",
+      "text": "У вас нет прав на это действие."
+    },
+    {
+      "id": 16,
+      "code": "csrf_failed",
+      "lang": "en",
+      "text": "The security check failed. Reload the page and try again."
+    },
+    {
+      "id": 17,
+      "code": "csrf_failed",
+      "lang": "am",
+      "text": "Անվտանգության ստուգումը չանցավ։ Թարմացրու էջը և փորձիր նորից։"
+    },
+    {
+      "id": 18,
+      "code": "csrf_failed",
+      "lang": "ru",
+      "text": "Проверка безопасности не пройдена. Обновите страницу и попробуйте снова."
+    },
+    {
+      "id": 19,
+      "code": "not_enough_lc",
+      "lang": "en",
+      "text": "Not enough LC."
+    },
+    {
+      "id": 20,
+      "code": "not_enough_lc",
+      "lang": "am",
+      "text": "Բավարար LC չունես։"
+    },
+    {
+      "id": 21,
+      "code": "not_enough_lc",
+      "lang": "ru",
+      "text": "Недостаточно LC."
+    },
+    {
+      "id": 22,
+      "code": "bonus_already_claimed",
+      "lang": "en",
+      "text": "Daily bonus already claimed."
+    },
+    {
+      "id": 23,
+      "code": "bonus_already_claimed",
+      "lang": "am",
+      "text": "Օրական բոնուսն արդեն ստացել ես։"
+    },
+    {
+      "id": 24,
+      "code": "bonus_already_claimed",
+      "lang": "ru",
+      "text": "Ежедневный бонус уже получен."
+    },
+    {
+      "id": 25,
+      "code": "bet_out_of_range",
+      "lang": "en",
+      "text": "Bet must be between {min} and {max} LC."
+    },
+    {
+      "id": 26,
+      "code": "bet_out_of_range",
+      "lang": "am",
+      "text": "Խաղադրույքը պետք է լինի {min}-ից {max} LC։"
+    },
+    {
+      "id": 27,
+      "code": "bet_out_of_range",
+      "lang": "ru",
+      "text": "Ставка должна быть от {min} до {max} LC."
+    },
+    {
+      "id": 28,
+      "code": "target_out_of_range",
+      "lang": "en",
+      "text": "Target must be between {min}x and {max}x."
+    },
+    {
+      "id": 29,
+      "code": "target_out_of_range",
+      "lang": "am",
+      "text": "Նպատակը պետք է լինի {min}x-ից {max}x։"
+    },
+    {
+      "id": 30,
+      "code": "target_out_of_range",
+      "lang": "ru",
+      "text": "Цель должна быть от {min}x до {max}x."
+    },
+    {
+      "id": 31,
+      "code": "game_unavailable",
+      "lang": "en",
+      "text": "This game is not available right now."
+    },
+    {
+      "id": 32,
+      "code": "game_unavailable",
+      "lang": "am",
+      "text": "Այս խաղը հիմա հասանելի չէ։"
+    },
+    {
+      "id": 33,
+      "code": "game_unavailable",
+      "lang": "ru",
+      "text": "Эта игра сейчас недоступна."
+    },
+    {
+      "id": 34,
+      "code": "email_taken",
+      "lang": "en",
+      "text": "A player with this email already exists."
+    },
+    {
+      "id": 35,
+      "code": "email_taken",
+      "lang": "am",
+      "text": "Այս էլ. փոստով խաղացող արդեն կա։"
+    },
+    {
+      "id": 36,
+      "code": "email_taken",
+      "lang": "ru",
+      "text": "Игрок с такой почтой уже есть."
+    },
+    {
+      "id": 37,
+      "code": "required",
+      "lang": "en",
+      "text": "This field is required."
+    },
+    {
+      "id": 38,
+      "code": "required",
+      "lang": "am",
+      "text": "Այս դաշտը պարտադիր է։"
+    },
+    {
+      "id": 39,
+      "code": "required",
+      "lang": "ru",
+      "text": "Это поле обязательно."
+    },
+    {
+      "id": 40,
+      "code": "blank",
+      "lang": "en",
+      "text": "This field can't be empty."
+    },
+    {
+      "id": 41,
+      "code": "blank",
+      "lang": "am",
+      "text": "Այս դաշտը չի կարող դատարկ լինել։"
+    },
+    {
+      "id": 42,
+      "code": "blank",
+      "lang": "ru",
+      "text": "Поле не может быть пустым."
+    },
+    {
+      "id": 43,
+      "code": "null",
+      "lang": "en",
+      "text": "This field can't be empty."
+    },
+    {
+      "id": 44,
+      "code": "null",
+      "lang": "am",
+      "text": "Այս դաշտը չի կարող դատարկ լինել։"
+    },
+    {
+      "id": 45,
+      "code": "null",
+      "lang": "ru",
+      "text": "Поле не может быть пустым."
+    },
+    {
+      "id": 46,
+      "code": "invalid",
+      "lang": "en",
+      "text": "Enter a valid value."
+    },
+    {
+      "id": 47,
+      "code": "invalid",
+      "lang": "am",
+      "text": "Մուտքագրիր ճիշտ արժեք։"
+    },
+    {
+      "id": 48,
+      "code": "invalid",
+      "lang": "ru",
+      "text": "Введите корректное значение."
+    },
+    {
+      "id": 49,
+      "code": "max_length",
+      "lang": "en",
+      "text": "This value is too long."
+    },
+    {
+      "id": 50,
+      "code": "max_length",
+      "lang": "am",
+      "text": "Արժեքը չափազանց երկար է։"
+    },
+    {
+      "id": 51,
+      "code": "max_length",
+      "lang": "ru",
+      "text": "Значение слишком длинное."
+    },
+    {
+      "id": 52,
+      "code": "max_digits",
+      "lang": "en",
+      "text": "This number has too many digits."
+    },
+    {
+      "id": 53,
+      "code": "max_digits",
+      "lang": "am",
+      "text": "Թիվը չափազանց շատ նիշ ունի։"
+    },
+    {
+      "id": 54,
+      "code": "max_digits",
+      "lang": "ru",
+      "text": "В числе слишком много цифр."
+    },
+    {
+      "id": 55,
+      "code": "max_decimal_places",
+      "lang": "en",
+      "text": "Use at most two decimal places."
+    },
+    {
+      "id": 56,
+      "code": "max_decimal_places",
+      "lang": "am",
+      "text": "Օգտագործիր առավելագույնը երկու տասնորդական նիշ։"
+    },
+    {
+      "id": 57,
+      "code": "max_decimal_places",
+      "lang": "ru",
+      "text": "Используйте не больше двух знаков после запятой."
+    },
+    {
+      "id": 58,
+      "code": "max_whole_digits",
+      "lang": "en",
+      "text": "This number is too large."
+    },
+    {
+      "id": 59,
+      "code": "max_whole_digits",
+      "lang": "am",
+      "text": "Թիվը չափազանց մեծ է։"
+    },
+    {
+      "id": 60,
+      "code": "max_whole_digits",
+      "lang": "ru",
+      "text": "Число слишком большое."
+    },
+    {
+      "id": 61,
+      "code": "password_too_short",
+      "lang": "en",
+      "text": "This password is too short. It must contain at least {min_length} characters."
+    },
+    {
+      "id": 62,
+      "code": "password_too_short",
+      "lang": "am",
+      "text": "Գաղտնաբառը կարճ է։ Այն պետք է ունենա առնվազն {min_length} նիշ։"
+    },
+    {
+      "id": 63,
+      "code": "password_too_short",
+      "lang": "ru",
+      "text": "Пароль слишком короткий: нужно минимум {min_length} символов."
+    },
+    {
+      "id": 64,
+      "code": "password_too_common",
+      "lang": "en",
+      "text": "This password is too common."
+    },
+    {
+      "id": 65,
+      "code": "password_too_common",
+      "lang": "am",
+      "text": "Այս գաղտնաբառը չափազանց տարածված է։"
+    },
+    {
+      "id": 66,
+      "code": "password_too_common",
+      "lang": "ru",
+      "text": "Этот пароль слишком распространён."
+    },
+    {
+      "id": 67,
+      "code": "password_entirely_numeric",
+      "lang": "en",
+      "text": "This password can't be only digits."
+    },
+    {
+      "id": 68,
+      "code": "password_entirely_numeric",
+      "lang": "am",
+      "text": "Գաղտնաբառը չի կարող կազմված լինել միայն թվերից։"
+    },
+    {
+      "id": 69,
+      "code": "password_entirely_numeric",
+      "lang": "ru",
+      "text": "Пароль не может состоять только из цифр."
+    },
+    {
+      "id": 70,
+      "code": "password_too_similar",
+      "lang": "en",
+      "text": "This password is too similar to your details."
+    },
+    {
+      "id": 71,
+      "code": "password_too_similar",
+      "lang": "am",
+      "text": "Գաղտնաբառը շատ նման է քո տվյալներին։"
+    },
+    {
+      "id": 72,
+      "code": "password_too_similar",
+      "lang": "ru",
+      "text": "Пароль слишком похож на ваши данные."
+    },
+    {
+      "id": 73,
+      "code": "validation_error",
+      "lang": "en",
+      "text": "Check the fields."
+    },
+    {
+      "id": 74,
+      "code": "validation_error",
+      "lang": "am",
+      "text": "Ստուգիր լրացրած դաշտերը։"
+    },
+    {
+      "id": 75,
+      "code": "validation_error",
+      "lang": "ru",
+      "text": "Проверьте поля формы."
+    },
+    {
+      "id": 76,
+      "code": "not_found",
+      "lang": "en",
+      "text": "Not found."
+    },
+    {
+      "id": 77,
+      "code": "not_found",
+      "lang": "am",
+      "text": "Չի գտնվել։"
+    },
+    {
+      "id": 78,
+      "code": "not_found",
+      "lang": "ru",
+      "text": "Не найдено."
+    },
+    {
+      "id": 79,
+      "code": "method_not_allowed",
+      "lang": "en",
+      "text": "This action is not allowed here."
+    },
+    {
+      "id": 80,
+      "code": "method_not_allowed",
+      "lang": "am",
+      "text": "Այս գործողությունն այստեղ թույլատրված չէ։"
+    },
+    {
+      "id": 81,
+      "code": "method_not_allowed",
+      "lang": "ru",
+      "text": "Это действие здесь недоступно."
+    },
+    {
+      "id": 82,
+      "code": "parse_error",
+      "lang": "en",
+      "text": "The request could not be read."
+    },
+    {
+      "id": 83,
+      "code": "parse_error",
+      "lang": "am",
+      "text": "Հարցումը հնարավոր չեղավ կարդալ։"
+    },
+    {
+      "id": 84,
+      "code": "parse_error",
+      "lang": "ru",
+      "text": "Не удалось прочитать запрос."
+    },
+    {
+      "id": 85,
+      "code": "unsupported_media_type",
+      "lang": "en",
+      "text": "This request format is not supported."
+    },
+    {
+      "id": 86,
+      "code": "unsupported_media_type",
+      "lang": "am",
+      "text": "Հարցման այս ձևաչափը չի աջակցվում։"
+    },
+    {
+      "id": 87,
+      "code": "unsupported_media_type",
+      "lang": "ru",
+      "text": "Этот формат запроса не поддерживается."
+    },
+    {
+      "id": 88,
+      "code": "not_acceptable",
+      "lang": "en",
+      "text": "This response format is not supported."
+    },
+    {
+      "id": 89,
+      "code": "not_acceptable",
+      "lang": "am",
+      "text": "Պատասխանի այս ձևաչափը չի աջակցվում։"
+    },
+    {
+      "id": 90,
+      "code": "not_acceptable",
+      "lang": "ru",
+      "text": "Этот формат ответа не поддерживается."
+    },
+    {
+      "id": 91,
+      "code": "throttled",
+      "lang": "en",
+      "text": "Too many requests. Try again later."
+    },
+    {
+      "id": 92,
+      "code": "throttled",
+      "lang": "am",
+      "text": "Չափազանց շատ հարցումներ։ Փորձիր մի փոքր ուշ։"
+    },
+    {
+      "id": 93,
+      "code": "throttled",
+      "lang": "ru",
+      "text": "Слишком много запросов. Попробуйте позже."
+    }
+  ]
+}

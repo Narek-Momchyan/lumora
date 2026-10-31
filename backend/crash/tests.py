@@ -84,7 +84,7 @@ class CrashApiTests(TestCase):
         Wallet.objects.filter(user=self.user).update(balance=Decimal("5.00"))
         response = self.play("10")
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {"detail": "Not enough LC."})
+        self.assertEqual(response.json(), {"code": "not_enough_lc", "detail": "Not enough LC."})
 
     def test_players_see_only_their_own_rounds(self):
         self.play()

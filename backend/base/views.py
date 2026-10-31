@@ -1,5 +1,8 @@
 from rest_framework import viewsets
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+
+from .language import get_lang
 
 
 class FilteredReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
@@ -19,6 +22,16 @@ class FilteredReadOnlyViewSet(viewsets.ReadOnlyModelViewSet):
         if self.list_limit:
             qs = qs[: self.list_limit]
         return Response(self.get_serializer(qs, many=True).data)
+
+
+class LangFilteredViewSet(FilteredReadOnlyViewSet):
+    """Public site content in one language. An unknown ?lang= returns [], like any filter."""
+
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        lang = self.request.query_params.get("lang") or get_lang(self.request)
+        return super().get_queryset().filter(lang=lang)
 
 
 class SingleObjectViewSet(viewsets.GenericViewSet):

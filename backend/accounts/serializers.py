@@ -2,8 +2,9 @@ from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from rest_framework import serializers
 
+from base.serializers import ModelSerializer
 from wallet.services import open_wallet
-from .models import User
+from .models import LoginPageLabel, User
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -12,12 +13,13 @@ class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "email", "display_name", "password"]
-        extra_kwargs = {"email": {"max_length": 150}}  # the email is also the username (150 max)
+        # The email is also the username (150 max). validate_email checks uniqueness in any letter case.
+        extra_kwargs = {"email": {"max_length": 150, "validators": []}}
 
     def validate_email(self, value):
         email = value.lower()
         if User.objects.filter(email__iexact=email).exists():
-            raise serializers.ValidationError("A player with this email already exists.")
+            raise serializers.ValidationError("A player with this email already exists.", code="email_taken")
         return email
 
     @transaction.atomic
@@ -36,3 +38,9 @@ class MeSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "email", "display_name", "date_joined"]
+
+
+class LoginPageLabelSerializer(ModelSerializer):
+    class Meta:
+        model = LoginPageLabel
+        fields = "__all__"

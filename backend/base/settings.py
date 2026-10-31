@@ -49,6 +49,8 @@ INSTALLED_APPS = [
     "roulette",
     "slots",
     "leaderboard",
+    "header",
+    "errors",
 ]
 
 CORS_ALLOWED_ORIGINS = config(
@@ -150,6 +152,12 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# Uploaded images. The API returns them under PUBLIC_BASE_URL, the Next site, which rewrites
+# /media/ to Django.
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+PUBLIC_BASE_URL = config("PUBLIC_BASE_URL", default="http://localhost:3000").rstrip("/")
+
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
@@ -177,10 +185,11 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_RENDERER_CLASSES": (
-        ["rest_framework.renderers.JSONRenderer", "rest_framework.renderers.BrowsableAPIRenderer"]
+        ["base.renderers.MediaURLJSONRenderer", "rest_framework.renderers.BrowsableAPIRenderer"]
         if DEBUG
-        else ["rest_framework.renderers.JSONRenderer"]
+        else ["base.renderers.MediaURLJSONRenderer"]
     ),
+    "EXCEPTION_HANDLER": "errors.handlers.exception_handler",
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
 }
 
