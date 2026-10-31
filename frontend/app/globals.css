@@ -16,10 +16,18 @@
   --color-magenta: #ff2bd6;
   --color-lime: #b6ff3b;
   --color-danger: #ff4d6d;
+
+  /* Fonts from next/font in app/layout.tsx: font-sans (Inter), font-heading (Sora). */
+  --font-sans: var(--font-inter), sans-serif;
+  --font-heading: var(--font-sora), sans-serif;
 }
 
-/* Fonts from next/font in app/layout.tsx: font-sans (Inter), font-heading (Sora). */
-@theme inline {
-  --font-sans: var(--font-inter);
-  --font-heading: var(--font-sora);
+/* Sora has no Cyrillic or Armenian letters, and Inter no Armenian ones. */
+html:lang(ru) {
+  --font-heading: var(--font-inter), sans-serif;
+}
+
+html:lang(hy) {
+  --font-sans: var(--font-noto-armenian), sans-serif;
+  --font-heading: var(--font-noto-armenian), sans-serif;
 }

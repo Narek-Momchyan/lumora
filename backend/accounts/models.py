@@ -29,6 +29,9 @@ class LoginPageLabel(models.Model):
     """Every text of the login page in one language."""
 
     lang = models.CharField(max_length=10, choices=LANG_CHOICES, db_index=True)
+    page_title = models.CharField(max_length=100)
+    page_description = models.CharField(max_length=255)
+    language_switcher_label = models.CharField(max_length=50)
     hero_title_line_1 = models.CharField(max_length=100)
     hero_title_line_2 = models.CharField(max_length=100)
     hero_text = models.CharField(max_length=255)

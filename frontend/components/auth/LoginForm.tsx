@@ -3,15 +3,17 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, fieldErrors, login } from '@/lib/api'
+import { ApiError, errorDetail, fieldErrors, login } from '@/lib/api'
 import type { FieldErrors } from '@/lib/api'
+import type { LoginPageLabels } from '@/types/account'
 import TextField from './TextField'
 
 interface LoginFormProps {
+  labels: LoginPageLabels
   onCreateAccount: () => void
 }
 
-export default function LoginForm({ onCreateAccount }: LoginFormProps) {
+export default function LoginForm({ labels, onCreateAccount }: LoginFormProps) {
   const router = useRouter()
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState('')
@@ -34,28 +36,27 @@ export default function LoginForm({ onCreateAccount }: LoginFormProps) {
 
       const fields = fieldErrors(error)
       setErrors(fields)
-      if (error.status === 401) setFormError('Wrong email or password.')
-      else if (!fields.email && !fields.password) setFormError(error.message)
+      if (!fields.email && !fields.password) setFormError(errorDetail(error, labels.server_unreachable))
     }
   }
 
   return (
     <>
-      <h2 className="font-heading text-2xl font-bold">Welcome back</h2>
-      <p className="mt-1 text-sm text-muted">Log in to claim your daily 5,000 LC bonus.</p>
+      <h2 className="font-heading text-2xl font-bold">{labels.login_title}</h2>
+      <p className="mt-1 text-sm text-muted">{labels.login_subtitle}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <TextField
-          label="Email"
+          label={labels.email_label}
           name="email"
           type="email"
-          placeholder="you@example.com"
+          placeholder={labels.email_placeholder}
           autoComplete="email"
           required
           errors={errors.email}
         />
         <TextField
-          label="Password"
+          label={labels.password_label}
           name="password"
           type="password"
           autoComplete="current-password"
@@ -74,18 +75,18 @@ export default function LoginForm({ onCreateAccount }: LoginFormProps) {
           disabled={pending}
           className="w-full rounded-xl bg-linear-to-r from-cyan to-magenta px-4 py-3 text-sm font-semibold text-bg shadow-lg shadow-cyan/20 transition-opacity hover:opacity-90 disabled:opacity-60"
         >
-          {pending ? 'Logging in...' : 'Log in'}
+          {pending ? labels.login_pending : labels.login_button}
         </button>
       </form>
 
-      <p className="my-4 text-center text-xs text-muted">or</p>
+      <p className="my-4 text-center text-xs text-muted">{labels.or_text}</p>
 
       <button
         type="button"
         onClick={onCreateAccount}
         className="w-full rounded-xl border border-border bg-surface2 px-4 py-3 text-sm font-medium text-text transition-colors hover:border-muted"
       >
-        Create a free account
+        {labels.create_account_button}
       </button>
     </>
   )

@@ -35,6 +35,11 @@ export function fieldErrors(error: ApiError) {
   return errors
 }
 
+// The backend's text in the visitor's language. Only a dead server has none.
+export function errorDetail(error: ApiError, fallback: string) {
+  return typeof error.data?.detail === 'string' ? error.data.detail : fallback
+}
+
 async function readBody(response: Response): Promise<ErrorData> {
   const text = await response.text()
   if (!text) return null

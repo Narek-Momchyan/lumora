@@ -1,23 +1,24 @@
 'use client'
 
 import { useState } from 'react'
+import type { LoginPageLabels } from '@/types/account'
 import LoginForm from './LoginForm'
 import SignupForm from './SignupForm'
 
 type Tab = 'login' | 'signup'
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: 'login', label: 'Log in' },
-  { id: 'signup', label: 'Sign up' },
-]
-
-export default function AuthCard() {
+export default function AuthCard({ labels }: { labels: LoginPageLabels }) {
   const [tab, setTab] = useState<Tab>('login')
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: 'login', label: labels.tab_login },
+    { id: 'signup', label: labels.tab_signup },
+  ]
 
   return (
     <div className="w-full max-w-md rounded-3xl border border-border bg-surface p-6 sm:p-8">
       <div role="tablist" className="grid grid-cols-2 gap-1 rounded-xl bg-surface2 p-1">
-        {TABS.map(({ id, label }) => (
+        {tabs.map(({ id, label }) => (
           <button
             key={id}
             type="button"
@@ -35,9 +36,9 @@ export default function AuthCard() {
 
       <div className="mt-6">
         {tab === 'login' ? (
-          <LoginForm onCreateAccount={() => setTab('signup')} />
+          <LoginForm labels={labels} onCreateAccount={() => setTab('signup')} />
         ) : (
-          <SignupForm onLogin={() => setTab('login')} />
+          <SignupForm labels={labels} onLogin={() => setTab('login')} />
         )}
       </div>
     </div>

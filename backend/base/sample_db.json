@@ -28,6 +28,9 @@
     {
       "id": 1,
       "lang": "en",
+      "page_title": "Log in · Lumora",
+      "page_description": "Casino-style games with demo coins. Lumora Coins (LC) have no cash value.",
+      "language_switcher_label": "Language",
       "hero_title_line_1": "Play bold.",
       "hero_title_line_2": "Risk nothing.",
       "hero_text": "Slots, crash and table games with demo coins only. No deposits, no real money, just the thrill.",
@@ -57,7 +60,10 @@
     {
       "id": 2,
       "lang": "am",
-      "hero_title_line_1": "Խաղա համարձակ։",
+      "page_title": "Մուտք · Lumora",
+      "page_description": "Կազինո ոճի խաղեր դեմո մետաղադրամներով։ Lumora Coins-ը (LC) դրամական արժեք չունի։",
+      "language_switcher_label": "Լեզու",
+      "hero_title_line_1": "Խաղա խիզախ։",
       "hero_title_line_2": "Առանց ռիսկի։",
       "hero_text": "Սլոթեր, crash և սեղանի խաղեր՝ միայն դեմո մետաղադրամներով։ Ոչ մի ներդրում, ոչ մի իրական գումար, միայն խաղի հաճույքը։",
       "stat_games": "Խաղեր",
@@ -86,6 +92,9 @@
     {
       "id": 3,
       "lang": "ru",
+      "page_title": "Вход · Lumora",
+      "page_description": "Игры в стиле казино на демо-монеты. Lumora Coins (LC) не имеют денежной ценности.",
+      "language_switcher_label": "Язык",
       "hero_title_line_1": "Играй смело.",
       "hero_title_line_2": "Ничем не рискуя.",
       "hero_text": "Слоты, краш и настольные игры только на демо-монеты. Никаких депозитов и реальных денег, только азарт.",

@@ -3,16 +3,17 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, apiFetch, fieldErrors } from '@/lib/api'
+import { ApiError, apiFetch, errorDetail, fieldErrors } from '@/lib/api'
 import type { FieldErrors } from '@/lib/api'
-import type { Player, RegisterPayload } from '@/types/account'
+import type { LoginPageLabels, Player, RegisterPayload } from '@/types/account'
 import TextField from './TextField'
 
 interface SignupFormProps {
+  labels: LoginPageLabels
   onLogin: () => void
 }
 
-export default function SignupForm({ onLogin }: SignupFormProps) {
+export default function SignupForm({ labels, onLogin }: SignupFormProps) {
   const router = useRouter()
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState('')
@@ -41,27 +42,29 @@ export default function SignupForm({ onLogin }: SignupFormProps) {
 
       const fields = fieldErrors(error)
       setErrors(fields)
-      if (!fields.email && !fields.password && !fields.display_name) setFormError(error.message)
+      if (!fields.email && !fields.password && !fields.display_name) {
+        setFormError(errorDetail(error, labels.server_unreachable))
+      }
     }
   }
 
   return (
     <>
-      <h2 className="font-heading text-2xl font-bold">Create your account</h2>
-      <p className="mt-1 text-sm text-muted">Start with 10,000 LC of demo coins.</p>
+      <h2 className="font-heading text-2xl font-bold">{labels.signup_title}</h2>
+      <p className="mt-1 text-sm text-muted">{labels.signup_subtitle}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <TextField
-          label="Email"
+          label={labels.email_label}
           name="email"
           type="email"
-          placeholder="you@example.com"
+          placeholder={labels.email_placeholder}
           autoComplete="email"
           required
           errors={errors.email}
         />
         <TextField
-          label="Password"
+          label={labels.password_label}
           name="password"
           type="password"
           autoComplete="new-password"
@@ -69,7 +72,7 @@ export default function SignupForm({ onLogin }: SignupFormProps) {
           errors={errors.password}
         />
         <TextField
-          label="Display name (optional)"
+          label={labels.display_name_label}
           name="display_name"
           autoComplete="nickname"
           errors={errors.display_name}
@@ -86,18 +89,18 @@ export default function SignupForm({ onLogin }: SignupFormProps) {
           disabled={pending}
           className="w-full rounded-xl bg-linear-to-r from-cyan to-magenta px-4 py-3 text-sm font-semibold text-bg shadow-lg shadow-cyan/20 transition-opacity hover:opacity-90 disabled:opacity-60"
         >
-          {pending ? 'Creating account...' : 'Create account'}
+          {pending ? labels.signup_pending : labels.signup_button}
         </button>
       </form>
 
-      <p className="my-4 text-center text-xs text-muted">or</p>
+      <p className="my-4 text-center text-xs text-muted">{labels.or_text}</p>
 
       <button
         type="button"
         onClick={onLogin}
         className="w-full rounded-xl border border-border bg-surface2 px-4 py-3 text-sm font-medium text-text transition-colors hover:border-muted"
       >
-        I already have an account
+        {labels.have_account_button}
       </button>
     </>
   )

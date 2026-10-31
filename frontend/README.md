@@ -6,7 +6,8 @@ from the Django API (`../backend`) through native `fetch`.
 ```text
 app/         routes: pages and layouts
 components/  shared components, `auth/` holds the login page parts
-lib/         `api.ts` for the browser (cookies, CSRF header, errors), `server-api.ts` for server components
+lib/         `api.ts` for the browser (cookies, CSRF header, errors), `server-api.ts` for server components,
+             `content.ts` for page content, `lang.ts` for the visitor's language
 types/       TypeScript interfaces for the API responses (they mirror the backend serializers)
 proxy.ts     sends visitors without a session to /login, before the page renders
 ```
@@ -34,7 +35,18 @@ Figma file "Lumora — Web Design": 01 Login, 02 Lobby, 03 Game · Neon Crash,
 04 Wallet. The colours are Tailwind tokens in `app/globals.css`, so classes look
 like `bg-bg`, `bg-surface`, `bg-surface2`, `border-border`, `text-text`,
 `text-muted`, `text-cyan`, `text-magenta`, `text-lime`, `text-danger`.
-Fonts: Sora for headings, Inter for text.
+Fonts: Sora for headings, Inter for text. Sora has no Armenian or Cyrillic letters and
+Inter no Armenian ones, so `app/globals.css` picks the font by `<html lang>`: Russian
+headings use Inter, and Armenian uses Noto Sans Armenian everywhere.
+
+## Content and languages
+
+No text or image is written in the code. Server components read the language with
+`displayLang()` from `lib/lang.ts` (the `lang` cookie, else `en`) and load texts through
+`lib/content.ts`, then pass them to client components as props. The texts come from the
+backend, so run `python manage.py load_sample` there first. `LanguageSwitcher` sets the
+`lang` cookie and calls `router.refresh()`. API errors already arrive in the chosen
+language: show their `detail` and field messages as they are.
 
 ## Notes for the API types
 
