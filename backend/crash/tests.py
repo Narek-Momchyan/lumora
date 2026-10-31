@@ -17,6 +17,7 @@ class CrashEngineTests(SimpleTestCase):
         self.assertEqual(engine.crash_point(0.0), Decimal("1.00"))  # 0.97 is raised to the minimum
         self.assertEqual(engine.crash_point(0.5), Decimal("1.94"))
         self.assertEqual(engine.crash_point(0.75), Decimal("3.88"))
+        self.assertEqual(str(engine.crash_point(0.1182)), "1.10")  # always two decimals, as in the API
         with self.assertRaises(ValueError):
             engine.crash_point(1.0)
 

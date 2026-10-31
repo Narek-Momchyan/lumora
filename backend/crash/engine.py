@@ -22,7 +22,7 @@ def crash_point(r):
         raise ValueError("r must be in [0, 1)")
     # Exact Decimal maths: no float rounding surprises at the 2-decimal boundary.
     hundredths = (100 * (1 - HOUSE_EDGE) / (1 - Decimal(r))).to_integral_value(rounding=ROUND_FLOOR)
-    return max(Decimal("1.00"), hundredths / 100)
+    return max(Decimal("1.00"), (hundredths / 100).quantize(Decimal("0.01")))
 
 
 def payout(amount, target, point):
