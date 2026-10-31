@@ -7,9 +7,10 @@ from the Django API (`../backend`) through native `fetch`.
 app/         routes: pages and layouts. `(site)/` holds every page behind the login, with the
              shared sidebar and header in its layout
 components/  shared components, `auth/` the login page, `layout/` the sidebar and header,
-             `lobby/` the lobby page
+             `lobby/` the lobby page, `zeus/` the Zeus Legacy game
 lib/         `api.ts` for the browser (cookies, CSRF header, errors), `server-api.ts` for server components,
-             `content.ts` for page content, `lang.ts` for the visitor's language
+             `content.ts` for page content, `lang.ts` for the visitor's language, `zeus.ts` for bet steps,
+             speeds and turning pays into LC
 types/       TypeScript interfaces for the API responses (they mirror the backend serializers)
 proxy.ts     sends visitors without a session to /login and renews an expired access token
 ```
@@ -49,6 +50,15 @@ No text or image is written in the code. Server components read the language wit
 backend, so run `python manage.py load_sample` there first. `LanguageSwitcher` sets the
 `lang` cookie and calls `router.refresh()`. API errors already arrive in the chosen
 language: show their `detail` and field messages as they are.
+
+## Zeus Legacy
+
+The page at `/zeus-legacy` only animates. `POST /api/slot_spins` returns the whole round,
+and `components/zeus/useZeusRound.ts` plays its spins and tumbles step by step; nothing is
+calculated or rolled in the browser. The balance on the page changes to the `balance` of
+that response when the round ends. Animations use `motion` (`motion/react`). Sounds come
+from `/api/slot_sounds`, so a sound with no uploaded file is silent, and the mute choice
+is the only thing kept in `localStorage`.
 
 ## Notes for the API types
 

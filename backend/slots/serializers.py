@@ -1,3 +1,5 @@
+from decimal import ROUND_DOWN, Decimal
+
 from rest_framework import serializers
 
 from base.serializers import ModelSerializer
@@ -37,6 +39,16 @@ class SlotSpinListSerializer(serializers.ModelSerializer):
 class SlotSpinSerializer(SlotSpinListSerializer):
     class Meta(SlotSpinListSerializer.Meta):
         fields = [*SlotSpinListSerializer.Meta.fields, "result"]
+
+
+class JackpotPoolSerializer(serializers.Serializer):
+    """Whole cents: a pool keeps more decimals only so that tiny shares of a stake add up."""
+
+    tier = serializers.CharField()
+    amount = serializers.SerializerMethodField()
+
+    def get_amount(self, pool):
+        return str(pool.amount.quantize(Decimal("0.01"), rounding=ROUND_DOWN))
 
 
 class SlotSymbolSerializer(ModelSerializer):

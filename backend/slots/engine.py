@@ -255,7 +255,7 @@ def play_round(stream, *, bonus_buy=False):
     first = play_spin(stream, bought=bonus_buy)
     spins = [first]
     total = first["win"]
-    free_spins_left = first["free_spins_awarded"]
+    free_spins_left = first["free_spins_left"] = first["free_spins_awarded"]
     multiplier = 0
 
     while free_spins_left > 0:
@@ -266,6 +266,7 @@ def play_round(stream, *, bonus_buy=False):
         free_spins_left += spin["free_spins_awarded"] - 1
         if spin["is_max_win"]:
             free_spins_left = 0  # reaching the max win ends the bonus
+        spin["free_spins_left"] = free_spins_left
 
     return {
         "spins": spins,

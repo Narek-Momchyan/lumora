@@ -5,6 +5,7 @@ import type { Game, LobbyPageLabels } from '@/types/game'
 // A playable game opens its page; a new game needs its route added here.
 const GAME_ROUTES: Record<string, string> = {
   'neon-crash': '/crash',
+  'zeus-legacy': '/zeus-legacy',
 }
 
 interface GameCardProps {

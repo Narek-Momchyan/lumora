@@ -5,10 +5,12 @@ from rest_framework.response import Response
 from base.views import FilteredReadOnlyViewSet, LangFilteredViewSet
 from errors.exceptions import CodedError
 from wallet import services as wallet_services
+from wallet.models import JackpotPool
 from wallet.services import InsufficientFunds
 from . import services
 from .models import SlotSound, SlotSpin, SlotSymbol, SlotSymbolName, ZeusPageLabel
 from .serializers import (
+    JackpotPoolSerializer,
     SlotSoundSerializer,
     SlotSpinListSerializer,
     SlotSpinRequestSerializer,
@@ -53,6 +55,12 @@ class SlotSpinViewSet(FilteredReadOnlyViewSet):
             "jackpot_pools": {tier: str(amount) for tier, amount in wallet_services.jackpot_pools().items()},
         }
         return Response(body, status=status.HTTP_201_CREATED)
+
+
+class JackpotPoolViewSet(FilteredReadOnlyViewSet):
+    queryset = JackpotPool.objects.all()
+    serializer_class = JackpotPoolSerializer
+    permission_classes = [AllowAny]
 
 
 class SlotSymbolViewSet(FilteredReadOnlyViewSet):

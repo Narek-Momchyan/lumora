@@ -84,7 +84,7 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
   `logout`, `games`, `leaderboard`, `error_messages` and the site content: `logos`,
   `languages`, `sidebar_items`, `header_labels`, `login_page_labels`,
   `lobby_page_labels`, `game_categories`, `slot_symbols`, `slot_symbol_names`,
-  `slot_sounds` and `zeus_page_labels`.
+  `slot_sounds`, `jackpot_pools` and `zeus_page_labels`.
 - The JWTs live only in httpOnly cookies, never in a response body and never in an
   `Authorization` header. `register` and `token` set `lumora_access` (30 minutes)
   and `lumora_refresh` (7 days), both `SameSite=Lax`, and `Secure` when
@@ -132,6 +132,7 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 | GET | `/api/slot_symbols` | – | slot symbols with their images |
 | GET | `/api/slot_symbol_names` | – | symbol names; `?lang=` |
 | GET | `/api/slot_sounds` | – | active sounds that have an uploaded file |
+| GET | `/api/jackpot_pools` | – | the current amount of each jackpot tier |
 | GET | `/api/zeus_page_labels` | – | every text of the Zeus Legacy page; `?lang=` |
 | GET | `/api/error_messages` | – | error texts; `?lang=`, `?code=` |
 
@@ -221,7 +222,7 @@ during free spins), and a spin pays at most 1000x. The first spin of a bonus buy
 `result` is `{spins, total_win, free_spins_played, bonus_buy}`. Each spin has `steps`, one
 per tumble (`grid`, `wins`, `winning_cells`, `pay`, `running_win`), and `win`,
 `scatter_win`, `collected_multipliers`, `global_multiplier`, `free_spins_awarded`,
-`is_max_win`. **Pays in `result` are in hundredths of the bet**: 150 means 1.5x.
+`free_spins_left`, `is_max_win`. **Pays in `result` are in hundredths of the bet**: 150 means 1.5x.
 Multiply by `amount` for LC. The LC that were really paid are in `payout`.
 
 | Measured | Rounds | Game | Jackpots | Total |

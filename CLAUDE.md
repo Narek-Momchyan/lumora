@@ -203,7 +203,7 @@ Each phase ends with something that works and can be shown.
 - [x] Use `wallet.services.debit/credit` instead of its own balance code
 - [x] 1,000,000-round RTP test (`--tag slow`; measured about 96.6%, bonus buy about 97.2%)
 - [x] `POST /api/slot_spins`, jackpot pools, symbols, sounds and page texts in the admin
-- [ ] Frontend: the Zeus Legacy page, then turn `is_playable` on in the admin
+- [x] Frontend: the Zeus Legacy page, `is_playable` on
 - [ ] Next step: Ante Bet (x1.25 stake, more scatters), as in the Zeus_Legacy repo
 
 ### Phase 5 — Polish and deploy

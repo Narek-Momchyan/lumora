@@ -165,6 +165,10 @@ class ZeusRoundTests(SimpleTestCase):
         result, _ = round_of({"free_spins_awarded": 1}, {"free_spins_awarded": 5}, *[{"win": 10}] * 5)
         self.assertEqual(result["free_spins_played"], 6)
 
+    def test_every_spin_says_how_many_free_spins_are_left(self):
+        result, _ = round_of({"free_spins_awarded": 2}, {"free_spins_awarded": 5}, *[{}] * 6)
+        self.assertEqual([spin["free_spins_left"] for spin in result["spins"]], [2, 6, 5, 4, 3, 2, 1, 0])
+
     def test_the_multiplier_carries_to_the_next_free_spin(self):
         _, play = round_of({"free_spins_awarded": 2}, {"global_multiplier": 7}, {})
         self.assertEqual(play.call_args_list[2].kwargs["global_multiplier"], 7)
@@ -427,6 +431,13 @@ class SlotContentTests(TestCase):
         upload = SimpleUploadedFile(name, content, content_type="audio/mpeg")
         data = {"code": SlotSound.Code.BIG_WIN, "file": upload, "is_active": "on"}
         return self.client.post(reverse("admin:slots_slotsound_add"), data, format="multipart")
+
+    def test_jackpot_pools_are_public_in_whole_cents(self):
+        JackpotPool.objects.filter(tier="MINI").update(amount=Decimal("100.123456"))
+        self.client.logout()
+        rows = {row["tier"]: row["amount"] for row in self.client.get("/api/jackpot_pools").json()}
+        self.assertEqual(rows["MINI"], "100.12")
+        self.assertEqual(set(rows), set(engine.JACKPOT_TIERS))
 
     def test_the_api_lists_only_sounds_that_can_be_played(self):
         SlotSound.objects.create(code=SlotSound.Code.MEGA_WIN)

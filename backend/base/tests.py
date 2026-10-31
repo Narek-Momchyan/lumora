@@ -176,6 +176,9 @@ class ApiContractTests(TestCase):
                 self.assertIn("{count}", label.free_spins_left)
                 self.assertIn("{count}", label.tumble)
                 self.assertIn("{tier}", label.jackpot_won)
+                self.assertIn("{count}", label.free_spins_won)
+                self.assertIn("{count}", label.auto_spins_left)
+                self.assertIn("{amount}", label.buy_bonus_text)
 
     def test_every_engine_symbol_has_a_row_and_a_name_in_every_language(self):
         codes = [row["code"] for row in self.client.get("/api/slot_symbols").json()]
