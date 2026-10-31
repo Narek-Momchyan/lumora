@@ -5,9 +5,10 @@ from the Django API (`../backend`) through native `fetch`.
 
 ```text
 app/         routes: pages and layouts
-components/ shared components, `auth/` holds the login page parts
-lib/         the API fetcher: base URL from NEXT_PUBLIC_API_URL, JWT header, errors
+components/  shared components, `auth/` holds the login page parts
+lib/         `api.ts` for the browser (cookies, CSRF header, errors), `server-api.ts` for server components
 types/       TypeScript interfaces for the API responses (they mirror the backend serializers)
+proxy.ts     sends visitors without a session to /login, before the page renders
 ```
 
 ## Run
@@ -20,8 +21,10 @@ copy .env.example .env.local
 npm run dev
 ```
 
-`.env.local` holds `NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api`. Use
-`127.0.0.1`, not `localhost` (Node.js may resolve `localhost` to IPv6).
+`.env.local` holds `BACKEND_URL=http://127.0.0.1:8000`, which is private to the
+Next server. Use `127.0.0.1`, not `localhost` (Node.js may resolve `localhost` to
+IPv6). `next.config.ts` rewrites `/api/*` and `/media/*` to Django, so open the site
+at <http://localhost:3000> and the browser only ever talks to Next.
 
 Scripts: `npm run dev`, `npm run build`, `npm run start`, `npm run lint`.
 
@@ -38,9 +41,12 @@ Fonts: Sora for headings, Inter for text.
 - Money fields are strings (`"10000.00"`), so they are `string` in interfaces.
 - Times are ISO strings (`"2026-10-30T17:49:52.600009Z"`).
 - Lists are arrays; `me` and `wallet` are single objects.
-- Use `apiFetch` from `lib/api.ts`. On a `401` it gets a new access token from
-  `POST /api/token/refresh` and retries once. If that fails it clears the tokens
-  and throws `ApiError`, so `error.status === 401` means "send to login".
-- Tokens live in `localStorage` for now. Phase 5 moves the refresh token to an
-  httpOnly cookie.
+- In client components use `apiFetch` from `lib/api.ts`. It sends `X-CSRFToken`, and
+  on a `401` it calls `POST /api/token/refresh` and retries once. If that fails it
+  throws `ApiError`, so `error.status === 401` means "send to login".
+- In server components use `serverFetch` from `lib/server-api.ts`, which forwards
+  the visitor's cookies to Django. Call `await connection()` first when the page
+  must not be prerendered.
+- The JWTs live only in httpOnly cookies set by the backend: JavaScript never sees
+  them, and nothing is kept in `localStorage`.
 - Show "Demo mode · LC has no cash value" wherever a balance is shown.

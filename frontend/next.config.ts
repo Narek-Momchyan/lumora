@@ -1,7 +1,16 @@
 import type { NextConfig } from 'next'
 
+const BACKEND_URL = process.env.BACKEND_URL ?? 'http://127.0.0.1:8000'
+
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // The browser talks only to Next, so the auth cookies are first-party and no CORS is needed.
+  async rewrites() {
+    return [
+      { source: '/api/:path*', destination: `${BACKEND_URL}/api/:path*` },
+      { source: '/media/:path*', destination: `${BACKEND_URL}/media/:path*` },
+    ]
+  },
 }
 
 export default nextConfig

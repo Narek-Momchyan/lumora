@@ -1,8 +1,6 @@
-import type { TokenPair } from '@/types/account'
+import type { Player } from '@/types/account'
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL
-const ACCESS_KEY = 'lumora.access'
-const REFRESH_KEY = 'lumora.refresh'
+const CSRF_COOKIE = 'csrftoken'
 
 type ErrorData = Record<string, unknown> | null
 
@@ -10,7 +8,7 @@ export type FieldErrors = Record<string, string[]>
 
 interface FetchOptions extends Omit<RequestInit, 'body'> {
   body?: unknown
-  // false for login and register: their 401 is a wrong password, not an expired token
+  // false for login and register: their 401 is a wrong password, not an expired session
   auth?: boolean
 }
 
@@ -37,34 +35,6 @@ export function fieldErrors(error: ApiError) {
   return errors
 }
 
-// Tokens exist only in the browser, so on the server these return null and
-// requests go out without a JWT.
-function readToken(key: string) {
-  return typeof window === 'undefined' ? null : localStorage.getItem(key)
-}
-
-export function saveTokens({ access, refresh }: TokenPair) {
-  localStorage.setItem(ACCESS_KEY, access)
-  localStorage.setItem(REFRESH_KEY, refresh)
-}
-
-export function clearTokens() {
-  localStorage.removeItem(ACCESS_KEY)
-  localStorage.removeItem(REFRESH_KEY)
-}
-
-export function isLoggedIn() {
-  return readToken(REFRESH_KEY) !== null
-}
-
-async function send(path: string, init: RequestInit) {
-  try {
-    return await fetch(`${BASE_URL}${path}`, init)
-  } catch {
-    throw new ApiError(0, 'Cannot reach the server.')
-  }
-}
-
 async function readBody(response: Response): Promise<ErrorData> {
   const text = await response.text()
   if (!text) return null
@@ -82,59 +52,7 @@ function errorMessage(status: number, data: ErrorData) {
   return `Request failed (${status}).`
 }
 
-async function refreshAccess() {
-  const refresh = readToken(REFRESH_KEY)
-  if (!refresh) return null
-
-  const response = await send('/token/refresh', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refresh }),
-  })
-  if (!response.ok) {
-    clearTokens()
-    return null
-  }
-
-  const { access } = (await response.json()) as { access: string }
-  localStorage.setItem(ACCESS_KEY, access)
-  return access
-}
-
-// A page can start several requests at once: they all share one refresh.
-let refreshing: Promise<string | null> | null = null
-
-function refreshOnce() {
-  refreshing ??= refreshAccess().finally(() => {
-    refreshing = null
-  })
-  return refreshing
-}
-
-export async function apiFetch<T>(
-  path: string,
-  { body, auth = true, headers, ...init }: FetchOptions = {},
-): Promise<T> {
-  const request = (token: string | null) =>
-    send(path, {
-      ...init,
-      headers: {
-        ...(body !== undefined && { 'Content-Type': 'application/json' }),
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...headers,
-      },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    })
-
-  const token = auth ? readToken(ACCESS_KEY) : null
-  let response = await request(token)
-
-  // Public endpoints also answer 401 to a bad token. If the refresh fails the
-  // retry goes out without a token, so they still work for a logged-out player.
-  if (response.status === 401 && token) {
-    response = await request(await refreshOnce())
-  }
-
+export async function parseResponse<T>(response: Response) {
   const data = await readBody(response)
   if (!response.ok) {
     throw new ApiError(response.status, errorMessage(response.status, data), data)
@@ -142,11 +60,61 @@ export async function apiFetch<T>(
   return data as T
 }
 
-export async function login(email: string, password: string) {
-  const tokens = await apiFetch<TokenPair>('/token', {
-    method: 'POST',
-    body: { email, password },
-    auth: false,
+async function send(path: string, init: RequestInit) {
+  try {
+    return await fetch(`/api${path}`, init)
+  } catch {
+    throw new ApiError(0, 'Cannot reach the server.')
+  }
+}
+
+// Django's CSRF cookie is the only one JavaScript can read. The JWT cookies are httpOnly.
+function csrfHeader(): Record<string, string> {
+  const cookie = document.cookie.split('; ').find((item) => item.startsWith(`${CSRF_COOKIE}=`))
+  return cookie ? { 'X-CSRFToken': cookie.slice(CSRF_COOKIE.length + 1) } : {}
+}
+
+async function refreshSession() {
+  const response = await send('/token/refresh', { method: 'POST', headers: csrfHeader() })
+  return response.ok
+}
+
+// A page can start several requests at once: they all share one refresh.
+let refreshing: Promise<boolean> | null = null
+
+function refreshOnce() {
+  refreshing ??= refreshSession().finally(() => {
+    refreshing = null
   })
-  saveTokens(tokens)
+  return refreshing
+}
+
+// For the browser only: server components use serverFetch from lib/server-api.ts.
+export async function apiFetch<T>(
+  path: string,
+  { body, auth = true, headers, ...init }: FetchOptions = {},
+): Promise<T> {
+  const request = () =>
+    send(path, {
+      ...init,
+      headers: {
+        ...(body !== undefined && { 'Content-Type': 'application/json' }),
+        ...csrfHeader(),
+        ...headers,
+      },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+
+  let response = await request()
+
+  // If the refresh fails, the caller gets this 401: it means "send to login".
+  if (response.status === 401 && auth && (await refreshOnce())) {
+    response = await request()
+  }
+
+  return parseResponse<T>(response)
+}
+
+export function login(email: string, password: string) {
+  return apiFetch<Player>('/token', { method: 'POST', body: { email, password }, auth: false })
 }

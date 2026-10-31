@@ -3,17 +3,16 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { ApiError, apiFetch, fieldErrors, login } from '@/lib/api'
+import { ApiError, apiFetch, fieldErrors } from '@/lib/api'
 import type { FieldErrors } from '@/lib/api'
-import type { RegisteredPlayer, RegisterPayload } from '@/types/account'
+import type { Player, RegisterPayload } from '@/types/account'
 import TextField from './TextField'
 
 interface SignupFormProps {
   onLogin: () => void
-  onLoginFailed: (email: string) => void
 }
 
-export default function SignupForm({ onLogin, onLoginFailed }: SignupFormProps) {
+export default function SignupForm({ onLogin }: SignupFormProps) {
   const router = useRouter()
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState('')
@@ -33,7 +32,9 @@ export default function SignupForm({ onLogin, onLoginFailed }: SignupFormProps) 
     setFormError('')
 
     try {
-      await apiFetch<RegisteredPlayer>('/register', { method: 'POST', body: payload, auth: false })
+      // The backend logs the new player in: the response sets the cookies.
+      await apiFetch<Player>('/register', { method: 'POST', body: payload, auth: false })
+      router.replace('/')
     } catch (error) {
       setPending(false)
       if (!(error instanceof ApiError)) throw error
@@ -41,15 +42,6 @@ export default function SignupForm({ onLogin, onLoginFailed }: SignupFormProps) 
       const fields = fieldErrors(error)
       setErrors(fields)
       if (!fields.email && !fields.password && !fields.display_name) setFormError(error.message)
-      return
-    }
-
-    // The account exists now, so a failed login must not look like a failed sign up.
-    try {
-      await login(payload.email, payload.password)
-      router.replace('/')
-    } catch {
-      onLoginFailed(payload.email)
     }
   }
 

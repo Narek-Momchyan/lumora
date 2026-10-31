@@ -8,12 +8,10 @@ import type { FieldErrors } from '@/lib/api'
 import TextField from './TextField'
 
 interface LoginFormProps {
-  defaultEmail?: string
-  notice?: string
   onCreateAccount: () => void
 }
 
-export default function LoginForm({ defaultEmail, notice, onCreateAccount }: LoginFormProps) {
+export default function LoginForm({ onCreateAccount }: LoginFormProps) {
   const router = useRouter()
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState('')
@@ -46,8 +44,6 @@ export default function LoginForm({ defaultEmail, notice, onCreateAccount }: Log
       <h2 className="font-heading text-2xl font-bold">Welcome back</h2>
       <p className="mt-1 text-sm text-muted">Log in to claim your daily 5,000 LC bonus.</p>
 
-      {notice && <p className="mt-4 text-sm text-cyan">{notice}</p>}
-
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <TextField
           label="Email"
@@ -56,7 +52,6 @@ export default function LoginForm({ defaultEmail, notice, onCreateAccount }: Log
           placeholder="you@example.com"
           autoComplete="email"
           required
-          defaultValue={defaultEmail}
           errors={errors.email}
         />
         <TextField

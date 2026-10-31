@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { connection } from 'next/server'
 import AuthCard from '@/components/auth/AuthCard'
 import LoginHero from '@/components/auth/LoginHero'
-import { apiFetch } from '@/lib/api'
+import { serverFetch } from '@/lib/server-api'
 import type { Game } from '@/types/game'
 
 export const metadata: Metadata = {
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 async function loadGames() {
   try {
-    return await apiFetch<Game[]>('/games', { auth: false, cache: 'no-store' })
+    return await serverFetch<Game[]>('/games')
   } catch {
     return null
   }

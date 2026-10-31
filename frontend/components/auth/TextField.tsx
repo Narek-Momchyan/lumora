@@ -5,7 +5,6 @@ interface TextFieldProps {
   placeholder?: string
   autoComplete?: string
   required?: boolean
-  defaultValue?: string
   errors?: string[]
 }
 

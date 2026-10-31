@@ -53,10 +53,11 @@ catalogue (migration `games/0002_seed_games`).
 
 ## Connecting the frontend
 
-In `frontend/.env.local` (copied from `frontend/.env.example`):
+The browser talks only to the Next app, which rewrites `/api/*` and `/media/*` to
+Django. In `frontend/.env.local` (copied from `frontend/.env.example`):
 
 ```
-NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api
+BACKEND_URL=http://127.0.0.1:8000
 ```
 
 Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
