@@ -81,8 +81,9 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 - Images are full URLs that start with `PUBLIC_BASE_URL`, so they load through the
   Next `/media` rewrite.
 - Every endpoint needs a login except `register`, `token`, `token/refresh`,
-  `logout`, `games`, `leaderboard`, `logos`, `languages`, `login_page_labels` and
-  `error_messages`.
+  `logout`, `games`, `leaderboard`, `error_messages` and the site content: `logos`,
+  `languages`, `sidebar_items`, `header_labels`, `login_page_labels`,
+  `lobby_page_labels` and `game_categories`.
 - The JWTs live only in httpOnly cookies, never in a response body and never in an
   `Authorization` header. `register` and `token` set `lumora_access` (30 minutes)
   and `lumora_refresh` (7 days), both `SameSite=Lax`, and `Secure` when
@@ -111,7 +112,7 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 | GET | `/api/wallet` | cookie | `{balance, last_bonus_at, bonus_available_at, updated_at}` |
 | GET | `/api/transactions` | cookie | the player's ledger, newest first |
 | POST | `/api/bonus` | cookie | daily bonus of 5,000 LC; `409` with `available_at` if claimed in the last 24 hours |
-| GET | `/api/games` | – | active games |
+| GET | `/api/games` | – | active games, with `image` and `is_playable`; a game that isn't playable is coming soon |
 | GET | `/api/crash_bets` | cookie | the player's Neon Crash rounds, newest first |
 | POST | `/api/crash_bets` | cookie | `{amount, target}` → plays one round at once (auto cash-out at `target`) |
 | GET | `/api/seeds` | cookie | the player's provably fair seed pairs, the active one first |
@@ -119,7 +120,11 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 | GET | `/api/leaderboard` | – | top 20 of the last 7 days by net game result |
 | GET | `/api/logos` | – | the logo as one object, `{}` before one is added |
 | GET | `/api/languages` | – | languages for the language switcher, in `order` |
+| GET | `/api/sidebar_items` | – | sidebar links with their `order` and `is_soon`; `?lang=` |
+| GET | `/api/header_labels` | – | every text of the sidebar and the header; `?lang=` |
 | GET | `/api/login_page_labels` | – | every text of the login page; `?lang=` |
+| GET | `/api/lobby_page_labels` | – | every text of the lobby page; `?lang=` |
+| GET | `/api/game_categories` | – | category names for filters and game cards; `?lang=` |
 | GET | `/api/error_messages` | – | error texts; `?lang=`, `?code=` |
 
 `bonus_available_at` is `null` before the first bonus; a time in the past means
@@ -136,10 +141,9 @@ with 200, like any filter; an unknown `lang` cookie means English.
 python manage.py load_sample
 ```
 
-Fills `logos`, `languages`, `login_page_labels` and `error_messages` from
-`base/sample_db.json` in en, am and ru (`--path` loads another file). It **replaces**
-those four tables, so edits made in the admin are lost; it never touches players,
-wallets, bets or games. To add a collection: add the model, its endpoint, a key in
+Fills every collection of `base.sample.COLLECTIONS` from `base/sample_db.json` in en,
+am and ru (`--path` loads another file). It **replaces** those tables, so edits made
+in the admin are lost; it never touches players, wallets, bets or games. To add a collection: add the model, its endpoint, a key in
 `sample_db.json` and a row in `base.sample.COLLECTIONS`.
 
 Images are plain `FileField`s with `base.fields.IMAGE_VALIDATORS`: JPG, PNG, WEBP or
@@ -192,11 +196,11 @@ A revealed pair was used for nonces `0` to `nonce - 1`.
 | App | What it owns |
 | --- | --- |
 | `accounts` | `User` (logs in with email), register, me, login, refresh and logout with JWT cookies (`authentication.py`, `cookies.py`), `LoginPageLabel` |
-| `header` | `Logo`, `Language` |
+| `header` | `Logo`, `Language`, `SidebarItem`, `HeaderLabel` |
 | `errors` | `ErrorMessage`, `CodedError`, the DRF exception handler, the list of codes |
 | `wallet` | `Wallet`, append-only `Transaction` ledger, `services.py` (the only code that moves money), daily bonus |
 | `fairness` | provably fair RNG (`rng.py`), `SeedPair`, `services.py` (next nonce, seed rotation) |
-| `games` | `Game` catalogue |
+| `games` | `Game` catalogue, `GameCategory`, `LobbyPageLabel` |
 | `crash` | Neon Crash: `engine.py` (pure maths), `services.py` (plays a round), `CrashBet` |
 | `roulette` | European roulette `engine.py` (maths only, the API comes in phase 3) |
 | `slots` | empty for now: Zeus Legacy moves here in phase 4 |

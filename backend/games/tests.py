@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.test import TestCase
 
 from .models import Game
@@ -22,6 +23,20 @@ class GameApiTests(TestCase):
         self.assertEqual([g["slug"] for g in crash], ["neon-crash"])
         game = self.client.get("/api/games?slug=zeus-legacy").json()
         self.assertEqual(game[0]["rtp"], "96.50")
+
+    def test_only_neon_crash_is_playable_and_the_others_are_coming_soon(self):
+        games = {g["slug"]: g for g in self.client.get("/api/games").json()}
+        self.assertTrue(games["neon-crash"]["is_playable"])
+        self.assertFalse(games["zeus-legacy"]["is_playable"])
+        self.assertFalse(games["lumora-roulette"]["is_playable"])
+
+    def test_a_game_without_an_image_returns_null(self):
+        self.assertIsNone(self.client.get("/api/games?slug=neon-crash").json()[0]["image"])
+
+    def test_a_game_image_is_a_full_url(self):
+        Game.objects.filter(slug="neon-crash").update(image="images/games/neon.png")
+        image = self.client.get("/api/games?slug=neon-crash").json()[0]["image"]
+        self.assertEqual(image, f"{settings.PUBLIC_BASE_URL}/media/images/games/neon.png")
 
     def test_unknown_slug_returns_an_empty_list(self):
         response = self.client.get("/api/games?slug=does-not-exist")

@@ -17,7 +17,8 @@ from crash.services import play
 from errors.codes import ERROR_CODES
 from errors.models import ErrorMessage
 from fairness.services import rotate_seeds
-from header.models import Logo
+from games.models import Game, LobbyPageLabel
+from header.models import HeaderLabel, Logo
 from wallet.services import claim_daily_bonus, open_wallet
 from .fields import MAX_IMAGE_SIZE_MB
 from .sample import COLLECTIONS, LANGS, load_sample, read_sample
@@ -120,7 +121,7 @@ class ApiContractTests(TestCase):
         self.assertEqual(self.client.get(url).json()[0]["lang"], "en")
 
     def test_unknown_lang_filter_returns_an_empty_list(self):
-        for name in ["login_page_labels", "error_messages"]:
+        for name in [n for n, rows in self.sample.items() if isinstance(rows, list) and "lang" in rows[0]]:
             with self.subTest(name=name):
                 response = self.client.get(f"/api/{name}?lang=de")
                 self.assertEqual(response.status_code, 200)
@@ -154,11 +155,36 @@ class ApiContractTests(TestCase):
                 texts = ErrorMessage.objects.filter(code=code).values_list("text", flat=True)
                 self.assertEqual(len({tuple(sorted(re.findall(r"\{\w+\}", text))) for text in texts}), 1)
 
-    def test_no_login_label_is_empty(self):
-        for label in LoginPageLabel.objects.all():
-            for field in label._meta.concrete_fields:
-                with self.subTest(lang=label.lang, field=field.name):
-                    self.assertTrue(getattr(label, field.attname))
+    def test_no_label_is_empty(self):
+        for model in [LoginPageLabel, LobbyPageLabel, HeaderLabel]:
+            self.assertEqual(model.objects.count(), len(LANGS))
+            for label in model.objects.all():
+                for field in label._meta.concrete_fields:
+                    with self.subTest(model=model.__name__, lang=label.lang, field=field.name):
+                        self.assertTrue(getattr(label, field.attname))
+
+    def test_lobby_placeholders_are_in_every_language(self):
+        for label in LobbyPageLabel.objects.all():
+            with self.subTest(lang=label.lang):
+                self.assertIn("{time}", label.bonus_next)
+
+    def test_sidebar_and_categories_have_the_same_rows_in_every_language(self):
+        expected = {
+            "sidebar_items": lambda row: (row["url"], row["order"], row["is_soon"]),
+            "game_categories": lambda row: (row["code"], row["order"], row["is_soon"]),
+        }
+        for name, key in expected.items():
+            rows = [{key(row) for row in self.client.get(f"/api/{name}?lang={lang}").json()} for lang in LANGS]
+            with self.subTest(name=name):
+                self.assertEqual(rows[0], rows[1])
+                self.assertEqual(rows[0], rows[2])
+
+    def test_every_game_category_has_names(self):
+        codes = {code for code, _ in Game.Category.choices}
+        for lang in LANGS:
+            with self.subTest(lang=lang):
+                rows = self.client.get(f"/api/game_categories?lang={lang}").json()
+                self.assertEqual({row["code"] for row in rows}, codes)
 
     def test_content_api_is_read_only(self):
         for method in ["post", "put", "patch", "delete"]:

@@ -1,9 +1,9 @@
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from base.views import FilteredReadOnlyViewSet, SingleObjectViewSet
-from .models import Language, Logo
-from .serializers import LanguageSerializer, LogoSerializer
+from base.views import FilteredReadOnlyViewSet, LangFilteredViewSet, SingleObjectViewSet
+from .models import HeaderLabel, Language, Logo, SidebarItem
+from .serializers import HeaderLabelSerializer, LanguageSerializer, LogoSerializer, SidebarItemSerializer
 
 
 class LogoViewSet(SingleObjectViewSet):
@@ -22,3 +22,13 @@ class LanguageViewSet(FilteredReadOnlyViewSet):
     queryset = Language.objects.all()
     serializer_class = LanguageSerializer
     permission_classes = [AllowAny]
+
+
+class SidebarItemViewSet(LangFilteredViewSet):
+    queryset = SidebarItem.objects.all()
+    serializer_class = SidebarItemSerializer
+
+
+class HeaderLabelViewSet(LangFilteredViewSet):
+    queryset = HeaderLabel.objects.all()
+    serializer_class = HeaderLabelSerializer

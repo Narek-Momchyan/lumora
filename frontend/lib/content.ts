@@ -1,6 +1,7 @@
-import type { LoginPageLabels } from '@/types/account'
-import type { Game } from '@/types/game'
-import type { Language, Logo } from '@/types/header'
+import type { LoginPageLabels, Player } from '@/types/account'
+import type { Game, GameCategory, LobbyPageLabels } from '@/types/game'
+import type { HeaderLabels, Language, Logo, SidebarItem } from '@/types/header'
+import type { Wallet } from '@/types/wallet'
 import { serverFetch } from './server-api'
 
 async function fetchOrNull<T>(path: string) {
@@ -9,6 +10,13 @@ async function fetchOrNull<T>(path: string) {
   } catch {
     return null
   }
+}
+
+// A page can't render without its texts, unlike the logo, the balance or the stats.
+async function firstRow<T>(path: string) {
+  const [row] = await serverFetch<T[]>(path)
+  if (!row) throw new Error(`No rows in ${path}: run python manage.py load_sample`)
+  return row
 }
 
 // The API answers {} before a logo is added.
@@ -25,9 +33,30 @@ export function getGames() {
   return fetchOrNull<Game[]>('/games')
 }
 
-// Unlike the logo or the stats, a page can't render without its texts.
-export async function getLoginPageLabels(lang: string) {
-  const [labels] = await serverFetch<LoginPageLabels[]>(`/login_page_labels?lang=${lang}`)
-  if (!labels) throw new Error(`No login page labels for "${lang}": run python manage.py load_sample`)
-  return labels
+export function getGameCategories(lang: string) {
+  return fetchOrNull<GameCategory[]>(`/game_categories?lang=${lang}`)
+}
+
+export function getSidebarItems(lang: string) {
+  return fetchOrNull<SidebarItem[]>(`/sidebar_items?lang=${lang}`)
+}
+
+export function getWallet() {
+  return fetchOrNull<Wallet>('/wallet')
+}
+
+export function getMe() {
+  return fetchOrNull<Player>('/me')
+}
+
+export function getLoginPageLabels(lang: string) {
+  return firstRow<LoginPageLabels>(`/login_page_labels?lang=${lang}`)
+}
+
+export function getHeaderLabels(lang: string) {
+  return firstRow<HeaderLabels>(`/header_labels?lang=${lang}`)
+}
+
+export function getLobbyPageLabels(lang: string) {
+  return firstRow<LobbyPageLabels>(`/lobby_page_labels?lang=${lang}`)
 }

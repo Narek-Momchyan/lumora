@@ -24,6 +24,223 @@
       "order": 3
     }
   ],
+  "header_labels": [
+    {
+      "id": 1,
+      "lang": "en",
+      "navigation_label": "Main menu",
+      "soon_label": "soon",
+      "search_placeholder": "Search games...",
+      "demo_badge": "DEMO MODE",
+      "demo_note": "Demo mode · LC has no cash value",
+      "balance_label": "Balance",
+      "currency": "LC",
+      "menu_label": "Account menu",
+      "language_label": "Language",
+      "logout_button": "Log out",
+      "server_unreachable": "Cannot reach the server."
+    },
+    {
+      "id": 2,
+      "lang": "am",
+      "navigation_label": "Գլխավոր ընտրացանկ",
+      "soon_label": "շուտով",
+      "search_placeholder": "Որոնել խաղեր...",
+      "demo_badge": "ԴԵՄՈ ՌԵԺԻՄ",
+      "demo_note": "Դեմո ռեժիմ · LC-ն դրամական արժեք չունի",
+      "balance_label": "Մնացորդ",
+      "currency": "LC",
+      "menu_label": "Հաշվի ընտրացանկ",
+      "language_label": "Լեզու",
+      "logout_button": "Ելք",
+      "server_unreachable": "Սերվերին միանալ չհաջողվեց։"
+    },
+    {
+      "id": 3,
+      "lang": "ru",
+      "navigation_label": "Главное меню",
+      "soon_label": "скоро",
+      "search_placeholder": "Поиск игр...",
+      "demo_badge": "ДЕМО-РЕЖИМ",
+      "demo_note": "Демо-режим · LC не имеет денежной ценности",
+      "balance_label": "Баланс",
+      "currency": "LC",
+      "menu_label": "Меню аккаунта",
+      "language_label": "Язык",
+      "logout_button": "Выйти",
+      "server_unreachable": "Не удалось связаться с сервером."
+    }
+  ],
+  "sidebar_items": [
+    {
+      "id": 1,
+      "lang": "en",
+      "title": "Lobby",
+      "url": "/",
+      "order": 1,
+      "is_soon": false
+    },
+    {
+      "id": 2,
+      "lang": "en",
+      "title": "Slots",
+      "url": "/?category=slot",
+      "order": 2,
+      "is_soon": false
+    },
+    {
+      "id": 3,
+      "lang": "en",
+      "title": "Crash",
+      "url": "/?category=crash",
+      "order": 3,
+      "is_soon": false
+    },
+    {
+      "id": 4,
+      "lang": "en",
+      "title": "Table games",
+      "url": "/?category=table",
+      "order": 4,
+      "is_soon": false
+    },
+    {
+      "id": 5,
+      "lang": "en",
+      "title": "Sports",
+      "url": "/?category=sports",
+      "order": 5,
+      "is_soon": true
+    },
+    {
+      "id": 6,
+      "lang": "en",
+      "title": "Wallet",
+      "url": "/wallet",
+      "order": 6,
+      "is_soon": true
+    },
+    {
+      "id": 7,
+      "lang": "en",
+      "title": "Leaderboard",
+      "url": "/leaderboard",
+      "order": 7,
+      "is_soon": true
+    },
+    {
+      "id": 8,
+      "lang": "am",
+      "title": "Լոբբի",
+      "url": "/",
+      "order": 1,
+      "is_soon": false
+    },
+    {
+      "id": 9,
+      "lang": "am",
+      "title": "Սլոթեր",
+      "url": "/?category=slot",
+      "order": 2,
+      "is_soon": false
+    },
+    {
+      "id": 10,
+      "lang": "am",
+      "title": "Crash",
+      "url": "/?category=crash",
+      "order": 3,
+      "is_soon": false
+    },
+    {
+      "id": 11,
+      "lang": "am",
+      "title": "Սեղանի խաղեր",
+      "url": "/?category=table",
+      "order": 4,
+      "is_soon": false
+    },
+    {
+      "id": 12,
+      "lang": "am",
+      "title": "Սպորտ",
+      "url": "/?category=sports",
+      "order": 5,
+      "is_soon": true
+    },
+    {
+      "id": 13,
+      "lang": "am",
+      "title": "Դրամապանակ",
+      "url": "/wallet",
+      "order": 6,
+      "is_soon": true
+    },
+    {
+      "id": 14,
+      "lang": "am",
+      "title": "Առաջատարներ",
+      "url": "/leaderboard",
+      "order": 7,
+      "is_soon": true
+    },
+    {
+      "id": 15,
+      "lang": "ru",
+      "title": "Лобби",
+      "url": "/",
+      "order": 1,
+      "is_soon": false
+    },
+    {
+      "id": 16,
+      "lang": "ru",
+      "title": "Слоты",
+      "url": "/?category=slot",
+      "order": 2,
+      "is_soon": false
+    },
+    {
+      "id": 17,
+      "lang": "ru",
+      "title": "Краш",
+      "url": "/?category=crash",
+      "order": 3,
+      "is_soon": false
+    },
+    {
+      "id": 18,
+      "lang": "ru",
+      "title": "Настольные игры",
+      "url": "/?category=table",
+      "order": 4,
+      "is_soon": false
+    },
+    {
+      "id": 19,
+      "lang": "ru",
+      "title": "Спорт",
+      "url": "/?category=sports",
+      "order": 5,
+      "is_soon": true
+    },
+    {
+      "id": 20,
+      "lang": "ru",
+      "title": "Кошелёк",
+      "url": "/wallet",
+      "order": 6,
+      "is_soon": true
+    },
+    {
+      "id": 21,
+      "lang": "ru",
+      "title": "Лидеры",
+      "url": "/leaderboard",
+      "order": 7,
+      "is_soon": true
+    }
+  ],
   "login_page_labels": [
     {
       "id": 1,
@@ -119,6 +336,208 @@
       "or_text": "или",
       "create_account_button": "Создать бесплатный аккаунт",
       "have_account_button": "У меня уже есть аккаунт",
+      "server_unreachable": "Не удалось связаться с сервером."
+    }
+  ],
+  "game_categories": [
+    {
+      "id": 1,
+      "lang": "en",
+      "code": "slot",
+      "filter_label": "Slots",
+      "card_label": "Slot",
+      "order": 1,
+      "is_soon": false
+    },
+    {
+      "id": 2,
+      "lang": "en",
+      "code": "crash",
+      "filter_label": "Crash",
+      "card_label": "Crash",
+      "order": 2,
+      "is_soon": false
+    },
+    {
+      "id": 3,
+      "lang": "en",
+      "code": "table",
+      "filter_label": "Table",
+      "card_label": "Table",
+      "order": 3,
+      "is_soon": false
+    },
+    {
+      "id": 4,
+      "lang": "en",
+      "code": "instant",
+      "filter_label": "Instant",
+      "card_label": "Instant",
+      "order": 4,
+      "is_soon": false
+    },
+    {
+      "id": 5,
+      "lang": "en",
+      "code": "sports",
+      "filter_label": "Sports",
+      "card_label": "Sports",
+      "order": 5,
+      "is_soon": true
+    },
+    {
+      "id": 6,
+      "lang": "am",
+      "code": "slot",
+      "filter_label": "Սլոթեր",
+      "card_label": "Սլոթ",
+      "order": 1,
+      "is_soon": false
+    },
+    {
+      "id": 7,
+      "lang": "am",
+      "code": "crash",
+      "filter_label": "Crash",
+      "card_label": "Crash",
+      "order": 2,
+      "is_soon": false
+    },
+    {
+      "id": 8,
+      "lang": "am",
+      "code": "table",
+      "filter_label": "Սեղանի",
+      "card_label": "Սեղանի խաղ",
+      "order": 3,
+      "is_soon": false
+    },
+    {
+      "id": 9,
+      "lang": "am",
+      "code": "instant",
+      "filter_label": "Արագ խաղեր",
+      "card_label": "Արագ խաղ",
+      "order": 4,
+      "is_soon": false
+    },
+    {
+      "id": 10,
+      "lang": "am",
+      "code": "sports",
+      "filter_label": "Սպորտ",
+      "card_label": "Սպորտ",
+      "order": 5,
+      "is_soon": true
+    },
+    {
+      "id": 11,
+      "lang": "ru",
+      "code": "slot",
+      "filter_label": "Слоты",
+      "card_label": "Слот",
+      "order": 1,
+      "is_soon": false
+    },
+    {
+      "id": 12,
+      "lang": "ru",
+      "code": "crash",
+      "filter_label": "Краш",
+      "card_label": "Краш",
+      "order": 2,
+      "is_soon": false
+    },
+    {
+      "id": 13,
+      "lang": "ru",
+      "code": "table",
+      "filter_label": "Настольные",
+      "card_label": "Настольная",
+      "order": 3,
+      "is_soon": false
+    },
+    {
+      "id": 14,
+      "lang": "ru",
+      "code": "instant",
+      "filter_label": "Быстрые",
+      "card_label": "Быстрая",
+      "order": 4,
+      "is_soon": false
+    },
+    {
+      "id": 15,
+      "lang": "ru",
+      "code": "sports",
+      "filter_label": "Спорт",
+      "card_label": "Спорт",
+      "order": 5,
+      "is_soon": true
+    }
+  ],
+  "lobby_page_labels": [
+    {
+      "id": 1,
+      "lang": "en",
+      "page_title": "Lobby · Lumora",
+      "page_description": "Choose a game and play with free demo coins. LC has no cash value.",
+      "bonus_eyebrow": "DAILY BONUS",
+      "bonus_title": "5,000 free LC every day",
+      "bonus_text": "Log in every day and claim your free demo coins.",
+      "bonus_claim_button": "Claim bonus",
+      "bonus_claiming": "Claiming...",
+      "bonus_claimed": "Bonus claimed!",
+      "bonus_next": "Next bonus: {time}",
+      "filter_all": "All games",
+      "filters_label": "Game categories",
+      "section_popular": "Popular now",
+      "section_all": "Games",
+      "soon_badge": "Soon",
+      "rtp_label": "RTP",
+      "no_results": "No games found.",
+      "server_unreachable": "Cannot reach the server."
+    },
+    {
+      "id": 2,
+      "lang": "am",
+      "page_title": "Լոբբի · Lumora",
+      "page_description": "Ընտրիր խաղ և խաղա անվճար դեմո մետաղադրամներով։ LC-ն դրամական արժեք չունի։",
+      "bonus_eyebrow": "ՕՐԱԿԱՆ ԲՈՆՈՒՍ",
+      "bonus_title": "Ամեն օր 5,000 անվճար LC",
+      "bonus_text": "Մուտք գործիր ամեն օր և ստացիր անվճար դեմո մետաղադրամներ։",
+      "bonus_claim_button": "Ստանալ բոնուսը",
+      "bonus_claiming": "Ստանում ենք...",
+      "bonus_claimed": "Բոնուսը ստացար։",
+      "bonus_next": "Հաջորդ բոնուսը՝ {time}",
+      "filter_all": "Բոլոր խաղերը",
+      "filters_label": "Խաղերի կատեգորիաներ",
+      "section_popular": "Հիմա հայտնի են",
+      "section_all": "Խաղեր",
+      "soon_badge": "Շուտով",
+      "rtp_label": "RTP",
+      "no_results": "Խաղեր չեն գտնվել։",
+      "server_unreachable": "Սերվերին միանալ չհաջողվեց։"
+    },
+    {
+      "id": 3,
+      "lang": "ru",
+      "page_title": "Лобби · Lumora",
+      "page_description": "Выберите игру и играйте на бесплатные демо-монеты. LC не имеет денежной ценности.",
+      "bonus_eyebrow": "ЕЖЕДНЕВНЫЙ БОНУС",
+      "bonus_title": "5 000 бесплатных LC каждый день",
+      "bonus_text": "Заходите каждый день и забирайте бесплатные демо-монеты.",
+      "bonus_claim_button": "Забрать бонус",
+      "bonus_claiming": "Забираем...",
+      "bonus_claimed": "Бонус получен!",
+      "bonus_next": "Следующий бонус: {time}",
+      "filter_all": "Все игры",
+      "filters_label": "Категории игр",
+      "section_popular": "Сейчас популярны",
+      "section_all": "Игры",
+      "soon_badge": "Скоро",
+      "rtp_label": "RTP",
+      "no_results": "Игры не найдены.",
       "server_unreachable": "Не удалось связаться с сервером."
     }
   ],

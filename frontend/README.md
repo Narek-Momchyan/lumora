@@ -4,12 +4,14 @@ Next.js 16 (App Router) + React 19 + TypeScript + Tailwind CSS 4. All data comes
 from the Django API (`../backend`) through native `fetch`.
 
 ```text
-app/         routes: pages and layouts
-components/  shared components, `auth/` holds the login page parts
+app/         routes: pages and layouts. `(site)/` holds every page behind the login, with the
+             shared sidebar and header in its layout
+components/  shared components, `auth/` the login page, `layout/` the sidebar and header,
+             `lobby/` the lobby page
 lib/         `api.ts` for the browser (cookies, CSRF header, errors), `server-api.ts` for server components,
              `content.ts` for page content, `lang.ts` for the visitor's language
 types/       TypeScript interfaces for the API responses (they mirror the backend serializers)
-proxy.ts     sends visitors without a session to /login, before the page renders
+proxy.ts     sends visitors without a session to /login and renews an expired access token
 ```
 
 ## Run
@@ -23,7 +25,7 @@ npm run dev
 ```
 
 `.env.local` holds `BACKEND_URL=http://127.0.0.1:8000`, which is private to the
-Next server. Use `127.0.0.1`, not `localhost` (Node.js may resolve `localhost` to
+Next server, and the auth cookie names that `proxy.ts` reads. Use `127.0.0.1`, not `localhost` (Node.js may resolve `localhost` to
 IPv6). `next.config.ts` rewrites `/api/*` and `/media/*` to Django, so open the site
 at <http://localhost:3000> and the browser only ever talks to Next.
 

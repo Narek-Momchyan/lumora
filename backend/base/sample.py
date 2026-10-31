@@ -7,7 +7,8 @@ from django.db import connection, models
 
 from accounts.models import LoginPageLabel
 from errors.models import ErrorMessage
-from header.models import Language, Logo
+from games.models import GameCategory, LobbyPageLabel
+from header.models import HeaderLabel, Language, Logo, SidebarItem
 from .language import LANG_CODES
 
 SAMPLE_DB = Path(settings.BASE_DIR) / "base" / "sample_db.json"
@@ -16,7 +17,11 @@ LANGS = LANG_CODES
 COLLECTIONS = {
     "logos": Logo,
     "languages": Language,
+    "header_labels": HeaderLabel,
+    "sidebar_items": SidebarItem,
     "login_page_labels": LoginPageLabel,
+    "game_categories": GameCategory,
+    "lobby_page_labels": LobbyPageLabel,
     "error_messages": ErrorMessage,
 }
 

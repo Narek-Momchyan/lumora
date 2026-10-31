@@ -1,5 +1,5 @@
 from base.serializers import ModelSerializer
-from .models import Language, Logo
+from .models import HeaderLabel, Language, Logo, SidebarItem
 
 
 class LogoSerializer(ModelSerializer):
@@ -11,4 +11,16 @@ class LogoSerializer(ModelSerializer):
 class LanguageSerializer(ModelSerializer):
     class Meta:
         model = Language
+        fields = "__all__"
+
+
+class SidebarItemSerializer(ModelSerializer):
+    class Meta:
+        model = SidebarItem
+        fields = "__all__"
+
+
+class HeaderLabelSerializer(ModelSerializer):
+    class Meta:
+        model = HeaderLabel
         fields = "__all__"
