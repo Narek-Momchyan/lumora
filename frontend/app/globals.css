@@ -22,6 +22,40 @@
   --font-heading: var(--font-sora), sans-serif;
 }
 
+/*
+  Zeus Legacy's own colours, kept from the original game. `static` writes them into the CSS even
+  when no Tailwind class uses them, because the game reads them as var(--color-zeus-...).
+*/
+@theme static {
+  --color-zeus-white: #ffffff;
+  --color-zeus-gold: #f5d060;
+  --color-zeus-gold-light: #fff8b0;
+  --color-zeus-gold-dark: #c8860a;
+  --color-zeus-gold-deep: #7a4e00;
+  --color-zeus-brown: #2a1000;
+  --color-zeus-yellow: #facc15;
+  --color-zeus-coin-edge: #b8860b;
+  --color-zeus-orange: #f97316;
+  --color-zeus-red: #ef4444;
+  --color-zeus-green: #10b981;
+  --color-zeus-pink: #ec4899;
+  --color-zeus-violet: #8b5cf6;
+  --color-zeus-purple: #a855f7;
+  --color-zeus-lilac: #c87fff;
+  --color-zeus-lilac-light: #e9d5ff;
+  --color-zeus-plum: #7a30c0;
+  --color-zeus-plum-deep: #3a0070;
+  --color-zeus-blue: #3b82f6;
+  --color-zeus-sky: #60a5fa;
+  --color-zeus-ice: #00d4ff;
+  --color-zeus-mult-blue: #00cfff;
+  --color-zeus-night: #040012;
+  --color-zeus-black: #000000;
+  --color-zeus-grid: #060012;
+  --color-zeus-fire: #c80a0a;
+  --color-zeus-ember: #1a0000;
+}
+
 /* Sora has no Cyrillic or Armenian letters, and Inter no Armenian ones. */
 html:lang(ru) {
   --font-heading: var(--font-inter), sans-serif;

@@ -14,12 +14,17 @@ import type {
   SymbolDetails,
   ZeusPageLabels,
 } from '@/types/zeus'
+import BigWinOverlay from './BigWinOverlay'
+import BonusSummary from './BonusSummary'
+import BonusTrigger from './BonusTrigger'
 import BuyBonusDialog from './BuyBonusDialog'
 import ControlBar from './ControlBar'
 import GameHero from './GameHero'
 import JackpotPanel from './JackpotPanel'
+import JackpotWinOverlay from './JackpotWinOverlay'
+import LightningBolt from './LightningBolt'
 import MultiplierPanel from './MultiplierPanel'
-import RoundOverlay from './RoundOverlay'
+import Particles from './Particles'
 import SlotGrid from './SlotGrid'
 import SpinHistory from './SpinHistory'
 import useSlotSounds from './useSlotSounds'
@@ -63,12 +68,14 @@ export default function ZeusGame({ game, symbols, sounds, pools, spins, balance,
   const amount = betSteps[betIndex]
   const price = bonusCost(amount)
   const priceText = formatBalance(price.toFixed(2))
-  const isBusy = round.isPlaying || round.overlay !== null
+  const { overlay } = round
+  const isBusy = round.isPlaying || overlay !== null
+  const scale = SPEEDS[speed].overlay
   const pressSpin = useRef(() => {})
 
   function playOrSkip() {
     if (round.isPlaying) round.skip()
-    else if (autoLeft === 0) round.spin(amount)
+    else if (autoLeft === 0) round.spin(amount, { manual: true })
   }
 
   useEffect(() => {
@@ -107,97 +114,119 @@ export default function ZeusGame({ game, symbols, sounds, pools, spins, balance,
   const liveWin = round.roundPay > 0 ? payToLc(round.roundPay, amount) : null
 
   return (
-    <div className="space-y-4">
-      <motion.div
-        animate={round.shake ? { x: [0, -3, 3, 0] } : { x: 0 }}
-        transition={{ duration: 0.25 }}
-        className="flex items-center justify-between gap-3"
+    <div className="overflow-x-clip">
+      <LightningBolt active={round.lightning} scale={scale} />
+      {round.particles > 0 && <Particles key={round.particles} currency={header.currency} scale={scale} />}
+
+      <div
+        className={`zeus-table space-y-4 rounded-3xl p-1 sm:p-2 ${round.shake ? 'zeus-shake' : ''} ${
+          round.inBonus ? 'zeus-table-bonus' : ''
+        }`}
       >
-        <div className="min-w-0">
-          <h1 className="truncate font-heading text-lg font-bold sm:text-2xl">
-            {round.inBonus ? labels.free_spins_title : labels.game_title}
-          </h1>
-          <p className="truncate text-xs text-muted">
-            {round.inBonus
-              ? labels.free_spins_left.replace('{count}', String(round.freeSpinsLeft))
-              : labels.tagline}
-          </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <motion.h1
+              animate={round.inBonus ? { scale: [1, 1.02, 1] } : { scale: 1 }}
+              transition={round.inBonus ? { duration: 2.5, repeat: Infinity } : undefined}
+              className={`truncate font-heading text-lg font-bold sm:text-2xl ${
+                round.inBonus ? 'text-zeus-lilac' : 'zeus-gold-text'
+              }`}
+            >
+              {round.inBonus ? labels.free_spins_title : labels.game_title}
+            </motion.h1>
+            <p className="truncate text-xs text-muted">
+              {round.inBonus
+                ? labels.free_spins_left.replace('{count}', String(round.freeSpinsLeft))
+                : labels.tagline}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            aria-pressed={audio.muted}
+            onClick={audio.toggleMuted}
+            className="shrink-0 rounded-xl border border-border bg-surface px-3 py-2 text-xs text-muted hover:text-text"
+          >
+            {audio.muted ? labels.unmute : labels.mute}
+          </button>
         </div>
 
-        <button
-          type="button"
-          aria-pressed={audio.muted}
-          onClick={audio.toggleMuted}
-          className="shrink-0 rounded-xl border border-border bg-surface px-3 py-2 text-xs text-muted hover:text-text"
-        >
-          {audio.muted ? labels.unmute : labels.mute}
-        </button>
-      </motion.div>
+        <JackpotPanel pools={poolAmounts} currency={header.currency} labels={labels} />
 
-      <JackpotPanel pools={poolAmounts} currency={header.currency} labels={labels} />
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,12rem)_minmax(0,1fr)_minmax(0,10rem)] lg:items-start">
+          <GameHero image={game.image} attacking={round.lightning} />
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,12rem)_minmax(0,1fr)_minmax(0,10rem)] lg:items-start">
-        <GameHero image={game.image} attacking={round.lightning} />
+          <div className="relative min-w-0">
+            <AnimatePresence>
+              {round.tumble > 0 && round.isPlaying && (
+                <div key={round.tumble} className="absolute -top-3 right-0 left-0 z-30 flex justify-center">
+                  <motion.p
+                    initial={{ scale: 0.5, opacity: 0, y: 10 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.7, opacity: 0 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                    className="rounded-full border border-zeus-gold/60 bg-zeus-gold/20 px-4 py-0.5 text-xs font-bold tracking-widest whitespace-nowrap text-zeus-gold-light uppercase shadow-[0_0_20px_var(--color-zeus-gold)] backdrop-blur-sm"
+                  >
+                    {labels.tumble.replace('{count}', String(round.tumble))}
+                  </motion.p>
+                </div>
+              )}
+            </AnimatePresence>
 
-        <div className="relative min-w-0">
-          <AnimatePresence>
-            {round.tumble > 0 && round.isPlaying && (
-              <motion.p
-                key={round.tumble}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="absolute -top-3 left-1/2 z-10 -translate-x-1/2 rounded-full border border-cyan bg-surface px-3 py-1 text-xs font-semibold whitespace-nowrap text-cyan"
-              >
-                {labels.tumble.replace('{count}', String(round.tumble))}
-              </motion.p>
-            )}
-          </AnimatePresence>
+            <SlotGrid
+              grid={round.grid}
+              gridId={round.gridId}
+              winningCells={round.winningCells}
+              symbols={symbols}
+              speed={speed}
+              inBonus={round.inBonus}
+              teaser={round.teaser}
+              onLand={() => audio.play('stone_tumble')}
+            />
+          </div>
 
-          <SlotGrid
-            grid={round.grid}
-            spinNumber={round.spinNumber}
-            winningCells={round.winningCells}
-            symbols={symbols}
-            speed={speed}
+          <MultiplierPanel
+            collected={round.collected}
+            total={round.multiplier}
             inBonus={round.inBonus}
+            labels={labels}
           />
         </div>
-
-        <MultiplierPanel collected={round.collected} total={round.multiplier} labels={labels} />
       </div>
 
       {round.error && (
-        <p role="alert" className="text-sm text-danger">
+        <p role="alert" className="mt-4 text-sm text-danger">
           {round.error}
         </p>
       )}
 
-      <ControlBar
-        amount={amount}
-        canLower={betIndex > 0}
-        canRaise={betIndex < betSteps.length - 1}
-        winText={round.isPlaying ? liveWin : lastWin}
-        isPlaying={round.isPlaying}
-        inBonus={round.inBonus}
-        multiplier={round.multiplier}
-        speed={speed}
-        autoLeft={autoLeft}
-        canBuyBonus={Number(wallet) >= price}
-        bonusPrice={priceText}
-        currency={header.currency}
-        labels={labels}
-        onLower={() => setBetIndex(betIndex - 1)}
-        onRaise={() => setBetIndex(betIndex + 1)}
-        onSpeed={setSpeed}
-        onSpin={() => round.spin(amount)}
-        onSkip={round.skip}
-        onBuyBonus={() => setAskBuy(true)}
-        onAutoStart={setAutoLeft}
-        onAutoStop={() => setAutoLeft(0)}
-      />
+      <div className="mt-4 space-y-4">
+        <ControlBar
+          amount={amount}
+          canLower={betIndex > 0}
+          canRaise={betIndex < betSteps.length - 1}
+          winText={round.isPlaying ? liveWin : lastWin}
+          isPlaying={round.isPlaying}
+          inBonus={round.inBonus}
+          multiplier={round.multiplier}
+          speed={speed}
+          autoLeft={autoLeft}
+          canBuyBonus={Number(wallet) >= price}
+          bonusPrice={priceText}
+          currency={header.currency}
+          labels={labels}
+          onLower={() => setBetIndex(betIndex - 1)}
+          onRaise={() => setBetIndex(betIndex + 1)}
+          onSpeed={setSpeed}
+          onSpin={() => round.spin(amount, { manual: true })}
+          onSkip={round.skip}
+          onBuyBonus={() => setAskBuy(true)}
+          onAutoStart={setAutoLeft}
+          onAutoStop={() => setAutoLeft(0)}
+        />
 
-      <SpinHistory spins={spins} currency={header.currency} labels={labels} />
+        <SpinHistory spins={spins} currency={header.currency} labels={labels} />
+      </div>
 
       {askBuy && (
         <BuyBonusDialog
@@ -206,18 +235,53 @@ export default function ZeusGame({ game, symbols, sounds, pools, spins, balance,
           onCancel={() => setAskBuy(false)}
           onConfirm={() => {
             setAskBuy(false)
-            round.spin(amount, true)
+            round.spin(amount, { bonusBuy: true })
           }}
         />
       )}
 
       <AnimatePresence>
-        {round.overlay && (
-          <RoundOverlay
-            key={round.overlay.kind}
-            overlay={round.overlay}
+        {overlay?.kind === 'big_win' && (
+          <BigWinOverlay
+            key={overlay.id}
+            payout={overlay.payout}
+            amount={overlay.amount}
             currency={header.currency}
             labels={labels}
+            scale={scale}
+            sounds={audio}
+            onClose={round.closeOverlay}
+          />
+        )}
+        {overlay?.kind === 'bonus' && (
+          <BonusTrigger
+            key={overlay.id}
+            count={overlay.count}
+            labels={labels}
+            scale={scale}
+            autoClose={autoLeft > 0}
+            onClose={round.closeOverlay}
+          />
+        )}
+        {overlay?.kind === 'summary' && (
+          <BonusSummary
+            key={overlay.id}
+            payout={overlay.payout}
+            currency={header.currency}
+            labels={labels}
+            scale={scale}
+            autoClose={autoLeft > 0}
+            onClose={round.closeOverlay}
+          />
+        )}
+        {overlay?.kind === 'jackpot' && (
+          <JackpotWinOverlay
+            key={overlay.id}
+            tier={overlay.tier}
+            amount={overlay.amount}
+            currency={header.currency}
+            labels={labels}
+            scale={scale}
             onClose={round.closeOverlay}
           />
         )}

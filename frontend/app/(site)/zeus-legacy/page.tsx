@@ -16,6 +16,7 @@ import {
 import { displayLang } from '@/lib/lang'
 import { GAME_SLUG } from '@/lib/zeus'
 import type { SymbolDetails } from '@/types/zeus'
+import './zeus.css'
 
 export async function generateMetadata(): Promise<Metadata> {
   await connection()

@@ -949,7 +949,15 @@
       "history_free_spins": "Free spins",
       "history_seed_hash": "Server seed hash",
       "history_client_seed": "Client seed",
-      "history_nonce": "Nonce"
+      "history_nonce": "Nonce",
+      "bonus_blessing": "Legacy blesses you with fortune!",
+      "bonus_begin": "Begin",
+      "bonus_complete": "BONUS ROUND COMPLETE",
+      "tap_to_continue": "Tap to continue",
+      "jackpot_icon_mini": "⭐",
+      "jackpot_icon_minor": "💜",
+      "jackpot_icon_major": "🔥",
+      "jackpot_icon_grand": "👑"
     },
     {
       "id": 2,
@@ -1018,7 +1026,15 @@
       "history_free_spins": "Անվճար պտույտներ",
       "history_seed_hash": "Սերվերի seed-ի hash",
       "history_client_seed": "Client seed",
-      "history_nonce": "Nonce"
+      "history_nonce": "Nonce",
+      "bonus_blessing": "Legacy-ն օրհնում է քեզ հաջողությամբ։",
+      "bonus_begin": "Սկսել",
+      "bonus_complete": "ԲՈՆՈՒՍ ՌԱՈՒՆԴՆ ԱՎԱՐՏՎԵՑ",
+      "tap_to_continue": "Հպիր՝ շարունակելու համար",
+      "jackpot_icon_mini": "⭐",
+      "jackpot_icon_minor": "💜",
+      "jackpot_icon_major": "🔥",
+      "jackpot_icon_grand": "👑"
     },
     {
       "id": 3,
@@ -1087,7 +1103,15 @@
       "history_free_spins": "Бесплатные вращения",
       "history_seed_hash": "Хэш серверного сида",
       "history_client_seed": "Клиентский сид",
-      "history_nonce": "Nonce"
+      "history_nonce": "Nonce",
+      "bonus_blessing": "Legacy дарует вам удачу!",
+      "bonus_begin": "Начать",
+      "bonus_complete": "БОНУСНЫЙ РАУНД ЗАВЕРШЁН",
+      "tap_to_continue": "Нажмите, чтобы продолжить",
+      "jackpot_icon_mini": "⭐",
+      "jackpot_icon_minor": "💜",
+      "jackpot_icon_major": "🔥",
+      "jackpot_icon_grand": "👑"
     }
   ],
   "error_messages": [

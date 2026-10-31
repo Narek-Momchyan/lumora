@@ -56,9 +56,15 @@ language: show their `detail` and field messages as they are.
 The page at `/zeus-legacy` only animates. `POST /api/slot_spins` returns the whole round,
 and `components/zeus/useZeusRound.ts` plays its spins and tumbles step by step; nothing is
 calculated or rolled in the browser. The balance on the page changes to the `balance` of
-that response when the round ends. Animations use `motion` (`motion/react`). Sounds come
-from `/api/slot_sounds`, so a sound with no uploaded file is silent, and the mute choice
-is the only thing kept in `localStorage`.
+that response when the round ends. Animations use `motion` (`motion/react`) with the same
+settings as the original Zeus Legacy, and `app/(site)/zeus-legacy/zeus.css` holds its CSS
+keyframes. Normal speed matches the original; `SPEEDS` in `lib/zeus.ts` makes turbo and
+instant faster. The game's own colours are the `zeus-*` tokens in `app/globals.css`.
+
+Sounds come from `/api/slot_sounds`, so run `python manage.py load_sounds` in the backend
+first. They load after the first click or key press, because browsers refuse sound before
+that. A sound with no file is silent, and the mute choice is the only thing kept in
+`localStorage`.
 
 ## Notes for the API types
 

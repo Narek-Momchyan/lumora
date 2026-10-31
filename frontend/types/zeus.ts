@@ -140,14 +140,27 @@ export interface ZeusPageLabels {
   history_seed_hash: string
   history_client_seed: string
   history_nonce: string
+  bonus_blessing: string
+  bonus_begin: string
+  bonus_complete: string
+  tap_to_continue: string
+  jackpot_icon_mini: string
+  jackpot_icon_minor: string
+  jackpot_icon_major: string
+  jackpot_icon_grand: string
 }
 
 export type SymbolDetails = Record<string, { name: string; image: string | null }>
 export type SpeedMode = 'normal' | 'turbo' | 'instant'
-export type WinStage = 'win_big' | 'win_super' | 'win_mega' | 'win_ultra' | 'win_max'
 
-export type ZeusOverlay =
+export type ZeusOverlay = { id: number } & (
   | { kind: 'bonus'; count: number }
   | { kind: 'summary'; payout: string }
-  | { kind: 'big_win'; payout: string; stage: WinStage }
+  | { kind: 'big_win'; payout: string; amount: string }
   | { kind: 'jackpot'; tier: string; amount: string }
+)
+
+export interface SlotSoundPlayer {
+  play: (code: string, loop?: boolean) => void
+  stop: (code: string) => void
+}

@@ -1,0 +1,217 @@
+/* The CSS part of Zeus Legacy's animations. Everything else runs through `motion` in components/zeus. */
+
+.zeus-table {
+  position: relative;
+  transition: background 1.5s ease-in-out;
+}
+
+.zeus-table-bonus {
+  background:
+    radial-gradient(ellipse 100% 45% at 50% -5%, color-mix(in srgb, var(--color-zeus-fire) 70%, transparent) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 40% at 50% 110%, color-mix(in srgb, var(--color-zeus-ember) 90%, transparent) 0%, transparent 70%);
+}
+
+.zeus-shake {
+  animation: zeus-shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes zeus-shake {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-8px, -6px) rotate(-1deg); }
+  20% { transform: translate(12px, 4px) rotate(1.5deg); }
+  30% { transform: translate(-12px, 8px) rotate(0deg); }
+  40% { transform: translate(8px, -6px) rotate(1deg); }
+  50% { transform: translate(-6px, 10px) rotate(-1.5deg); }
+  60% { transform: translate(-8px, 4px) rotate(0deg); }
+  70% { transform: translate(8px, 6px) rotate(-1deg); }
+  80% { transform: translate(-4px, -4px) rotate(1deg); }
+  90% { transform: translate(4px, 6px) rotate(0deg); }
+  100% { transform: translate(2px, -2px) rotate(-0.5deg); }
+}
+
+/* Grid */
+.zeus-grid {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in srgb, var(--color-zeus-plum) 22%, transparent) 0%, transparent 70%),
+    color-mix(in srgb, var(--color-zeus-grid) 65%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-zeus-purple) 22%, transparent);
+  border-radius: 1.5rem;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-zeus-gold-dark) 18%, transparent),
+    0 0 24px color-mix(in srgb, var(--color-zeus-gold-dark) 12%, transparent),
+    0 0 60px color-mix(in srgb, var(--color-zeus-gold-dark) 6%, transparent);
+  transition: all 0.5s;
+}
+
+.zeus-grid-bonus {
+  border-color: color-mix(in srgb, var(--color-zeus-purple) 50%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-zeus-purple) 25%, transparent),
+    0 0 40px color-mix(in srgb, var(--color-zeus-purple) 30%, transparent),
+    0 0 100px color-mix(in srgb, var(--color-zeus-plum) 20%, transparent),
+    inset 0 0 50px color-mix(in srgb, var(--color-zeus-purple) 6%, transparent);
+}
+
+.zeus-cell {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--color-zeus-white) 7%, transparent);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--color-zeus-white) 3%, transparent);
+  transition: border-color 0.2s;
+}
+
+.zeus-cell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--color-zeus-white) 4%, transparent) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.zeus-cell-win {
+  border-color: color-mix(in srgb, var(--color-zeus-gold) 85%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-zeus-gold) 50%, transparent),
+    0 0 18px color-mix(in srgb, var(--color-zeus-gold) 70%, transparent),
+    0 0 50px color-mix(in srgb, var(--color-zeus-gold-dark) 35%, transparent),
+    inset 0 0 20px color-mix(in srgb, var(--color-zeus-gold) 10%, transparent);
+  animation: zeus-cell-win 0.6s ease-in-out;
+}
+
+@keyframes zeus-cell-win {
+  0% { transform: scale(1); filter: brightness(1); }
+  25% { transform: scale(1.25); filter: brightness(1.6) contrast(1.2); }
+  50% { transform: scale(0.92); filter: brightness(1); }
+  75% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.zeus-mult-ring {
+  animation: zeus-mult-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes zeus-mult-pulse {
+  0%, 100% { filter: brightness(1) drop-shadow(0 0 4px currentColor); }
+  50% { filter: brightness(1.3) drop-shadow(0 0 16px currentColor) drop-shadow(0 0 32px currentColor); }
+}
+
+.zeus-teaser {
+  border-radius: 12px;
+  animation: zeus-teaser 1.2s infinite ease-in-out;
+}
+
+@keyframes zeus-teaser {
+  0%, 100% { box-shadow: inset 0 0 0 transparent; filter: brightness(1); }
+  50% { box-shadow: inset 0 0 20px color-mix(in srgb, var(--color-zeus-yellow) 80%, transparent); filter: brightness(1.2); }
+}
+
+/* The pictures have a black background: `screen` removes it. */
+.zeus-symbol {
+  mix-blend-mode: screen;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--color-zeus-white) 15%, transparent));
+}
+
+.zeus-symbol-scatter {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-zeus-yellow) 60%, transparent));
+}
+
+/* Buttons */
+.zeus-btn-spin,
+.zeus-btn-bonus {
+  background-size: 220% auto;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: filter 0.15s;
+}
+
+.zeus-btn-spin {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-zeus-gold-deep) 0%,
+    var(--color-zeus-gold-dark) 15%,
+    var(--color-zeus-gold) 35%,
+    var(--color-zeus-gold-light) 50%,
+    var(--color-zeus-gold) 65%,
+    var(--color-zeus-gold-dark) 85%,
+    var(--color-zeus-gold-deep) 100%
+  );
+  color: var(--color-zeus-brown);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--color-zeus-gold) 38%, transparent);
+  animation: zeus-btn-shine 2.8s linear infinite;
+}
+
+.zeus-btn-bonus {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-zeus-plum-deep),
+    var(--color-zeus-plum),
+    var(--color-zeus-lilac),
+    var(--color-zeus-plum),
+    var(--color-zeus-plum-deep)
+  );
+  color: var(--color-zeus-lilac-light);
+  box-shadow: 0 4px 24px color-mix(in srgb, var(--color-zeus-purple) 45%, transparent);
+  animation: zeus-btn-shine 2.5s linear infinite;
+}
+
+.zeus-btn-spin:hover {
+  filter: brightness(1.12) saturate(1.1);
+}
+
+@keyframes zeus-btn-shine {
+  0% { background-position: -220% center; }
+  100% { background-position: 220% center; }
+}
+
+/* Overlays */
+.zeus-overlay-title {
+  margin: 0;
+  color: var(--color-zeus-white);
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 11vw, 8rem);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.zeus-overlay-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: -10px;
+  color: var(--color-zeus-white);
+  font-size: clamp(2.5rem, 14vw, 12rem);
+  font-weight: 900;
+}
+
+.zeus-overlay-label {
+  margin-top: 20px;
+  padding: 8px 28px;
+  border-radius: 40px;
+  background: color-mix(in srgb, var(--color-zeus-white) 10%, transparent);
+  color: var(--color-zeus-white);
+  font-size: 1.15rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.zeus-gold-text {
+  background-image: linear-gradient(135deg, var(--color-zeus-gold-light), var(--color-zeus-gold), var(--color-zeus-gold-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.zeus-glass {
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--color-zeus-white) 3.5%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  backdrop-filter: blur(18px) saturate(1.4);
+}

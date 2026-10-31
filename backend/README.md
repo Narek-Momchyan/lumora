@@ -241,9 +241,19 @@ python manage.py simulate_zeus --rounds 300000 --bonus-buy --workers 10
 
 ### Sounds
 
-Sound files are not in the repo. Upload them in the admin (Slot sounds): MP3, OGG or WAV,
-10 MB at most. The frontend plays only what `/api/slot_sounds` returns, so a sound without
-a file is simply silent. `load_sample` doesn't touch them. The codes are:
+Sound files are not in the repo (`media/sounds/` is git-ignored). This downloads the
+original Zeus Legacy sounds from Mixkit into `media/sounds/zeus/` and creates their
+`SlotSound` rows:
+
+```bash
+python manage.py load_sounds           # only the codes that have no file yet
+python manage.py load_sounds --force   # also replace the existing files
+```
+
+To change a sound, upload another one in the admin (Slot sounds): MP3, OGG or WAV, 10 MB at
+most. `load_sounds` keeps it unless you pass `--force`. The frontend plays only what
+`/api/slot_sounds` returns, so a sound without a file is simply silent. `load_sample`
+doesn't touch them. The codes are:
 
 | Code | When |
 | --- | --- |

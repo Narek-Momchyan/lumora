@@ -1,7 +1,10 @@
 'use client'
 
+import { motion } from 'motion/react'
+import { useState } from 'react'
 import { formatBalance } from '@/lib/wallet'
 import type { SpeedMode, ZeusPageLabels } from '@/types/zeus'
+import AnimatedNumber from './AnimatedNumber'
 import AutoplayMenu from './AutoplayMenu'
 
 interface ControlBarProps {
@@ -30,19 +33,41 @@ interface ControlBarProps {
 
 const SPEEDS: SpeedMode[] = ['normal', 'turbo', 'instant']
 
+// Pops on every new win and counts up from the one before it.
+function WinValue({ value, currency }: { value: number; currency: string }) {
+  const [shown, setShown] = useState({ value, from: 0 })
+  if (shown.value !== value) setShown({ value, from: shown.value })
+
+  return (
+    <motion.p
+      key={value}
+      initial={{ scale: 0.7, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 20 }}
+      className="py-1.5 font-heading font-bold text-zeus-gold"
+      style={{ filter: 'drop-shadow(0 0 10px var(--color-zeus-gold))' }}
+    >
+      +<AnimatedNumber value={value} from={shown.from} /> {currency}
+    </motion.p>
+  )
+}
+
 export default function ControlBar(props: ControlBarProps) {
   const { amount, winText, isPlaying, inBonus, multiplier, speed, autoLeft, currency, labels } = props
   const speedLabels = { normal: labels.speed_normal, turbo: labels.speed_turbo, instant: labels.speed_instant }
+  const canBuy = props.canBuyBonus && !isPlaying && autoLeft === 0
   const betButton =
     'size-9 rounded-lg border border-border bg-surface2 text-lg font-bold text-text hover:border-muted disabled:opacity-40'
 
   return (
-    <section className="space-y-2 rounded-2xl border border-border bg-surface p-2 sm:space-y-3 sm:p-3">
+    <section className="space-y-2 rounded-2xl border border-border bg-surface/80 p-2 sm:space-y-3 sm:p-3">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
         <div>
           <p className="text-xs text-muted">{inBonus ? labels.bonus_bet : labels.bet}</p>
           {inBonus ? (
-            <p className="py-1.5 font-heading font-bold text-lime">{multiplier}</p>
+            <p className="py-1.5 font-heading font-bold text-zeus-lilac">
+              <AnimatedNumber value={multiplier} precision={0} />
+            </p>
           ) : (
             <div className="flex items-center gap-2">
               <button
@@ -70,11 +95,22 @@ export default function ControlBar(props: ControlBarProps) {
           )}
         </div>
 
-        <div aria-live="polite">
+        <div
+          aria-live="polite"
+          className={`relative overflow-hidden rounded-lg px-2 ${winText ? 'bg-zeus-gold/10' : ''}`}
+        >
           <p className="text-xs text-muted">{isPlaying ? labels.win : labels.last_win}</p>
-          <p className="py-1.5 font-heading font-bold text-cyan">
-            {winText ? `${formatBalance(winText)} ${currency}` : ''}
-          </p>
+          {winText ? <WinValue value={Number(winText)} currency={currency} /> : <p className="py-1.5 text-muted">—</p>}
+
+          {!isPlaying && winText && (
+            <motion.div
+              key={winText}
+              initial={{ opacity: 0.45 }}
+              animate={{ opacity: 0 }}
+              transition={{ duration: 0.9 }}
+              className="pointer-events-none absolute inset-0 bg-zeus-gold/15"
+            />
+          )}
         </div>
 
         <div className="col-span-2 sm:col-span-1">
@@ -98,17 +134,19 @@ export default function ControlBar(props: ControlBarProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_1fr_2fr]">
-        <button
+        <motion.button
           type="button"
-          disabled={!props.canBuyBonus || isPlaying || autoLeft > 0}
+          whileHover={canBuy ? { scale: 1.02 } : undefined}
+          whileTap={canBuy ? { scale: 0.95 } : undefined}
+          disabled={!canBuy}
           onClick={props.onBuyBonus}
-          className="rounded-xl border border-magenta px-3 py-2 text-sm font-semibold text-text transition-colors hover:bg-surface2 disabled:opacity-40"
+          className="rounded-xl border border-zeus-purple/50 bg-zeus-purple/20 px-3 py-2 text-sm font-semibold text-text shadow-lg shadow-zeus-purple/30 disabled:opacity-40 disabled:shadow-none"
         >
           {labels.buy_bonus}
-          <span className="block text-xs text-muted">
+          <span className="block text-xs text-zeus-lilac-light">
             {props.bonusPrice} {currency}
           </span>
-        </button>
+        </motion.button>
 
         <AutoplayMenu
           autoLeft={autoLeft}
@@ -118,14 +156,18 @@ export default function ControlBar(props: ControlBarProps) {
           onStop={props.onAutoStop}
         />
 
-        <button
+        <motion.button
           type="button"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.975 }}
           onClick={isPlaying ? props.onSkip : props.onSpin}
           disabled={autoLeft > 0 && !isPlaying}
-          className="col-span-2 rounded-xl bg-linear-to-r from-cyan to-magenta px-4 py-3 font-heading font-bold text-bg shadow-lg shadow-cyan/20 transition-opacity hover:opacity-90 disabled:opacity-60 sm:col-span-1"
+          className={`col-span-2 rounded-xl px-4 py-3 font-heading disabled:opacity-60 sm:col-span-1 ${
+            inBonus ? 'zeus-btn-bonus' : 'zeus-btn-spin'
+          }`}
         >
           {isPlaying ? labels.skip : labels.spin}
-        </button>
+        </motion.button>
       </div>
     </section>
   )

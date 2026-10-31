@@ -143,6 +143,14 @@ class ZeusPageLabel(models.Model):
     history_seed_hash = models.CharField(max_length=50)
     history_client_seed = models.CharField(max_length=50)
     history_nonce = models.CharField(max_length=50)
+    bonus_blessing = models.CharField(max_length=100)
+    bonus_begin = models.CharField(max_length=50)
+    bonus_complete = models.CharField(max_length=100)
+    tap_to_continue = models.CharField(max_length=50)
+    jackpot_icon_mini = models.CharField(max_length=10)
+    jackpot_icon_minor = models.CharField(max_length=10)
+    jackpot_icon_major = models.CharField(max_length=10)
+    jackpot_icon_grand = models.CharField(max_length=10)
 
     class Meta:
         verbose_name_plural = "Zeus page labels"

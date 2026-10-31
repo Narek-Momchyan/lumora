@@ -1,11 +1,14 @@
 import shutil
 import tempfile
 from decimal import Decimal
+from io import StringIO
 from itertools import cycle
 from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.db.models import Sum
 from django.test import SimpleTestCase, TestCase, override_settings, tag
 from django.urls import reverse
@@ -466,4 +469,42 @@ class SlotContentTests(TestCase):
 
     def test_the_admin_rejects_audio_over_the_size_limit(self):
         self.assertEqual(self.add_sound("big.mp3", MP3 + b"0" * (10 * 1024 * 1024)).status_code, 200)
+        self.assertFalse(SlotSound.objects.exists())
+
+    def load_sounds(self, content=MP3, **options):
+        with mock.patch("slots.management.commands.load_sounds.download", return_value=content) as download:
+            call_command("load_sounds", stdout=StringIO(), stderr=StringIO(), **options)
+        return download
+
+    def test_load_sounds_creates_a_playable_row_for_every_code(self):
+        self.load_sounds()
+
+        self.assertEqual(set(SlotSound.objects.values_list("code", flat=True)), set(SlotSound.Code.values))
+        rows = self.client.get("/api/slot_sounds").json()
+        self.assertEqual(len(rows), len(SlotSound.Code.values))
+        self.assertTrue(all("/media/sounds/zeus/" in row["file"] for row in rows))
+
+    def test_load_sounds_keeps_a_sound_changed_in_the_admin(self):
+        self.assertEqual(self.add_sound("mine.mp3", MP3).status_code, 302)
+        mine = SlotSound.objects.get(code=SlotSound.Code.BIG_WIN).file.name
+
+        self.load_sounds()
+
+        self.assertEqual(SlotSound.objects.get(code=SlotSound.Code.BIG_WIN).file.name, mine)
+
+    def test_load_sounds_force_replaces_the_file(self):
+        self.load_sounds()
+        sound = SlotSound.objects.get(code=SlotSound.Code.BIG_WIN)
+        old_file, storage = sound.file.name, sound.file.storage
+
+        self.load_sounds(force=True)
+
+        sound.refresh_from_db()
+        self.assertNotEqual(sound.file.name, old_file)
+        self.assertFalse(storage.exists(old_file))
+        self.assertEqual(SlotSound.objects.count(), len(SlotSound.Code.values))
+
+    def test_load_sounds_reports_a_download_that_is_not_audio(self):
+        with self.assertRaisesMessage(CommandError, "big_win"):
+            self.load_sounds(content=b"<html>not found</html>")
         self.assertFalse(SlotSound.objects.exists())

@@ -1,44 +1,35 @@
 'use client'
 
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
 import type { ZeusPageLabels } from '@/types/zeus'
+import GlobalMultiplier from './GlobalMultiplier'
+import MultiplierBadge from './MultiplierBadge'
 
 interface MultiplierPanelProps {
   collected: number[]
   total: number
+  inBonus: boolean
   labels: ZeusPageLabels
 }
 
-export default function MultiplierPanel({ collected, total, labels }: MultiplierPanelProps) {
+export default function MultiplierPanel({ collected, total, inBonus, labels }: MultiplierPanelProps) {
   return (
     <aside
-      className={`flex-wrap items-center gap-2 rounded-2xl border border-border bg-surface p-3 lg:flex lg:flex-col lg:items-stretch ${
-        collected.length > 0 ? 'flex' : 'hidden'
+      className={`flex-wrap items-center justify-center gap-3 rounded-2xl border border-border bg-surface/60 p-3 lg:flex lg:flex-col lg:items-stretch ${
+        collected.length > 0 || inBonus ? 'flex' : 'hidden'
       }`}
     >
-      <p className="text-xs text-muted">{labels.multiplier_collected}</p>
+      <GlobalMultiplier value={total} inBonus={inBonus} label={labels.multiplier_total} />
 
-      <div className="flex flex-1 flex-wrap gap-1 lg:flex-none">
+      <p className="text-center text-xs text-muted">{labels.multiplier_collected}</p>
+
+      <div className="flex flex-1 flex-wrap justify-center gap-1.5 lg:flex-none">
         <AnimatePresence>
           {collected.map((value, index) => (
-            <motion.span
-              key={index}
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="rounded-lg bg-surface2 px-2 py-1 text-xs font-bold text-lime"
-            >
-              ×{value}
-            </motion.span>
+            <MultiplierBadge key={index} multiplier={value} />
           ))}
         </AnimatePresence>
       </div>
-
-      {total > 0 && (
-        <p className="text-sm font-bold text-cyan lg:text-center">
-          {labels.multiplier_total} ×{total}
-        </p>
-      )}
     </aside>
   )
 }
