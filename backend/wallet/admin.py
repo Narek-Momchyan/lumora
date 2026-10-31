@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Transaction, Wallet
+from .models import JackpotPool, Transaction, Wallet
 
 
 class ReadOnlyAdmin(admin.ModelAdmin):
@@ -24,3 +24,8 @@ class TransactionAdmin(ReadOnlyAdmin):
     list_display = ["wallet", "kind", "amount", "balance_after", "game", "round_id", "created_at"]
     list_filter = ["kind", "game"]
     search_fields = ["wallet__user__email", "round_id"]
+
+
+@admin.register(JackpotPool)
+class JackpotPoolAdmin(ReadOnlyAdmin):
+    list_display = ["tier", "amount", "updated_at"]

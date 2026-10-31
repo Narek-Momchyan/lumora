@@ -48,7 +48,8 @@ pipenv install <package>                   # add a package, then:
 pipenv requirements > requirements.txt
 python manage.py migrate
 python manage.py runserver
-python manage.py test                      # all tests, ~5 s, needs PostgreSQL
+python manage.py test                      # all fast tests, ~10 s, needs PostgreSQL
+python manage.py test --tag slow           # Zeus Legacy's 1,000,000-round RTP test, ~3 min
 python manage.py makemigrations
 # without the shell: pipenv run python manage.py test
 
@@ -137,7 +138,8 @@ npm run build
 6. **Bet and settle in one database transaction.** If anything fails, nothing is
    charged and the nonce is not used.
 7. **Every game ships with an RTP simulation test** (at least 200,000 rounds) that
-   asserts its RTP.
+   asserts its RTP. A test too slow for `python manage.py test` is tagged `slow` and
+   runs with `python manage.py test --tag slow`; run it after changing that game's maths.
 8. Endpoints need a JWT by default; public ones set `permission_classes = [AllowAny]`.
 9. The admin never edits money or history: wallets, transactions, seed pairs and bets
    are read-only there.
@@ -195,11 +197,14 @@ Each phase ends with something that works and can be shown.
 - [ ] Wheel animation, chip selector, betting board
 
 ### Phase 4 — Zeus Legacy inside Lumora (`slots/`)
-- [ ] Port the spin engine from the Zeus_Legacy repo into `slots/engine.py` as pure
+- [x] Port the spin engine from the Zeus_Legacy repo into `slots/engine.py` as pure
       functions (grid, cascades, multipliers, free spins) that take a float stream
-- [ ] Use `fairness.rng.float_stream(server_seed, client_seed, nonce)` instead of its RNG
-- [ ] Use `wallet.services.debit/credit` instead of its own balance code
-- [ ] 1,000,000-spin RTP test (target 96.5%)
+- [x] Use `fairness.rng.float_stream(server_seed, client_seed, nonce)` instead of its RNG
+- [x] Use `wallet.services.debit/credit` instead of its own balance code
+- [x] 1,000,000-round RTP test (`--tag slow`; measured about 96.6%, bonus buy about 97.2%)
+- [x] `POST /api/slot_spins`, jackpot pools, symbols, sounds and page texts in the admin
+- [ ] Frontend: the Zeus Legacy page, then turn `is_playable` on in the admin
+- [ ] Next step: Ante Bet (x1.25 stake, more scatters), as in the Zeus_Legacy repo
 
 ### Phase 5 — Polish and deploy
 - [ ] Rate limiting on auth and bets

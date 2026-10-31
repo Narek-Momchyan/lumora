@@ -9,6 +9,7 @@ from accounts.models import LoginPageLabel
 from errors.models import ErrorMessage
 from games.models import GameCategory, LobbyPageLabel
 from header.models import HeaderLabel, Language, Logo, SidebarItem
+from slots.models import SlotSymbol, SlotSymbolName, ZeusPageLabel
 from .language import LANG_CODES
 
 SAMPLE_DB = Path(settings.BASE_DIR) / "base" / "sample_db.json"
@@ -22,16 +23,24 @@ COLLECTIONS = {
     "login_page_labels": LoginPageLabel,
     "game_categories": GameCategory,
     "lobby_page_labels": LobbyPageLabel,
+    "slot_symbols": SlotSymbol,
+    "slot_symbol_names": SlotSymbolName,
+    "zeus_page_labels": ZeusPageLabel,
     "error_messages": ErrorMessage,
 }
 
 
 def to_file_names(model, values):
-    """FileFields store paths relative to MEDIA_ROOT: "/media/images/x.png" -> "images/x.png"."""
+    """FileFields store paths relative to MEDIA_ROOT: "/media/images/x.png" -> "images/x.png".
+
+    A foreign key comes as the value it points to, so it goes in through its column: symbol_id.
+    """
     for field in model._meta.concrete_fields:
         value = values.get(field.name)
         if isinstance(field, models.FileField) and isinstance(value, str) and value.startswith(settings.MEDIA_URL):
             values[field.name] = value[len(settings.MEDIA_URL) :]
+        elif field.is_relation and field.name in values:
+            values[field.attname] = values.pop(field.name)
     return values
 
 

@@ -31,3 +31,32 @@ def validate_image_content(file):
 
 
 IMAGE_VALIDATORS = [FileExtensionValidator(IMAGE_EXTENSIONS), validate_image_size, validate_image_content]
+
+AUDIO_EXTENSIONS = ["mp3", "ogg", "wav"]
+MAX_AUDIO_SIZE_MB = 10
+
+
+def validate_audio_size(file):
+    if getattr(file, "_committed", True):
+        return
+    if file.size > MAX_AUDIO_SIZE_MB * 1024 * 1024:
+        raise ValidationError(f"Audio must be {MAX_AUDIO_SIZE_MB} MB or smaller.")
+
+
+def is_audio(head):
+    return (
+        head.startswith((b"ID3", b"OggS", b"\xff\xfb", b"\xff\xf3", b"\xff\xf2"))
+        or (head[:4] == b"RIFF" and head[8:12] == b"WAVE")
+    )
+
+
+def validate_audio_content(file):
+    if getattr(file, "_committed", True):
+        return
+    head = file.read(12)
+    file.seek(0)
+    if not is_audio(head):
+        raise ValidationError("Upload a real MP3, OGG or WAV file.")
+
+
+AUDIO_VALIDATORS = [FileExtensionValidator(AUDIO_EXTENSIONS), validate_audio_size, validate_audio_content]

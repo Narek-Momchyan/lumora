@@ -22,13 +22,19 @@ class GameApiTests(TestCase):
         crash = self.client.get("/api/games?category=crash").json()
         self.assertEqual([g["slug"] for g in crash], ["neon-crash"])
         game = self.client.get("/api/games?slug=zeus-legacy").json()
-        self.assertEqual(game[0]["rtp"], "96.50")
+        self.assertEqual(game[0]["rtp"], "96.60")
 
     def test_only_neon_crash_is_playable_and_the_others_are_coming_soon(self):
         games = {g["slug"]: g for g in self.client.get("/api/games").json()}
         self.assertTrue(games["neon-crash"]["is_playable"])
         self.assertFalse(games["zeus-legacy"]["is_playable"])
         self.assertFalse(games["lumora-roulette"]["is_playable"])
+
+    def test_zeus_legacy_stays_out_of_play_until_its_page_is_ready(self):
+        game = self.client.get("/api/games?slug=zeus-legacy").json()[0]
+        self.assertFalse(game["is_playable"])
+        self.assertEqual((game["min_bet"], game["max_bet"]), ("0.20", "100.00"))
+        self.assertEqual(game["image"], f"{settings.PUBLIC_BASE_URL}/media/images/zeus/zeus.png")
 
     def test_a_game_without_an_image_returns_null(self):
         self.assertIsNone(self.client.get("/api/games?slug=neon-crash").json()[0]["image"])

@@ -15,6 +15,7 @@ GAME_CODES = [
     "bet_out_of_range",
     "target_out_of_range",
     "game_unavailable",
+    "game_not_found",
 ]
 
 FIELD_CODES = [

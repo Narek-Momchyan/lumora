@@ -29,6 +29,7 @@ from fairness.urls import fairness_router
 from games.urls import games_router
 from header.urls import header_router
 from leaderboard.urls import leaderboard_router
+from slots.urls import slots_router
 from wallet.urls import wallet_router
 
 
@@ -51,6 +52,7 @@ router.registry.extend(wallet_router.registry)
 router.registry.extend(fairness_router.registry)
 router.registry.extend(games_router.registry)
 router.registry.extend(crash_router.registry)
+router.registry.extend(slots_router.registry)
 router.registry.extend(leaderboard_router.registry)
 router.registry.extend(header_router.registry)
 router.registry.extend(errors_router.registry)

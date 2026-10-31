@@ -19,6 +19,8 @@ from errors.models import ErrorMessage
 from fairness.services import rotate_seeds
 from games.models import Game, LobbyPageLabel
 from header.models import HeaderLabel, Logo
+from slots import engine
+from slots.models import ZeusPageLabel
 from wallet.services import claim_daily_bonus, open_wallet
 from .fields import MAX_IMAGE_SIZE_MB
 from .sample import COLLECTIONS, LANGS, load_sample, read_sample
@@ -156,7 +158,7 @@ class ApiContractTests(TestCase):
                 self.assertEqual(len({tuple(sorted(re.findall(r"\{\w+\}", text))) for text in texts}), 1)
 
     def test_no_label_is_empty(self):
-        for model in [LoginPageLabel, LobbyPageLabel, HeaderLabel]:
+        for model in [LoginPageLabel, LobbyPageLabel, HeaderLabel, ZeusPageLabel]:
             self.assertEqual(model.objects.count(), len(LANGS))
             for label in model.objects.all():
                 for field in label._meta.concrete_fields:
@@ -167,6 +169,29 @@ class ApiContractTests(TestCase):
         for label in LobbyPageLabel.objects.all():
             with self.subTest(lang=label.lang):
                 self.assertIn("{time}", label.bonus_next)
+
+    def test_zeus_placeholders_are_in_every_language(self):
+        for label in ZeusPageLabel.objects.all():
+            with self.subTest(lang=label.lang):
+                self.assertIn("{count}", label.free_spins_left)
+                self.assertIn("{count}", label.tumble)
+                self.assertIn("{tier}", label.jackpot_won)
+
+    def test_every_engine_symbol_has_a_row_and_a_name_in_every_language(self):
+        codes = [row["code"] for row in self.client.get("/api/slot_symbols").json()]
+        self.assertEqual(set(codes), set(engine.SYMBOLS))
+        for lang in LANGS:
+            with self.subTest(lang=lang):
+                names = self.client.get(f"/api/slot_symbol_names?lang={lang}").json()
+                self.assertEqual({row["symbol"] for row in names}, set(engine.SYMBOLS))
+
+    def test_symbols_with_pictures_have_their_files_in_the_repo(self):
+        with_images = [row for row in self.sample["slot_symbols"] if row["image"]]
+        self.assertEqual(len(with_images), 10)
+        for row in with_images:
+            with self.subTest(code=row["code"]):
+                path = Path(settings.MEDIA_ROOT) / row["image"].removeprefix(settings.MEDIA_URL)
+                self.assertTrue(path.is_file())
 
     def test_sidebar_and_categories_have_the_same_rows_in_every_language(self):
         expected = {
@@ -329,7 +354,7 @@ class AdminTests(TestCase):
     def test_money_and_history_are_read_only_in_the_admin(self):
         request = RequestFactory().get("/admin/")
         request.user = self.admin
-        for model_name in ["wallet", "transaction", "seedpair", "crashbet"]:
+        for model_name in ["wallet", "transaction", "jackpotpool", "seedpair", "crashbet", "slotspin"]:
             model_admin = next(a for m, a in admin.site._registry.items() if m._meta.model_name == model_name)
             with self.subTest(model=model_name):
                 self.assertFalse(model_admin.has_add_permission(request))

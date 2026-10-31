@@ -5,7 +5,7 @@ from django.utils import timezone
 
 from wallet.models import Transaction
 
-GAME_KINDS = [Transaction.Kind.BET, Transaction.Kind.WIN]
+GAME_KINDS = [Transaction.Kind.BET, Transaction.Kind.WIN, Transaction.Kind.JACKPOT]
 
 
 def weekly_top(limit=20, now=None):

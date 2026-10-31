@@ -96,6 +96,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "base.wsgi.application"
 
+TEST_RUNNER = "base.test_runner.SkipSlowTestsRunner"
+
 
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases

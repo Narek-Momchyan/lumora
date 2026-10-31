@@ -34,6 +34,7 @@ class Transaction(models.Model):
         BONUS = "bonus", "Daily bonus"
         BET = "bet", "Bet"
         WIN = "win", "Win"
+        JACKPOT = "jackpot", "Jackpot"
 
     wallet = models.ForeignKey(Wallet, related_name="transactions", on_delete=models.CASCADE)
     kind = models.CharField(max_length=16, choices=Kind.choices)
@@ -58,3 +59,24 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.kind} {self.amount} LC"
+
+
+class JackpotPool(models.Model):
+    """A progressive jackpot shared by all players. Changes only through wallet.services.
+
+    Six decimals, because a pool grows by a tiny share of every stake.
+    """
+
+    tier = models.CharField(max_length=8)
+    amount = models.DecimalField(max_digits=16, decimal_places=6)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Jackpot pools"
+        ordering = ["amount"]
+        constraints = [
+            models.UniqueConstraint(fields=["tier"], name="unique_jackpot_pool_tier"),
+        ]
+
+    def __str__(self):
+        return f"{self.tier} · {self.amount} LC"

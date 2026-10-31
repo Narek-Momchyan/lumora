@@ -83,7 +83,8 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 - Every endpoint needs a login except `register`, `token`, `token/refresh`,
   `logout`, `games`, `leaderboard`, `error_messages` and the site content: `logos`,
   `languages`, `sidebar_items`, `header_labels`, `login_page_labels`,
-  `lobby_page_labels` and `game_categories`.
+  `lobby_page_labels`, `game_categories`, `slot_symbols`, `slot_symbol_names`,
+  `slot_sounds` and `zeus_page_labels`.
 - The JWTs live only in httpOnly cookies, never in a response body and never in an
   `Authorization` header. `register` and `token` set `lumora_access` (30 minutes)
   and `lumora_refresh` (7 days), both `SameSite=Lax`, and `Secure` when
@@ -125,6 +126,13 @@ Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 | GET | `/api/login_page_labels` | – | every text of the login page; `?lang=` |
 | GET | `/api/lobby_page_labels` | – | every text of the lobby page; `?lang=` |
 | GET | `/api/game_categories` | – | category names for filters and game cards; `?lang=` |
+| GET | `/api/slot_spins` | cookie | the player's last 50 slot rounds, newest first, without `result` |
+| POST | `/api/slot_spins` | cookie | `{game, amount, bonus_buy?}` → plays one round with all its free spins: the round, `result`, `balance` and `jackpot_pools` |
+| GET | `/api/slot_spins/<id>` | cookie | one round with its `result` |
+| GET | `/api/slot_symbols` | – | slot symbols with their images |
+| GET | `/api/slot_symbol_names` | – | symbol names; `?lang=` |
+| GET | `/api/slot_sounds` | – | active sounds that have an uploaded file |
+| GET | `/api/zeus_page_labels` | – | every text of the Zeus Legacy page; `?lang=` |
 | GET | `/api/error_messages` | – | error texts; `?lang=`, `?code=` |
 
 `bonus_available_at` is `null` before the first bonus; a time in the past means
@@ -191,6 +199,66 @@ Neon Crash round:
 
 A revealed pair was used for nonces `0` to `nonce - 1`.
 
+A slot round uses one nonce for everything, free spins included. To check one:
+
+```python
+stream = float_stream(server_seed, client_seed, nonce)
+tier = slots.engine.roll_jackpot(cost, next(stream))
+result = slots.engine.play_round(stream, bonus_buy=bonus_buy)
+```
+
+`result` equals the saved one, and `tier` equals `jackpot_tier`. The seeds prove only the
+jackpot **tier**, not its amount: a pool is shared by all players and grows with their
+stakes, so the amount that was paid is saved in `jackpot_win`.
+
+## Zeus Legacy
+
+All the maths is in `slots/engine.py` and can't be changed in the admin: 6 columns by 5
+rows, 8 or more of a symbol anywhere pay, wins tumble, 4+ scatters give 15 free spins (+5
+during free spins), and a spin pays at most 1000x. The first spin of a bonus buy costs
+100x the bet, has no multipliers and pays at most 10x. Bets are 0.20 to 100 LC.
+
+`result` is `{spins, total_win, free_spins_played, bonus_buy}`. Each spin has `steps`, one
+per tumble (`grid`, `wins`, `winning_cells`, `pay`, `running_win`), and `win`,
+`scatter_win`, `collected_multipliers`, `global_multiplier`, `free_spins_awarded`,
+`is_max_win`. **Pays in `result` are in hundredths of the bet**: 150 means 1.5x.
+Multiply by `amount` for LC. The LC that were really paid are in `payout`.
+
+| Measured | Rounds | Game | Jackpots | Total |
+| --- | --- | --- | --- | --- |
+| Base game | 5,000,000 | 95.85% | 0.74% (by formula) | 96.6% ± 0.65% |
+| Bonus buy | 300,000 | 96.45% | 0.71% | 97.2% ± 0.4% |
+
+A jackpot pool pays back about twice its share of the stakes, so all four give about
+0.74%. The grand one is too rare to show in a simulation of this size, which measured
+0.59%, so the table uses the formula for the base game. To measure again:
+
+```bash
+python manage.py simulate_zeus --rounds 5000000 --workers 10
+python manage.py simulate_zeus --rounds 300000 --bonus-buy --workers 10
+```
+
+### Sounds
+
+Sound files are not in the repo. Upload them in the admin (Slot sounds): MP3, OGG or WAV,
+10 MB at most. The frontend plays only what `/api/slot_sounds` returns, so a sound without
+a file is simply silent. `load_sample` doesn't touch them. The codes are:
+
+| Code | When |
+| --- | --- |
+| `stone_tumble` | stones fall |
+| `sparkle_win` | a win appears |
+| `lightning_hit` | lightning |
+| `epic_drop` | a big drop |
+| `free_spins_theme` | free spins music |
+| `big_win` | big win |
+| `mega_win` | mega win |
+| `ultra_win` | ultra win |
+| `symbol_explode` | a symbol explodes |
+| `collect_multiplier` | a multiplier is collected |
+| `win_tick` | the win counts up |
+| `scatter_impact` | a scatter lands |
+
 ## Apps
 
 | App | What it owns |
@@ -198,12 +266,12 @@ A revealed pair was used for nonces `0` to `nonce - 1`.
 | `accounts` | `User` (logs in with email), register, me, login, refresh and logout with JWT cookies (`authentication.py`, `cookies.py`), `LoginPageLabel` |
 | `header` | `Logo`, `Language`, `SidebarItem`, `HeaderLabel` |
 | `errors` | `ErrorMessage`, `CodedError`, the DRF exception handler, the list of codes |
-| `wallet` | `Wallet`, append-only `Transaction` ledger, `services.py` (the only code that moves money), daily bonus |
+| `wallet` | `Wallet`, append-only `Transaction` ledger, `JackpotPool`, `services.py` (the only code that moves money), daily bonus |
 | `fairness` | provably fair RNG (`rng.py`), `SeedPair`, `services.py` (next nonce, seed rotation) |
 | `games` | `Game` catalogue, `GameCategory`, `LobbyPageLabel` |
 | `crash` | Neon Crash: `engine.py` (pure maths), `services.py` (plays a round), `CrashBet` |
 | `roulette` | European roulette `engine.py` (maths only, the API comes in phase 3) |
-| `slots` | empty for now: Zeus Legacy moves here in phase 4 |
+| `slots` | Zeus Legacy: `engine.py` (pure maths), `services.py` (plays a round), `simulation.py`, `SlotSpin`, `SlotSymbol`, `SlotSymbolName`, `SlotSound`, `ZeusPageLabel` |
 | `leaderboard` | weekly leaderboard from the ledger |
 
 `base/` holds the settings, the URLs (`OptionalSlashRouter`),
@@ -215,7 +283,8 @@ media URLs (`serializers.py`, `renderers.py`), `ImagePreviewMixin` and `load_sam
 ## Tests
 
 ```bash
-python manage.py test
+python manage.py test              # everything except the slow tests, about 10 s
+python manage.py test --tag slow   # only the 1,000,000-round Zeus Legacy simulation, about 3 min
 ```
 
 Every app has its tests in `tests.py`. They run on a temporary PostgreSQL
@@ -227,7 +296,9 @@ revealed, the API rules, CORS and that every admin page opens. `ApiContractTests
 checks that every collection in `base/sample_db.json` has an endpoint that returns
 exactly the sample in every language, with and without a trailing slash.
 `WalletConcurrencyTests` sends 30 bets of 500 LC at the same moment on real
-PostgreSQL connections to a 10,000 LC wallet: exactly 20 must succeed.
+PostgreSQL connections to a 10,000 LC wallet: exactly 20 must succeed. A test tagged
+`slow` is skipped by `base.test_runner.SkipSlowTestsRunner` unless `--tag slow` asks
+for it. Run the slow tests after changing `slots/engine.py`.
 
 ## Production
 

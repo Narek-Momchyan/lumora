@@ -445,6 +445,579 @@
       "server_unreachable": "Не удалось связаться с сервером."
     }
   ],
+  "slot_symbols": [
+    {
+      "id": 1,
+      "code": "trident",
+      "image": "/media/images/zeus/symbols/sym_trident.png",
+      "order": 1
+    },
+    {
+      "id": 2,
+      "code": "pegasus",
+      "image": "/media/images/zeus/symbols/sym_pegasus.png",
+      "order": 2
+    },
+    {
+      "id": 3,
+      "code": "shield",
+      "image": "/media/images/zeus/symbols/sym_shield.png",
+      "order": 3
+    },
+    {
+      "id": 4,
+      "code": "chalice",
+      "image": "/media/images/zeus/symbols/sym_chalice.png",
+      "order": 4
+    },
+    {
+      "id": 5,
+      "code": "red_stone",
+      "image": "/media/images/zeus/symbols/sym_red_stone.png",
+      "order": 5
+    },
+    {
+      "id": 6,
+      "code": "purple_stone",
+      "image": "/media/images/zeus/symbols/sym_purple_stone.png",
+      "order": 6
+    },
+    {
+      "id": 7,
+      "code": "yellow_stone",
+      "image": "/media/images/zeus/symbols/sym_yellow_stone.png",
+      "order": 7
+    },
+    {
+      "id": 8,
+      "code": "green_stone",
+      "image": "/media/images/zeus/symbols/sym_green_stone.png",
+      "order": 8
+    },
+    {
+      "id": 9,
+      "code": "blue_stone",
+      "image": "/media/images/zeus/symbols/sym_blue_stone.png",
+      "order": 9
+    },
+    {
+      "id": 10,
+      "code": "scatter",
+      "image": "/media/images/zeus/symbols/sym_scatter.png",
+      "order": 10
+    },
+    {
+      "id": 11,
+      "code": "mult_2",
+      "image": null,
+      "order": 11
+    },
+    {
+      "id": 12,
+      "code": "mult_5",
+      "image": null,
+      "order": 12
+    },
+    {
+      "id": 13,
+      "code": "mult_10",
+      "image": null,
+      "order": 13
+    },
+    {
+      "id": 14,
+      "code": "mult_25",
+      "image": null,
+      "order": 14
+    },
+    {
+      "id": 15,
+      "code": "mult_50",
+      "image": null,
+      "order": 15
+    },
+    {
+      "id": 16,
+      "code": "mult_100",
+      "image": null,
+      "order": 16
+    },
+    {
+      "id": 17,
+      "code": "mult_250",
+      "image": null,
+      "order": 17
+    },
+    {
+      "id": 18,
+      "code": "mult_500",
+      "image": null,
+      "order": 18
+    }
+  ],
+  "slot_symbol_names": [
+    {
+      "id": 1,
+      "symbol": "trident",
+      "lang": "en",
+      "name": "Trident"
+    },
+    {
+      "id": 2,
+      "symbol": "trident",
+      "lang": "am",
+      "name": "Եռաժանի"
+    },
+    {
+      "id": 3,
+      "symbol": "trident",
+      "lang": "ru",
+      "name": "Трезубец"
+    },
+    {
+      "id": 4,
+      "symbol": "pegasus",
+      "lang": "en",
+      "name": "Pegasus"
+    },
+    {
+      "id": 5,
+      "symbol": "pegasus",
+      "lang": "am",
+      "name": "Պեգաս"
+    },
+    {
+      "id": 6,
+      "symbol": "pegasus",
+      "lang": "ru",
+      "name": "Пегас"
+    },
+    {
+      "id": 7,
+      "symbol": "shield",
+      "lang": "en",
+      "name": "Shield"
+    },
+    {
+      "id": 8,
+      "symbol": "shield",
+      "lang": "am",
+      "name": "Վահան"
+    },
+    {
+      "id": 9,
+      "symbol": "shield",
+      "lang": "ru",
+      "name": "Щит"
+    },
+    {
+      "id": 10,
+      "symbol": "chalice",
+      "lang": "en",
+      "name": "Chalice"
+    },
+    {
+      "id": 11,
+      "symbol": "chalice",
+      "lang": "am",
+      "name": "Գավաթ"
+    },
+    {
+      "id": 12,
+      "symbol": "chalice",
+      "lang": "ru",
+      "name": "Кубок"
+    },
+    {
+      "id": 13,
+      "symbol": "red_stone",
+      "lang": "en",
+      "name": "Red Stone"
+    },
+    {
+      "id": 14,
+      "symbol": "red_stone",
+      "lang": "am",
+      "name": "Կարմիր քար"
+    },
+    {
+      "id": 15,
+      "symbol": "red_stone",
+      "lang": "ru",
+      "name": "Красный камень"
+    },
+    {
+      "id": 16,
+      "symbol": "purple_stone",
+      "lang": "en",
+      "name": "Purple Stone"
+    },
+    {
+      "id": 17,
+      "symbol": "purple_stone",
+      "lang": "am",
+      "name": "Մանուշակագույն քար"
+    },
+    {
+      "id": 18,
+      "symbol": "purple_stone",
+      "lang": "ru",
+      "name": "Фиолетовый камень"
+    },
+    {
+      "id": 19,
+      "symbol": "yellow_stone",
+      "lang": "en",
+      "name": "Yellow Stone"
+    },
+    {
+      "id": 20,
+      "symbol": "yellow_stone",
+      "lang": "am",
+      "name": "Դեղին քար"
+    },
+    {
+      "id": 21,
+      "symbol": "yellow_stone",
+      "lang": "ru",
+      "name": "Жёлтый камень"
+    },
+    {
+      "id": 22,
+      "symbol": "green_stone",
+      "lang": "en",
+      "name": "Green Stone"
+    },
+    {
+      "id": 23,
+      "symbol": "green_stone",
+      "lang": "am",
+      "name": "Կանաչ քար"
+    },
+    {
+      "id": 24,
+      "symbol": "green_stone",
+      "lang": "ru",
+      "name": "Зелёный камень"
+    },
+    {
+      "id": 25,
+      "symbol": "blue_stone",
+      "lang": "en",
+      "name": "Blue Stone"
+    },
+    {
+      "id": 26,
+      "symbol": "blue_stone",
+      "lang": "am",
+      "name": "Կապույտ քար"
+    },
+    {
+      "id": 27,
+      "symbol": "blue_stone",
+      "lang": "ru",
+      "name": "Синий камень"
+    },
+    {
+      "id": 28,
+      "symbol": "scatter",
+      "lang": "en",
+      "name": "Zeus"
+    },
+    {
+      "id": 29,
+      "symbol": "scatter",
+      "lang": "am",
+      "name": "Զևս"
+    },
+    {
+      "id": 30,
+      "symbol": "scatter",
+      "lang": "ru",
+      "name": "Зевс"
+    },
+    {
+      "id": 31,
+      "symbol": "mult_2",
+      "lang": "en",
+      "name": "x2"
+    },
+    {
+      "id": 32,
+      "symbol": "mult_2",
+      "lang": "am",
+      "name": "x2"
+    },
+    {
+      "id": 33,
+      "symbol": "mult_2",
+      "lang": "ru",
+      "name": "x2"
+    },
+    {
+      "id": 34,
+      "symbol": "mult_5",
+      "lang": "en",
+      "name": "x5"
+    },
+    {
+      "id": 35,
+      "symbol": "mult_5",
+      "lang": "am",
+      "name": "x5"
+    },
+    {
+      "id": 36,
+      "symbol": "mult_5",
+      "lang": "ru",
+      "name": "x5"
+    },
+    {
+      "id": 37,
+      "symbol": "mult_10",
+      "lang": "en",
+      "name": "x10"
+    },
+    {
+      "id": 38,
+      "symbol": "mult_10",
+      "lang": "am",
+      "name": "x10"
+    },
+    {
+      "id": 39,
+      "symbol": "mult_10",
+      "lang": "ru",
+      "name": "x10"
+    },
+    {
+      "id": 40,
+      "symbol": "mult_25",
+      "lang": "en",
+      "name": "x25"
+    },
+    {
+      "id": 41,
+      "symbol": "mult_25",
+      "lang": "am",
+      "name": "x25"
+    },
+    {
+      "id": 42,
+      "symbol": "mult_25",
+      "lang": "ru",
+      "name": "x25"
+    },
+    {
+      "id": 43,
+      "symbol": "mult_50",
+      "lang": "en",
+      "name": "x50"
+    },
+    {
+      "id": 44,
+      "symbol": "mult_50",
+      "lang": "am",
+      "name": "x50"
+    },
+    {
+      "id": 45,
+      "symbol": "mult_50",
+      "lang": "ru",
+      "name": "x50"
+    },
+    {
+      "id": 46,
+      "symbol": "mult_100",
+      "lang": "en",
+      "name": "x100"
+    },
+    {
+      "id": 47,
+      "symbol": "mult_100",
+      "lang": "am",
+      "name": "x100"
+    },
+    {
+      "id": 48,
+      "symbol": "mult_100",
+      "lang": "ru",
+      "name": "x100"
+    },
+    {
+      "id": 49,
+      "symbol": "mult_250",
+      "lang": "en",
+      "name": "x250"
+    },
+    {
+      "id": 50,
+      "symbol": "mult_250",
+      "lang": "am",
+      "name": "x250"
+    },
+    {
+      "id": 51,
+      "symbol": "mult_250",
+      "lang": "ru",
+      "name": "x250"
+    },
+    {
+      "id": 52,
+      "symbol": "mult_500",
+      "lang": "en",
+      "name": "x500"
+    },
+    {
+      "id": 53,
+      "symbol": "mult_500",
+      "lang": "am",
+      "name": "x500"
+    },
+    {
+      "id": 54,
+      "symbol": "mult_500",
+      "lang": "ru",
+      "name": "x500"
+    }
+  ],
+  "zeus_page_labels": [
+    {
+      "id": 1,
+      "lang": "en",
+      "page_title": "Zeus Legacy · Lumora",
+      "page_description": "A cascading slot with free spins and jackpots, played with demo coins. LC has no cash value.",
+      "game_title": "ZEUS LEGACY",
+      "tagline": "PREMIUM · CASCADING · PAY ANYWHERE",
+      "free_spins_title": "FREE SPINS",
+      "free_spins_left": "{count} SPINS REMAINING",
+      "tumble": "TUMBLE ×{count}",
+      "multiplier_total": "Total",
+      "multiplier_collected": "Collected",
+      "balance": "Balance",
+      "last_win": "Last Win",
+      "win": "Win!",
+      "bet": "Bet",
+      "bonus_bet": "Bonus ×",
+      "speed_mode": "Speed Mode",
+      "speed_normal": "Normal",
+      "speed_turbo": "Turbo",
+      "speed_instant": "Instant",
+      "spin": "Spin",
+      "buy_bonus": "Buy Bonus",
+      "auto": "Auto",
+      "auto_spinning": "AUTO SPINNING",
+      "loading": "Loading...",
+      "loading_tagline": "Legacy Awakes",
+      "ready": "READY!",
+      "bonus_trigger": "BONUS",
+      "congratulations": "Congratulations!",
+      "total_win": "Total Win",
+      "collect": "Collect",
+      "win_winning": "WINNING",
+      "win_big": "BIG WIN",
+      "win_super": "SUPER WIN",
+      "win_mega": "MEGA WIN",
+      "win_ultra": "ULTRA WIN",
+      "win_max": "MAX WIN",
+      "jackpot_mini": "MINI",
+      "jackpot_minor": "MINOR",
+      "jackpot_major": "MAJOR",
+      "jackpot_grand": "GRAND",
+      "jackpot_won": "{tier} JACKPOT",
+      "server_unreachable": "Cannot reach the server."
+    },
+    {
+      "id": 2,
+      "lang": "am",
+      "page_title": "Zeus Legacy · Lumora",
+      "page_description": "Կասկադներով սլոթ՝ անվճար պտույտներով և ջեքփոթներով, դեմո մետաղադրամներով։ LC-ն դրամական արժեք չունի։",
+      "game_title": "ZEUS LEGACY",
+      "tagline": "ՊՐԵՄԻՈՒՄ · ԿԱՍԿԱԴՆԵՐ · ՎՃԱՐՈՒՄ ԱՄԵՆՈՒՐ",
+      "free_spins_title": "ԱՆՎՃԱՐ ՊՏՈՒՅՏՆԵՐ",
+      "free_spins_left": "ՄՆԱՑԵԼ Է {count} ՊՏՈՒՅՏ",
+      "tumble": "ԿԱՍԿԱԴ ×{count}",
+      "multiplier_total": "Ընդամենը",
+      "multiplier_collected": "Հավաքված",
+      "balance": "Մնացորդ",
+      "last_win": "Վերջին շահումը",
+      "win": "Շահում",
+      "bet": "Խաղադրույք",
+      "bonus_bet": "Բոնուս ×",
+      "speed_mode": "Արագություն",
+      "speed_normal": "Սովորական",
+      "speed_turbo": "Տուրբո",
+      "speed_instant": "Ակնթարթային",
+      "spin": "Պտտել",
+      "buy_bonus": "Գնել բոնուս",
+      "auto": "Ավտո",
+      "auto_spinning": "ԱՎՏՈ ՊՏՈՒՅՏ",
+      "loading": "Բեռնվում է...",
+      "loading_tagline": "Ժառանգությունն արթնանում է",
+      "ready": "ՊԱՏՐԱՍՏ Է",
+      "bonus_trigger": "ԲՈՆՈՒՍ",
+      "congratulations": "Շնորհավորում ենք։",
+      "total_win": "Ընդհանուր շահում",
+      "collect": "Վերցնել",
+      "win_winning": "ՇԱՀՈՒՄ",
+      "win_big": "ՄԵԾ ՇԱՀՈՒՄ",
+      "win_super": "ՍՈՒՊԵՐ ՇԱՀՈՒՄ",
+      "win_mega": "ՄԵԳԱ ՇԱՀՈՒՄ",
+      "win_ultra": "ՈՒԼՏՐԱ ՇԱՀՈՒՄ",
+      "win_max": "ԱՌԱՎԵԼԱԳՈՒՅՆ ՇԱՀՈՒՄ",
+      "jackpot_mini": "ՄԻՆԻ",
+      "jackpot_minor": "ՄԱՅՆՈՐ",
+      "jackpot_major": "ՄԵՅՋՈՐ",
+      "jackpot_grand": "ԳՐԱՆԴ",
+      "jackpot_won": "{tier} ՋԵՔՓՈԹ",
+      "server_unreachable": "Սերվերին միանալ չհաջողվեց։"
+    },
+    {
+      "id": 3,
+      "lang": "ru",
+      "page_title": "Zeus Legacy · Lumora",
+      "page_description": "Каскадный слот с бесплатными вращениями и джекпотами на демо-монеты. LC не имеет денежной ценности.",
+      "game_title": "ZEUS LEGACY",
+      "tagline": "ПРЕМИУМ · КАСКАДЫ · ВЫПЛАТЫ ВЕЗДЕ",
+      "free_spins_title": "БЕСПЛАТНЫЕ ВРАЩЕНИЯ",
+      "free_spins_left": "ОСТАЛОСЬ ВРАЩЕНИЙ: {count}",
+      "tumble": "КАСКАД ×{count}",
+      "multiplier_total": "Всего",
+      "multiplier_collected": "Собрано",
+      "balance": "Баланс",
+      "last_win": "Последний выигрыш",
+      "win": "Выигрыш!",
+      "bet": "Ставка",
+      "bonus_bet": "Бонус ×",
+      "speed_mode": "Скорость",
+      "speed_normal": "Обычная",
+      "speed_turbo": "Турбо",
+      "speed_instant": "Мгновенная",
+      "spin": "Крутить",
+      "buy_bonus": "Купить бонус",
+      "auto": "Авто",
+      "auto_spinning": "АВТОВРАЩЕНИЕ",
+      "loading": "Загрузка...",
+      "loading_tagline": "Наследие пробуждается",
+      "ready": "ГОТОВО!",
+      "bonus_trigger": "БОНУС",
+      "congratulations": "Поздравляем!",
+      "total_win": "Общий выигрыш",
+      "collect": "Забрать",
+      "win_winning": "ВЫИГРЫШ",
+      "win_big": "БОЛЬШОЙ ВЫИГРЫШ",
+      "win_super": "СУПЕРВЫИГРЫШ",
+      "win_mega": "МЕГАВЫИГРЫШ",
+      "win_ultra": "УЛЬТРАВЫИГРЫШ",
+      "win_max": "МАКСИМАЛЬНЫЙ ВЫИГРЫШ",
+      "jackpot_mini": "МИНИ",
+      "jackpot_minor": "МИНОР",
+      "jackpot_major": "МАЖОР",
+      "jackpot_grand": "ГРАНД",
+      "jackpot_won": "ДЖЕКПОТ {tier}",
+      "server_unreachable": "Не удалось связаться с сервером."
+    }
+  ],
   "error_messages": [
     {
       "id": 1,
@@ -1003,6 +1576,24 @@
       "code": "throttled",
       "lang": "ru",
       "text": "Слишком много запросов. Попробуйте позже."
+    },
+    {
+      "id": 94,
+      "code": "game_not_found",
+      "lang": "en",
+      "text": "This game doesn't exist."
+    },
+    {
+      "id": 95,
+      "code": "game_not_found",
+      "lang": "am",
+      "text": "Այս խաղը գոյություն չունի։"
+    },
+    {
+      "id": 96,
+      "code": "game_not_found",
+      "lang": "ru",
+      "text": "Такой игры нет."
     }
   ]
 }

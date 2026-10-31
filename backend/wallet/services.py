@@ -5,13 +5,13 @@ requests at the same moment cannot spend the same coins. Passing an idempotency_
 a retried request return the original Transaction instead of charging or paying twice.
 """
 
-from decimal import Decimal
+from decimal import ROUND_DOWN, Decimal
 
 from django.db import transaction
 from django.utils import timezone
 
 from base.constants import DAILY_BONUS, DAILY_BONUS_COOLDOWN, SIGNUP_BONUS
-from .models import Transaction, Wallet
+from .models import JackpotPool, Transaction, Wallet
 
 CENT = Decimal("0.01")
 
@@ -93,6 +93,31 @@ def credit(wallet, amount, *, game, round_id="", idempotency_key=None):
         round_id=round_id,
         idempotency_key=idempotency_key,
     )
+
+
+def add_to_jackpots(contributions, seeds):
+    """Grow the shared pools. `contributions` and `seeds` are {tier: amount}."""
+    with transaction.atomic():
+        for tier in sorted(contributions):  # always the same order, so two spins can't deadlock
+            pool, _ = JackpotPool.objects.select_for_update().get_or_create(
+                tier=tier, defaults={"amount": seeds[tier]}
+            )
+            pool.amount += contributions[tier]
+            pool.save(update_fields=["amount", "updated_at"])
+
+
+def pay_jackpot(wallet, tier, seed, *, game, round_id=""):
+    """Pay a whole pool to the player and start it again from `seed`. Returns the Transaction."""
+    with transaction.atomic():
+        pool = JackpotPool.objects.select_for_update().get(tier=tier)
+        won = pool.amount.quantize(CENT, rounding=ROUND_DOWN)
+        pool.amount = seed
+        pool.save(update_fields=["amount", "updated_at"])
+        return _apply(wallet.id, Transaction.Kind.JACKPOT, won, game=game, round_id=round_id)
+
+
+def jackpot_pools():
+    return {pool.tier: pool.amount.quantize(CENT, rounding=ROUND_DOWN) for pool in JackpotPool.objects.all()}
 
 
 def claim_daily_bonus(wallet, now=None):
