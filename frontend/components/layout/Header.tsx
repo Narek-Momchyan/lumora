@@ -41,7 +41,12 @@ export default function Header({ logo, labels, wallet, me, languages, lang }: He
           </p>
         )}
 
-        <AvatarMenu name={me?.display_name || me?.email} languages={languages} lang={lang} labels={labels} />
+        <AvatarMenu
+          name={me?.display_name || me?.email.split('@')[0]}
+          languages={languages}
+          lang={lang}
+          labels={labels}
+        />
       </div>
     </header>
   )

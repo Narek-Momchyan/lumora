@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import Logo from '@/components/Logo'
 import type { HeaderLabels, Logo as LogoData, SidebarItem } from '@/types/header'
 
@@ -17,12 +17,6 @@ function Dot({ active }: { active: boolean }) {
 
 export default function Sidebar({ logo, items, labels }: SidebarProps) {
   const pathname = usePathname()
-  const searchParams = useSearchParams()
-
-  function isActive(url: string) {
-    const [path, query] = url.split('?')
-    return path === pathname && new URLSearchParams(query).get('category') === searchParams.get('category')
-  }
 
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border bg-surface px-4 py-8 lg:flex">
@@ -39,12 +33,12 @@ export default function Sidebar({ logo, items, labels }: SidebarProps) {
             <Link
               key={id}
               href={url}
-              aria-current={isActive(url) ? 'page' : undefined}
+              aria-current={url === pathname ? 'page' : undefined}
               className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition-colors hover:text-text ${
-                isActive(url) ? 'bg-surface2 text-text' : 'text-muted'
+                url === pathname ? 'bg-surface2 text-text' : 'text-muted'
               }`}
             >
-              <Dot active={isActive(url)} />
+              <Dot active={url === pathname} />
               {title}
             </Link>
           ),

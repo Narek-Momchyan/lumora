@@ -179,6 +179,12 @@ class ApiContractTests(TestCase):
                 self.assertEqual(rows[0], rows[1])
                 self.assertEqual(rows[0], rows[2])
 
+    def test_sidebar_has_pages_only(self):
+        for lang in LANGS:
+            with self.subTest(lang=lang):
+                urls = [row["url"] for row in self.client.get(f"/api/sidebar_items?lang={lang}").json()]
+                self.assertEqual(urls, ["/", "/wallet", "/leaderboard"])
+
     def test_every_game_category_has_names(self):
         codes = {code for code, _ in Game.Category.choices}
         for lang in LANGS:

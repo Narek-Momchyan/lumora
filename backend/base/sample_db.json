@@ -83,53 +83,21 @@
     {
       "id": 2,
       "lang": "en",
-      "title": "Slots",
-      "url": "/?category=slot",
+      "title": "Wallet",
+      "url": "/wallet",
       "order": 2,
-      "is_soon": false
+      "is_soon": true
     },
     {
       "id": 3,
       "lang": "en",
-      "title": "Crash",
-      "url": "/?category=crash",
+      "title": "Leaderboard",
+      "url": "/leaderboard",
       "order": 3,
-      "is_soon": false
+      "is_soon": true
     },
     {
       "id": 4,
-      "lang": "en",
-      "title": "Table games",
-      "url": "/?category=table",
-      "order": 4,
-      "is_soon": false
-    },
-    {
-      "id": 5,
-      "lang": "en",
-      "title": "Sports",
-      "url": "/?category=sports",
-      "order": 5,
-      "is_soon": true
-    },
-    {
-      "id": 6,
-      "lang": "en",
-      "title": "Wallet",
-      "url": "/wallet",
-      "order": 6,
-      "is_soon": true
-    },
-    {
-      "id": 7,
-      "lang": "en",
-      "title": "Leaderboard",
-      "url": "/leaderboard",
-      "order": 7,
-      "is_soon": true
-    },
-    {
-      "id": 8,
       "lang": "am",
       "title": "Լոբբի",
       "url": "/",
@@ -137,55 +105,23 @@
       "is_soon": false
     },
     {
-      "id": 9,
-      "lang": "am",
-      "title": "Սլոթեր",
-      "url": "/?category=slot",
-      "order": 2,
-      "is_soon": false
-    },
-    {
-      "id": 10,
-      "lang": "am",
-      "title": "Crash",
-      "url": "/?category=crash",
-      "order": 3,
-      "is_soon": false
-    },
-    {
-      "id": 11,
-      "lang": "am",
-      "title": "Սեղանի խաղեր",
-      "url": "/?category=table",
-      "order": 4,
-      "is_soon": false
-    },
-    {
-      "id": 12,
-      "lang": "am",
-      "title": "Սպորտ",
-      "url": "/?category=sports",
-      "order": 5,
-      "is_soon": true
-    },
-    {
-      "id": 13,
+      "id": 5,
       "lang": "am",
       "title": "Դրամապանակ",
       "url": "/wallet",
-      "order": 6,
+      "order": 2,
       "is_soon": true
     },
     {
-      "id": 14,
+      "id": 6,
       "lang": "am",
       "title": "Առաջատարներ",
       "url": "/leaderboard",
-      "order": 7,
+      "order": 3,
       "is_soon": true
     },
     {
-      "id": 15,
+      "id": 7,
       "lang": "ru",
       "title": "Лобби",
       "url": "/",
@@ -193,51 +129,19 @@
       "is_soon": false
     },
     {
-      "id": 16,
-      "lang": "ru",
-      "title": "Слоты",
-      "url": "/?category=slot",
-      "order": 2,
-      "is_soon": false
-    },
-    {
-      "id": 17,
-      "lang": "ru",
-      "title": "Краш",
-      "url": "/?category=crash",
-      "order": 3,
-      "is_soon": false
-    },
-    {
-      "id": 18,
-      "lang": "ru",
-      "title": "Настольные игры",
-      "url": "/?category=table",
-      "order": 4,
-      "is_soon": false
-    },
-    {
-      "id": 19,
-      "lang": "ru",
-      "title": "Спорт",
-      "url": "/?category=sports",
-      "order": 5,
-      "is_soon": true
-    },
-    {
-      "id": 20,
+      "id": 8,
       "lang": "ru",
       "title": "Кошелёк",
       "url": "/wallet",
-      "order": 6,
+      "order": 2,
       "is_soon": true
     },
     {
-      "id": 21,
+      "id": 9,
       "lang": "ru",
       "title": "Лидеры",
       "url": "/leaderboard",
-      "order": 7,
+      "order": 3,
       "is_soon": true
     }
   ],
