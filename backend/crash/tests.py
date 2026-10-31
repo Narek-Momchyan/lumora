@@ -6,6 +6,7 @@ from unittest import mock
 
 from channels.db import database_sync_to_async
 from channels.testing import WebsocketCommunicator
+from channels_redis.core import RedisChannelLayer
 from django.conf import settings
 from django.contrib import admin
 from django.core.management import CommandError, call_command
@@ -704,6 +705,11 @@ class CashOutRaceTests(TransactionTestCase):
         else:
             self.assertEqual(results[0].code, "round_closed")
             self.assertEqual(balance(player), Decimal("10000.00"))
+
+
+class ChannelLayerSettingsTests(SimpleTestCase):
+    def test_redis_waits_longer_than_the_layers_own_blocking_read(self):
+        self.assertGreater(settings.CHANNEL_REDIS_SOCKET_TIMEOUT, RedisChannelLayer.brpop_timeout)
 
 
 class WebSocketTests(TransactionTestCase):

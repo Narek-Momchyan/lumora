@@ -101,10 +101,21 @@ ASGI_APPLICATION = "base.asgi.application"
 
 # The live game feed. Tests use the in-memory layer, see base.test_runner.
 
+CHANNEL_REDIS_SOCKET_TIMEOUT = 15
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [config("CHANNEL_REDIS_URL", default="redis://127.0.0.1:6379/0")]},
+        "CONFIG": {
+            "hosts": [
+                {
+                    "address": config("CHANNEL_REDIS_URL", default="redis://127.0.0.1:6379/0"),
+                    # The layer waits 5 s for a message at a time. redis-py's own default is also
+                    # 5 s, and that timeout then closes the WebSocket of a quiet client.
+                    "socket_timeout": CHANNEL_REDIS_SOCKET_TIMEOUT,
+                }
+            ]
+        },
     },
 }
 
