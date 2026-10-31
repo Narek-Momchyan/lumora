@@ -20,7 +20,7 @@ from django.urls import include, path
 from rest_framework.permissions import AllowAny
 from rest_framework.routers import APIRootView, DefaultRouter
 
-from accounts.urls import accounts_router, token_urls
+from accounts.urls import accounts_router
 from crash.urls import crash_router
 from fairness.urls import fairness_router
 from games.urls import games_router
@@ -51,6 +51,5 @@ router.registry.extend(leaderboard_router.registry)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", include(token_urls)),
     path("api/", include(router.urls)),
 ]

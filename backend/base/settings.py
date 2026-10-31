@@ -57,6 +57,13 @@ CORS_ALLOWED_ORIGINS = config(
     default="http://localhost:3000,http://127.0.0.1:3000",
 )
 
+# The browser's Origin is the Next app, not Django, so it must be trusted in development too.
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    cast=Csv(),
+    default="http://localhost:3000,http://127.0.0.1:3000",
+)
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -156,17 +163,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # Django REST Framework
-# Every endpoint needs a JWT by default. Public ones (games, leaderboard, register, token)
-# say so with AllowAny. In DEBUG the browsable API also accepts the admin session.
+# Every endpoint needs the JWT cookie by default. Public ones (games, leaderboard, register,
+# token) say so with AllowAny. In DEBUG the browsable API also accepts the admin session.
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         [
-            "rest_framework_simplejwt.authentication.JWTAuthentication",
+            "accounts.authentication.CookieJWTAuthentication",
             "rest_framework.authentication.SessionAuthentication",
         ]
         if DEBUG
-        else ["rest_framework_simplejwt.authentication.JWTAuthentication"]
+        else ["accounts.authentication.CookieJWTAuthentication"]
     ),
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_RENDERER_CLASSES": (
@@ -178,15 +185,21 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=config("ACCESS_TOKEN_MINUTES", cast=int, default=30)),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=config("REFRESH_TOKEN_DAYS", cast=int, default=7)),
 }
+
+# The JWTs live only in these httpOnly cookies. Their lifetimes come from SIMPLE_JWT.
+
+AUTH_ACCESS_COOKIE = config("AUTH_ACCESS_COOKIE", default="lumora_access")
+AUTH_REFRESH_COOKIE = config("AUTH_REFRESH_COOKIE", default="lumora_refresh")
+AUTH_COOKIE_SECURE = config("AUTH_COOKIE_SECURE", cast=bool, default=not DEBUG)
+AUTH_COOKIE_SAMESITE = "Lax"
 
 
 # Production security (active only when DEBUG=False)
 
 if not DEBUG:
-    CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", cast=Csv(), default="")
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", cast=bool, default=True)
     SESSION_COOKIE_SECURE = True
