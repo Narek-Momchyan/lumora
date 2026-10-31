@@ -5,8 +5,9 @@
 - Reply in Armenian, written in Armenian script. Code, comments, commit messages and
   docs stay in English.
 - Before a bigger task, ask clarifying questions first (one at a time) instead of guessing.
-- Narek writes the frontend himself. Don't generate frontend pages or components unless
-  he asks for them; explain, review, or give small snippets.
+- Claude Code writes the frontend one page at a time and Narek reviews every step.
+  Before a page, show the plan (routes, files, components) and wait for his OK. After
+  it, explain briefly what each new file does, so he understands and can defend the code.
 
 ## What Lumora is
 
@@ -15,15 +16,23 @@ A casino-style gaming platform with **demo coins only**. Players get free Lumora
 and we never add any.** It is a portfolio project for iGaming backend / full-stack
 roles, so clean code, tests and clear maths matter more than the number of features.
 
+Languages: **en (default), am, ru**. The chosen language lives in the `lang` cookie,
+like in Fruit Food (`am` is our code for Armenian; the HTML `lang` attribute is `hy`).
+
 Design: Figma "Lumora — Web Design",
 https://www.figma.com/design/FxLkT26ijHMkKgX87RjLyM — screens 01 Login, 02 Lobby,
-03 Game · Neon Crash, 04 Wallet. The colour variables ("Lumora Colors") are the
-Tailwind tokens in `frontend/app/globals.css`; keep both in sync. Fonts: Sora + Inter.
+03 Game · Neon Crash, 04 Wallet. PNG exports of these screens are in `design/`
+(open them before building a page). The colour variables ("Lumora Colors") are the
+Tailwind tokens in `frontend/app/globals.css`; keep both in sync. Fonts: Sora for
+headings, Inter for text. Build only what the API supports; if the design shows
+something the backend does not have yet (forgot password, reset balance, live bets,
+wagered stats), leave it out and list it for Narek instead of faking it.
 
 ## Stack
 
 - `backend/` Django 6.1, Django REST Framework, SimpleJWT, django-cors-headers,
-  python-decouple, PostgreSQL (installed on Windows, no Docker), Pipenv.
+  python-decouple, PostgreSQL (installed on Windows, no Docker). Pipenv manages the
+  environment in `backend/.venv`; `requirements.txt` is generated from `Pipfile.lock`.
 - `frontend/` Next.js 16 (App Router, React Compiler), TypeScript, Tailwind CSS 4,
   native `fetch`.
 - Later: `mobile/` React Native (Expo) on the same API.
@@ -31,14 +40,17 @@ Tailwind tokens in `frontend/app/globals.css`; keep both in sync. Fonts: Sora + 
 ## Commands (Windows)
 
 ```bash
-# backend
+# backend: always inside backend/
 cd backend
-pipenv install
-pipenv shell
+pipenv install                             # everything from Pipfile.lock into backend/.venv
+pipenv shell                               # every new terminal
+pipenv install <package>                   # add a package, then:
+pipenv requirements > requirements.txt
 python manage.py migrate
 python manage.py runserver
-python manage.py test              # all tests, ~5 s, needs PostgreSQL
+python manage.py test                      # all tests, ~5 s, needs PostgreSQL
 python manage.py makemigrations
+# without the shell: pipenv run python manage.py test
 
 # frontend
 cd frontend
@@ -68,9 +80,45 @@ npm run build
   `list_filter`, `search_fields`.
 - Settings come from `.env` through python-decouple. Never commit `.env`; every new
   setting goes into `.env.example` too.
+- Run pipenv only inside `backend/`, never in the repo root, so it never creates a
+  second Pipfile or virtualenv. `Pipfile`, `Pipfile.lock` and
+  `requirements.txt` change together in one commit.
 - Python uses double quotes (what Django 6 generates).
 - Every endpoint is listed in the "Endpoints" table of `backend/README.md`; keep it
   up to date.
+
+## Content, languages and errors (the same as in Fruit Food)
+
+- **Every text and image on the site comes from the API and is edited in the Django
+  admin**: labels, buttons, titles, the logo, game images. Nothing is hard-coded in
+  the frontend.
+- Each page has its own app, as in Fruit Food (`header`, `footer`, login labels in
+  `accounts`, lobby labels and game translations in `games`, crash page labels in
+  `crash`, wallet page labels in `wallet` ...). Models have a `lang` field
+  (`base.constants.LANG_CHOICES`), endpoints are public, read-only and filtered with
+  `?lang=`. Images are `FileField`s uploaded in the admin and returned as full URLs.
+- `python manage.py load_sample` fills all content in en, am and ru, and the tests
+  check that every collection has an endpoint (like Fruit Food's `ApiContractTests`).
+- The patterns come from Narek's Fruit Food project
+  (https://github.com/vsayyan/FruitFood, public; clone it outside `lumora/` to read it):
+  `base/serializers.py`
+  (`MediaFileField` returns full image URLs), `base/fields.py` (allowed image formats,
+  5 MB limit), `base/admin.py` (`ImagePreviewMixin`), `LANG_CHOICES` in
+  `base/constants.py`, a `load_sample` management command and an `ApiContractTests`
+  class that compares every endpoint with the sample data.
+- **Errors**: every API error has a `code`. Its text comes from the `ErrorMessage`
+  model (code + lang, edited in the admin) in the request's language (`lang` cookie,
+  default en); if a translation is missing, the English text is used.
+
+## Auth
+
+- JWT lives **only in httpOnly cookies** set by the backend (`/api/token`,
+  `/api/register`, `/api/token/refresh`, `/api/logout`); never in localStorage or JS.
+- The browser talks only to the Next app: `next.config.ts` rewrites `/api/*` and
+  `/media/*` to Django, so the cookies are first-party and no CORS is needed. Unsafe
+  requests send Django's CSRF token in the `X-CSRFToken` header.
+- `frontend/proxy.ts` sends every page except `/login` to `/login` when there is no
+  session cookie, before the page renders. Logged-in players who open `/login` go to `/`.
 
 ## Rules — do not break these
 
@@ -99,12 +147,17 @@ npm run build
     a password (fast); only the `accounts` tests use real passwords.
 11. Frontend: Tailwind tokens (`bg-surface`, `text-muted`, `text-cyan` ...), never raw
     hex. Show "Demo mode · LC has no cash value" wherever a balance is shown.
+12. No text or image is hard-coded in the frontend: it comes from the backend in the
+    current language and can be changed in the admin.
+13. Tokens only in httpOnly cookies. No page except `/login` opens without a session.
 
 ## Frontend conventions
 
 - TypeScript strict, no `src/` folder; `@/*` points to the `frontend/` root.
-- `lib/` holds the fetcher (base URL from `NEXT_PUBLIC_API_URL`, JWT header, errors);
-  `types/` holds the interfaces that mirror the backend serializers.
+- `lib/api.ts` is the fetcher: every request goes through it (same-origin `/api/...`,
+  cookies, CSRF header, one refresh on 401, `ApiError`). Server components forward the
+  request's cookies to Django. `types/` holds the interfaces that mirror the backend
+  serializers.
 - Native `fetch`, no axios.
 - Style: no semicolons, single quotes in TS, double quotes in JSX attributes.
 - Next.js 16 has breaking changes compared with older versions. When unsure about an
@@ -123,7 +176,11 @@ Each phase ends with something that works and can be shown.
 - [x] Game catalogue, Neon Crash (solo, auto cash-out, RTP 97% by simulation)
 - [x] European roulette maths (exact RTP 36/37), weekly leaderboard
 - [x] Tests on PostgreSQL, including parallel bets
-- [ ] Frontend (Narek): Login / Sign up, Lobby, Neon Crash, Wallet, Leaderboard (Figma 01–04)
+- [ ] Auth in httpOnly cookies, `/api/logout`, CSRF, Next rewrites + `proxy.ts` guard
+- [ ] Languages en/am/ru, content apps with admin-edited texts and images,
+      `ErrorMessage` with codes, `load_sample`
+- [ ] Frontend (Claude Code writes, Narek reviews): Login / Sign up, Lobby, Neon Crash,
+      Wallet, Leaderboard (Figma 01–04), language switcher
 
 ### Phase 2 — Live Neon Crash (multiplayer)
 - [ ] Round loop: betting window (7 s) → flight → crash, run by a background task
@@ -145,7 +202,7 @@ Each phase ends with something that works and can be shown.
 - [ ] 1,000,000-spin RTP test (target 96.5%)
 
 ### Phase 5 — Polish and deploy
-- [ ] Refresh token in an httpOnly cookie, rate limiting on auth and bets
+- [ ] Rate limiting on auth and bets
 - [ ] "Verify a round" page (paste the seeds, recompute the result in the browser)
 - [ ] Responsible-play touches: session timer, loss limits (even with demo coins)
 - [ ] Deploy the frontend, the backend and PostgreSQL

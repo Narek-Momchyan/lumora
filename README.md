@@ -41,7 +41,7 @@ copy .env.example .env.local
 npm run dev
 ```
 
-On macOS/Linux use `cp` instead of `copy`.
+In Git Bash and on macOS/Linux use `cp` instead of `copy`.
 
 - Site: <http://localhost:3000>
 - API: <http://127.0.0.1:8000/api/>
