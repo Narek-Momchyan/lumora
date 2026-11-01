@@ -32,7 +32,8 @@ ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 # Application definition
 
 INSTALLED_APPS = [
-    "daphne",  # first, so that runserver serves ASGI and the WebSocket
+    "base",  # first, so that its runserver is the one Django uses
+    "daphne",  # before staticfiles, so that runserver serves ASGI and the WebSocket
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -42,7 +43,6 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "channels",
-    "base",
     "accounts",
     "wallet",
     "fairness",

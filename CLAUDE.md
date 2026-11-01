@@ -49,9 +49,9 @@ pipenv shell                               # every new terminal
 pipenv install <package>                   # add a package, then:
 pipenv requirements > requirements.txt
 python manage.py migrate
-python manage.py runserver                 # HTTP and the WebSocket (Daphne)
-python manage.py run_crash                 # second terminal: the live Neon Crash rounds, needs Memurai
-python manage.py run_roulette              # third terminal: the live Lumora Roulette rounds, needs Memurai
+python manage.py runserver                 # HTTP, the WebSocket and the rounds of both live games, needs Memurai
+python manage.py run_crash                 # production only: Neon Crash's rounds as their own process
+python manage.py run_roulette              # production only: Lumora Roulette's rounds as their own process
 python manage.py test                      # all fast tests, ~2 min, needs PostgreSQL
 python manage.py test --tag slow           # Zeus Legacy's 1,000,000-round RTP test, ~3 min
 python manage.py makemigrations

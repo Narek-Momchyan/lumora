@@ -45,31 +45,30 @@ python manage.py runserver
 
 ## Running Neon Crash
 
-Rounds run only while `run_crash` runs. Three things must be up:
+Rounds run only while their runner runs. In development `runserver` does that too, so
+two things must be up:
 
 1. **Memurai**: the Windows service starts with Windows. To check it, run
    `Get-Service Memurai` in PowerShell. Its address is `CHANNEL_REDIS_URL` in `.env`.
-2. **The server**, in one terminal: `python manage.py runserver`. With `daphne` in
-   `INSTALLED_APPS` it serves HTTP and the WebSocket.
-3. **The rounds**, in a second terminal: `python manage.py run_crash`.
+2. **The server**: `python manage.py runserver`. With `daphne` in `INSTALLED_APPS` it
+   serves HTTP and the WebSocket, and `base/management/commands/runserver.py` also runs
+   the rounds of Neon Crash and Lumora Roulette in two threads of its own.
 
-A second `run_crash` refuses to start: the first one holds a PostgreSQL advisory lock,
-which is freed as soon as its process ends. After Ctrl+C or a crash, start it again:
-it continues the round it finds in the database.
+Production has no `runserver`: there each game runs as its own process,
+`python manage.py run_crash` and `python manage.py run_roulette`.
 
-Without `run_crash` there are no new rounds, and bets answer `round_closed`. Without
+Only one runner of a game works at a time, because it holds a PostgreSQL advisory lock,
+which is freed as soon as its process ends. A second `run_crash` refuses to start, and
+the threads of `runserver` wait for the lock. A restarted runner continues the round it
+finds in the database.
+
+Without a runner there are no new rounds, and bets answer `round_closed`. Without
 Redis the REST API and the money keep working, but the WebSocket stays quiet.
 
 Run `pipenv shell` in every new terminal (in Git Bash use `cp` instead of
 `copy`). The environment lives in `backend/.venv`; to keep it there, set the
 environment variable `PIPENV_VENV_IN_PROJECT=1`. `migrate` also adds the game
 catalogue (migration `games/0002_seed_games`).
-
-## Running Lumora Roulette
-
-The same as Neon Crash, in a terminal of its own: `python manage.py run_roulette`. It
-has its own advisory lock, so `run_crash` and `run_roulette` run side by side, and a
-second `run_roulette` refuses to start.
 
 ## Packages
 

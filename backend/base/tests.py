@@ -3,12 +3,13 @@ import shutil
 import tempfile
 from io import StringIO
 from pathlib import Path
+from unittest import mock
 
 from django.conf import settings
 from django.contrib import admin
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.management import call_command
-from django.test import RequestFactory, TestCase, override_settings
+from django.core.management import call_command, get_commands
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -25,8 +26,40 @@ from roulette.models import RoulettePageLabel
 from slots import engine
 from slots.models import ZeusPageLabel
 from wallet.services import claim_daily_bonus, open_wallet
+from . import live
 from .fields import MAX_IMAGE_SIZE_MB
+from .management.commands import runserver
 from .sample import COLLECTIONS, LANGS, load_sample, read_sample
+
+
+class RunserverTests(SimpleTestCase):
+    def test_runserver_is_ours(self):
+        self.assertEqual(get_commands()["runserver"], "base")
+
+    def test_it_starts_both_games(self):
+        with mock.patch.object(runserver.Thread, "start", autospec=True) as start:
+            with mock.patch.object(runserver.DaphneRunserver, "inner_run"):
+                runserver.Command().inner_run()
+        modules = [call.args[0]._args[1].__module__ for call in start.call_args_list]
+        self.assertEqual(modules, ["crash.runner", "roulette.runner"])
+
+    def run_until_the_third_wait(self, acquire, runner_class):
+        with mock.patch.object(live.time, "sleep", side_effect=[None, None, KeyboardInterrupt]):
+            with mock.patch.object(live.connection, "close"):
+                with self.assertRaises(KeyboardInterrupt):
+                    live.run_forever(acquire, runner_class)
+
+    def test_a_broken_runner_starts_again(self):
+        runner_class = mock.Mock(__module__="game.runner")
+        runner_class.return_value.run.side_effect = ConnectionError
+        with self.assertLogs("base.live", "ERROR"):
+            self.run_until_the_third_wait(lambda: True, runner_class)
+        self.assertEqual(runner_class.call_count, 3)
+
+    def test_it_waits_while_a_terminal_holds_the_lock(self):
+        runner_class = mock.Mock()
+        self.run_until_the_third_wait(lambda: False, runner_class)
+        runner_class.assert_not_called()
 
 
 class ApiRulesTests(TestCase):
