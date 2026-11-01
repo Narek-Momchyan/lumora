@@ -5,7 +5,7 @@ import Chip from './Chip'
 
 const COLUMNS = Array.from({ length: 12 }, (_, index) => index)
 const ROWS = [3, 2, 1] // the board's top row is 3, 6, 9 ...
-const CHIP_ON_BOARD = 'size-5 text-[8px] max-md:-rotate-90'
+const CHIP_ON_BOARD = 'pointer-events-none size-7 shrink-0 text-[10px] max-md:-rotate-90'
 const CELL_COLORS = { red: 'bg-danger', black: 'bg-surface2', green: 'bg-lime text-bg' }
 
 // On a phone the same board stands upright, so it fits the width. The text turns back.
@@ -62,7 +62,7 @@ export default function BettingBoard({ round, isOpen, amounts, labels, onBet }: 
         }`}
       >
         <span className={UPRIGHT}>{text}</span>
-        <span className="absolute inset-0 flex items-center justify-center">{chip(spot)}</span>
+        <span className="absolute inset-0 z-10 flex items-center justify-center">{chip(spot)}</span>
       </button>
     )
   }
