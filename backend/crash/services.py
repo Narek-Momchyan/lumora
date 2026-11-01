@@ -17,7 +17,8 @@ from functools import partial
 from django.db import transaction
 from django.utils import timezone
 
-from fairness.rng import first_float, hash_seed, new_server_seed, walk_chain
+from fairness.chain import next_link, seed_at
+from fairness.rng import first_float, hash_seed
 from games.models import Game
 from wallet import services as wallet_services
 from wallet.models import Wallet
@@ -50,13 +51,6 @@ def _decimal(value, field):
         raise CrashError("invalid", f"Invalid {field}") from exc
 
 
-def new_chain():
-    last_seed = new_server_seed()
-    return CrashChain.objects.create(
-        last_seed=last_seed, commitment=walk_chain(last_seed, CHAIN_LENGTH), length=CHAIN_LENGTH
-    )
-
-
 def round_result(seed):
     """The crash point of a round. Anyone can recompute it from the revealed seed."""
     return engine.crash_point(first_float(seed, GAME_SLUG, 0))
@@ -71,10 +65,8 @@ def open_round(now=None):
     now = now or timezone.now()
     with transaction.atomic():
         last = CrashRound.objects.first()
-        chain, position = (last.chain, last.position + 1) if last else (None, 0)
-        if chain is None or position >= chain.length:
-            chain, position = new_chain(), 0
-        seed = walk_chain(chain.last_seed, chain.length - 1 - position)
+        chain, position = next_link(CrashChain, last, CHAIN_LENGTH)
+        seed = seed_at(chain, position)
         current = CrashRound.objects.create(
             number=last.number + 1 if last else 1,
             chain=chain,

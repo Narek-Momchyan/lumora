@@ -8,9 +8,9 @@ round on the first step.
 import time
 from datetime import timedelta
 
-from django.db import connection
 from django.utils import timezone
 
+from base import live
 from . import bots, engine, services
 from .models import CrashRound
 
@@ -19,10 +19,7 @@ LOCK_KEY = 7_203_001  # any number, it only has to be the same in every runner
 
 
 def acquire_lock():
-    """Only one runner at a time. PostgreSQL frees the lock when the process's connection ends."""
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT pg_try_advisory_lock(%s)", [LOCK_KEY])
-        return cursor.fetchone()[0]
+    return live.acquire_lock(LOCK_KEY)
 
 
 class Runner:

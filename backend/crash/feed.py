@@ -5,26 +5,17 @@ because the channel layer carries it as msgpack: money and multipliers stay two-
 as in the REST API.
 """
 
-import logging
-
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 from django.utils import timezone
 
+from base import live
 from .models import CrashBotBet, CrashRound
 
 GROUP = "crash"
 HISTORY_LENGTH = 20
 
-logger = logging.getLogger(__name__)
-
 
 def publish(event, data):
-    """Send an event to every client. If Redis is down the game goes on without a live feed."""
-    try:
-        async_to_sync(get_channel_layer().group_send)(GROUP, {"type": "crash.event", "event": event, "data": data})
-    except Exception:
-        logger.exception("Could not publish %s", event)
+    live.publish(GROUP, event, data)
 
 
 def _time(value):
@@ -49,15 +40,11 @@ def round_data(current):
     return data
 
 
-def player_name(user):
-    return user.display_name or user.email.split("@")[0]
-
-
 def bet_data(bet):
     return {
         "id": f"player-{bet.pk}",
         "round": bet.round.number,
-        "player": player_name(bet.user),
+        "player": live.player_name(bet.user),
         "amount": str(bet.amount),
         "multiplier": None if bet.multiplier is None else str(bet.multiplier),
         "payout": str(bet.payout),

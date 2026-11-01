@@ -18,6 +18,7 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import AccessToken
 
 from accounts.models import User
+from base import live
 from base.asgi import application
 from fairness.rng import first_float, hash_seed, walk_chain
 from games.models import Game
@@ -428,8 +429,8 @@ class CashOutTests(TestCase):
         self.assertEqual(balance(user), Decimal("10000.00") - 5 * 100 + wins)
 
     def test_a_broken_feed_does_not_lose_the_bet(self):
-        with mock.patch.object(feed, "get_channel_layer", side_effect=ConnectionError):
-            with self.assertLogs("crash.feed", "ERROR"):
+        with mock.patch.object(live, "get_channel_layer", side_effect=ConnectionError):
+            with self.assertLogs("base.live", "ERROR"):
                 with self.captureOnCommitCallbacks(execute=True):
                     services.place_bet(self.user, "100")
         self.assertEqual(RoundBet.objects.count(), 1)

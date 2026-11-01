@@ -4,6 +4,25 @@ from django.db import models
 from .rng import hash_seed, new_client_seed, new_server_seed
 
 
+class HashChain(models.Model):
+    """A hash chain of round seeds for a game whose rounds are shared by all players.
+
+    `last_seed` never leaves the server. `commitment` is the SHA-256 of the first round's seed,
+    it is public, and every revealed seed must hash down to it.
+    """
+
+    last_seed = models.CharField(max_length=64)
+    commitment = models.CharField(max_length=64)
+    length = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        abstract = True
+
+    def __str__(self):
+        return f"Chain {self.pk} · {self.commitment[:12]}"
+
+
 class SeedPair(models.Model):
     """A player's provably fair seeds. One active pair per player; rotating reveals the old one."""
 

@@ -4,33 +4,20 @@ from django.conf import settings
 from django.db import models
 
 from base.constants import LANG_CHOICES
+from fairness.models import HashChain
 
 DEFAULT_BOT_NAMES = "\n".join(
     ["nova_88", "kite", "lumen_x", "echo", "arman.dev", "pixel", "orbit", "zara_7", "vega", "mirage", "nox", "tigran_k"]
 )
 
 
-class CrashChain(models.Model):
-    """A hash chain of round seeds, made from one secret last seed.
-
-    `last_seed` never leaves the server. `commitment` is the SHA-256 of the first round's seed,
-    it is public, and every revealed seed must hash down to it.
-    """
-
-    last_seed = models.CharField(max_length=64)
-    commitment = models.CharField(max_length=64)
-    length = models.PositiveIntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
+class CrashChain(HashChain):
     class Meta:
         verbose_name_plural = "Crash chains"
         ordering = ["-id"]
         constraints = [
             models.UniqueConstraint(fields=["commitment"], name="unique_crash_chain_commitment"),
         ]
-
-    def __str__(self):
-        return f"Chain {self.pk} · {self.commitment[:12]}"
 
 
 class CrashRound(models.Model):
