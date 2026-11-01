@@ -20,6 +20,8 @@ from errors.models import ErrorMessage
 from fairness.services import rotate_seeds
 from games.models import Game, LobbyPageLabel
 from header.models import HeaderLabel, Logo
+from roulette import services as roulette_services
+from roulette.models import RoulettePageLabel
 from slots import engine
 from slots.models import ZeusPageLabel
 from wallet.services import claim_daily_bonus, open_wallet
@@ -159,7 +161,7 @@ class ApiContractTests(TestCase):
                 self.assertEqual(len({tuple(sorted(re.findall(r"\{\w+\}", text))) for text in texts}), 1)
 
     def test_no_label_is_empty(self):
-        for model in [LoginPageLabel, LobbyPageLabel, HeaderLabel, ZeusPageLabel, CrashPageLabel]:
+        for model in [LoginPageLabel, LobbyPageLabel, HeaderLabel, ZeusPageLabel, CrashPageLabel, RoulettePageLabel]:
             self.assertEqual(model.objects.count(), len(LANGS))
             for label in model.objects.all():
                 for field in label._meta.concrete_fields:
@@ -189,6 +191,20 @@ class ApiContractTests(TestCase):
                 self.assertIn("{seconds}", label.betting_status)
                 self.assertIn("{count}", label.players_count)
                 self.assertIn("{number}", label.round_number)
+                self.assertIn("{value}", label.house_edge)
+
+    def test_roulette_placeholders_are_in_every_language(self):
+        for label in RoulettePageLabel.objects.all():
+            with self.subTest(lang=label.lang):
+                self.assertIn("{count}", label.players_count)
+                self.assertIn("{count}", label.bets_count)
+                self.assertIn("{seconds}", label.result_in)
+                self.assertIn("{seconds}", label.next_round_in)
+                self.assertIn("{amount}", label.net_win)
+                self.assertIn("{won}", label.bets_won)
+                self.assertIn("{total}", label.bets_won)
+                self.assertIn("{number}", label.round_number)
+                self.assertIn("{number}", label.bet_column)
                 self.assertIn("{value}", label.house_edge)
 
     def test_every_engine_symbol_has_a_row_and_a_name_in_every_language(self):
@@ -351,6 +367,10 @@ class AdminTests(TestCase):
         place_bet(self.admin, "10", "2.00")
         start_flight(current.pk)
         crash_round(current.pk)
+        spin = roulette_services.open_round()
+        roulette_services.place_bet(self.admin, "key", [{"bet_type": "red", "amount": "10"}])
+        roulette_services.start_spin(spin.pk)
+        roulette_services.settle_round(spin.pk)
         rotate_seeds(self.admin)
 
     def test_every_admin_page_opens(self):
@@ -371,7 +391,17 @@ class AdminTests(TestCase):
     def test_money_and_history_are_read_only_in_the_admin(self):
         request = RequestFactory().get("/admin/")
         request.user = self.admin
-        for model_name in ["wallet", "transaction", "jackpotpool", "seedpair", "crashround", "roundbet", "slotspin"]:
+        for model_name in [
+            "wallet",
+            "transaction",
+            "jackpotpool",
+            "seedpair",
+            "crashround",
+            "roundbet",
+            "slotspin",
+            "rouletteround",
+            "rouletteslip",
+        ]:
             model_admin = next(a for m, a in admin.site._registry.items() if m._meta.model_name == model_name)
             with self.subTest(model=model_name):
                 self.assertFalse(model_admin.has_add_permission(request))

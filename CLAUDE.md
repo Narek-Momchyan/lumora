@@ -51,7 +51,8 @@ pipenv requirements > requirements.txt
 python manage.py migrate
 python manage.py runserver                 # HTTP and the WebSocket (Daphne)
 python manage.py run_crash                 # second terminal: the live Neon Crash rounds, needs Memurai
-python manage.py test                      # all fast tests, ~50 s, needs PostgreSQL
+python manage.py run_roulette              # third terminal: the live Lumora Roulette rounds, needs Memurai
+python manage.py test                      # all fast tests, ~2 min, needs PostgreSQL
 python manage.py test --tag slow           # Zeus Legacy's 1,000,000-round RTP test, ~3 min
 python manage.py makemigrations
 # without the shell: pipenv run python manage.py test
@@ -118,8 +119,8 @@ npm run build
 
 - JWT lives **only in httpOnly cookies** set by the backend (`/api/token`,
   `/api/register`, `/api/token/refresh`, `/api/logout`); never in localStorage or JS.
-- The one exception is the public, cookie-free `/ws/crash`: the browser connects to
-  Django directly at `NEXT_PUBLIC_WS_URL`.
+- The one exception is the public, cookie-free live feeds (`/ws/crash`, `/ws/roulette`):
+  the browser connects to Django directly at `NEXT_PUBLIC_WS_URL`.
 - Everything else in the browser talks only to the Next app: `next.config.ts` rewrites `/api/*` and
   `/media/*` to Django, so the cookies are first-party and no CORS is needed. Unsafe
   requests send Django's CSRF token in the `X-CSRFToken` header.
@@ -137,13 +138,13 @@ npm run build
 3. **Decimal, never float, for money**, quantised to 0.01.
 4. **Game results come only from `fairness/rng.py`**, with the player's active
    `SeedPair` and the nonce from `fairness.services.next_nonce`. Never use `random`.
-   Store `server_seed_hash`, `client_seed` and `nonce` on every bet. Live Neon Crash is
-   the one exception: its round is shared, so its seeds come from a hash chain
-   (`fairness.rng.walk_chain`) and live on `CrashRound`, not on the bet.
+   Store `server_seed_hash`, `client_seed` and `nonce` on every bet. The live games
+   (Neon Crash, Lumora Roulette) are the exception: their rounds are shared, so their seeds
+   come from a hash chain (`fairness/chain.py`) and live on the round, not on the bet.
 5. **Game maths lives in a pure `engine.py`** (no Django, no database).
    `services.py` glues engine + wallet + fairness.
 6. **Bet and settle in one database transaction.** If anything fails, nothing is
-   charged and the nonce is not used. Live Neon Crash has them apart by nature: each
+   charged and the nonce is not used. The live games have them apart by nature: each
    step is its own transaction that first locks the round's row (order: round, bet, wallet).
 7. **Every game ships with an RTP simulation test** (at least 200,000 rounds) that
    asserts its RTP. A test too slow for `python manage.py test` is tagged `slow` and
@@ -204,8 +205,10 @@ Each phase ends with something that works and can be shown.
 - [ ] Load test with 200 simulated players
 
 ### Phase 3 — Lumora Roulette
-- [ ] API + wallet wiring for `roulette/engine.py` (several bets per spin)
-- [ ] Wheel animation, chip selector, betting board
+- [x] Live table: betting (18 s) → spin (8 s) → settle (4 s pause), run by `run_roulette`
+- [x] Hash-chain seeds, every bet of the table, exact RTP 36/37, slips with several lines
+- [x] `/ws/roulette`, demo bots set in the admin, `RoulettePageLabel` (`is_playable` still off)
+- [ ] Wheel animation, chip selector, betting board, then `is_playable` on
 
 ### Phase 4 — Zeus Legacy inside Lumora (`slots/`)
 - [x] Port the spin engine from the Zeus_Legacy repo into `slots/engine.py` as pure

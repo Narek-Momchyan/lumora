@@ -10,6 +10,7 @@ from crash.models import CrashPageLabel
 from errors.models import ErrorMessage
 from games.models import GameCategory, LobbyPageLabel
 from header.models import HeaderLabel, Language, Logo, SidebarItem
+from roulette.models import RoulettePageLabel
 from slots.models import SlotSymbol, SlotSymbolName, ZeusPageLabel
 from .language import LANG_CODES
 
@@ -28,6 +29,7 @@ COLLECTIONS = {
     "slot_symbol_names": SlotSymbolName,
     "zeus_page_labels": ZeusPageLabel,
     "crash_page_labels": CrashPageLabel,
+    "roulette_page_labels": RoulettePageLabel,
     "error_messages": ErrorMessage,
 }
 

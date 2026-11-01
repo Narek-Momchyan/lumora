@@ -18,12 +18,15 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "base.settings")
 
 django_application = get_asgi_application()
 
-from crash.routing import websocket_urlpatterns  # noqa: E402  (needs the apps loaded above)
+from crash.routing import websocket_urlpatterns as crash_urlpatterns  # noqa: E402  (needs the apps loaded above)
+from roulette.routing import websocket_urlpatterns as roulette_urlpatterns  # noqa: E402
 
 application = ProtocolTypeRouter(
     {
         "http": django_application,
         # Sites other than ours can't open the socket, even though it needs no login.
-        "websocket": OriginValidator(URLRouter(websocket_urlpatterns), settings.CSRF_TRUSTED_ORIGINS),
+        "websocket": OriginValidator(
+            URLRouter(crash_urlpatterns + roulette_urlpatterns), settings.CSRF_TRUSTED_ORIGINS
+        ),
     }
 )

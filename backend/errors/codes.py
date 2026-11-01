@@ -22,6 +22,9 @@ GAME_CODES = [
     "not_flying",
     "no_bet",
     "already_cashed_out",
+    "invalid_bet",
+    "too_many_lines",
+    "round_limit_exceeded",
 ]
 
 FIELD_CODES = [

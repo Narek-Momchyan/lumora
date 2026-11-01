@@ -30,6 +30,10 @@ class GameApiTests(TestCase):
         self.assertTrue(games["zeus-legacy"]["is_playable"])
         self.assertFalse(games["lumora-roulette"]["is_playable"])
 
+    def test_lumora_roulette_has_the_rtp_of_a_single_zero(self):
+        game = self.client.get("/api/games?slug=lumora-roulette").json()[0]
+        self.assertEqual(game["rtp"], "97.30")
+
     def test_zeus_legacy_has_its_limits_and_picture(self):
         game = self.client.get("/api/games?slug=zeus-legacy").json()[0]
         self.assertEqual((game["min_bet"], game["max_bet"]), ("0.20", "100.00"))
