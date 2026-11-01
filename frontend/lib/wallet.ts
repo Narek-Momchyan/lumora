@@ -5,6 +5,14 @@ export function formatBalance(balance: string) {
   return balance.replace(/\B(?=(\d{3})+\.)/g, ',')
 }
 
+export function toCents(amount: string) {
+  return Math.round(Number(amount) * 100)
+}
+
+export function fromCents(cents: number) {
+  return (cents / 100).toFixed(2)
+}
+
 // Only digits, in the browser's time zone: browsers don't all have Armenian month names.
 export function formatDateTime(value: string) {
   const date = new Date(value)

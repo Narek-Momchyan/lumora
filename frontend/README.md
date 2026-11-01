@@ -29,8 +29,8 @@ npm run dev
 Next server, and the auth cookie names that `proxy.ts` reads. Use `127.0.0.1`, not `localhost` (Node.js may resolve `localhost` to
 IPv6). `next.config.ts` rewrites `/api/*` and `/media/*` to Django, so open the site
 at <http://localhost:3000> and the browser talks to Next. The one exception is the public
-Neon Crash feed: the browser connects to Django at `NEXT_PUBLIC_WS_URL`, so restart
-`npm run dev` after changing it.
+feeds of the live games: the browser connects to Django at `NEXT_PUBLIC_WS_URL` and
+`NEXT_PUBLIC_ROULETTE_WS_URL`, so restart `npm run dev` after changing them.
 
 Scripts: `npm run dev`, `npm run build`, `npm run start`, `npm run lint`.
 

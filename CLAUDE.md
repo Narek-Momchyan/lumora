@@ -120,7 +120,8 @@ npm run build
 - JWT lives **only in httpOnly cookies** set by the backend (`/api/token`,
   `/api/register`, `/api/token/refresh`, `/api/logout`); never in localStorage or JS.
 - The one exception is the public, cookie-free live feeds (`/ws/crash`, `/ws/roulette`):
-  the browser connects to Django directly at `NEXT_PUBLIC_WS_URL`.
+  the browser connects to Django directly at `NEXT_PUBLIC_WS_URL` and
+  `NEXT_PUBLIC_ROULETTE_WS_URL`.
 - Everything else in the browser talks only to the Next app: `next.config.ts` rewrites `/api/*` and
   `/media/*` to Django, so the cookies are first-party and no CORS is needed. Unsafe
   requests send Django's CSRF token in the `X-CSRFToken` header.
@@ -207,8 +208,8 @@ Each phase ends with something that works and can be shown.
 ### Phase 3 — Lumora Roulette
 - [x] Live table: betting (18 s) → spin (8 s) → settle (4 s pause), run by `run_roulette`
 - [x] Hash-chain seeds, every bet of the table, exact RTP 36/37, slips with several lines
-- [x] `/ws/roulette`, demo bots set in the admin, `RoulettePageLabel` (`is_playable` still off)
-- [ ] Wheel animation, chip selector, betting board, then `is_playable` on
+- [x] `/ws/roulette`, demo bots set in the admin, `RoulettePageLabel`
+- [x] Frontend: wheel animation, chip selector, betting board, `is_playable` on
 
 ### Phase 4 — Zeus Legacy inside Lumora (`slots/`)
 - [x] Port the spin engine from the Zeus_Legacy repo into `slots/engine.py` as pure

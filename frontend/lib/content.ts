@@ -2,6 +2,7 @@ import type { LoginPageLabels, Player } from '@/types/account'
 import type { CrashBet, CrashPageLabels } from '@/types/crash'
 import type { Game, GameCategory, LobbyPageLabels } from '@/types/game'
 import type { HeaderLabels, Language, Logo, SidebarItem } from '@/types/header'
+import type { RoulettePageLabels, RouletteSlip } from '@/types/roulette'
 import type { Wallet } from '@/types/wallet'
 import type {
   JackpotPool,
@@ -84,6 +85,14 @@ export function getCrashBets() {
 
 export function getCrashPageLabels(lang: string) {
   return firstRow<CrashPageLabels>(`/crash_page_labels?lang=${lang}`)
+}
+
+export function getRouletteBets() {
+  return fetchOrNull<RouletteSlip[]>('/roulette_bets')
+}
+
+export function getRoulettePageLabels(lang: string) {
+  return firstRow<RoulettePageLabels>(`/roulette_page_labels?lang=${lang}`)
 }
 
 export function getZeusPageLabels(lang: string) {

@@ -24,11 +24,11 @@ class GameApiTests(TestCase):
         game = self.client.get("/api/games?slug=zeus-legacy").json()
         self.assertEqual(game[0]["rtp"], "96.60")
 
-    def test_neon_crash_and_zeus_legacy_are_playable_and_roulette_is_coming_soon(self):
+    def test_every_game_is_playable(self):
         games = {g["slug"]: g for g in self.client.get("/api/games").json()}
         self.assertTrue(games["neon-crash"]["is_playable"])
         self.assertTrue(games["zeus-legacy"]["is_playable"])
-        self.assertFalse(games["lumora-roulette"]["is_playable"])
+        self.assertTrue(games["lumora-roulette"]["is_playable"])
 
     def test_lumora_roulette_has_the_rtp_of_a_single_zero(self):
         game = self.client.get("/api/games?slug=lumora-roulette").json()[0]

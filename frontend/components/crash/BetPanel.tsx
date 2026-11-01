@@ -2,8 +2,8 @@
 
 import { useRef, useState } from 'react'
 import type { RefObject } from 'react'
-import { FIRST_AMOUNT, PLUS_STEP_CENTS, fromCents, multiplierAt, payoutAt, toCents } from '@/lib/crash'
-import { formatBalance } from '@/lib/wallet'
+import { FIRST_AMOUNT, PLUS_STEP_CENTS, multiplierAt, payoutAt } from '@/lib/crash'
+import { formatBalance, fromCents, toCents } from '@/lib/wallet'
 import type { CrashPageLabels, CrashRound } from '@/types/crash'
 import type { Game } from '@/types/game'
 import useFlightFrame from './useFlightFrame'

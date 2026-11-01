@@ -85,10 +85,12 @@ Django. In `frontend/.env.local` (copied from `frontend/.env.example`):
 ```
 BACKEND_URL=http://127.0.0.1:8000
 NEXT_PUBLIC_WS_URL=ws://127.0.0.1:8000/ws/crash
+NEXT_PUBLIC_ROULETTE_WS_URL=ws://127.0.0.1:8000/ws/roulette
 ```
 
-The WebSocket is the one exception: it is public and needs no cookies, so the browser
-connects to Django directly. Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
+The WebSockets are the one exception: they are public and need no cookies, so the browser
+connects to Django directly. Two servers on one Redis share the feed, so a second
+server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `127.0.0.1`, not `localhost`: Node.js may resolve `localhost` to IPv6
 (`::1`), while `runserver` listens on IPv4 only.
 
 ## API rules
