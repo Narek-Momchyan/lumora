@@ -133,14 +133,14 @@ export default function RouletteGame({ game, slips, mySeat, currency, labels }: 
       <div className="relative flex min-h-0 min-w-0 flex-col gap-4">
         <ResultHistory results={history} />
 
-        <section className="relative flex h-72 min-h-0 items-center gap-4 overflow-hidden rounded-3xl border border-border bg-linear-to-b from-magenta/10 to-bg px-3 pt-11 pb-3 sm:p-5 sm:pt-5 md:h-auto md:flex-[1.6] xl:gap-8 xl:px-8">
+        <section className="relative flex h-72 min-h-0 items-center gap-4 overflow-hidden rounded-3xl border border-border bg-linear-to-b from-accent2/10 to-bg px-3 pt-11 pb-3 sm:p-5 sm:pt-5 md:h-auto md:flex-[1.6] xl:gap-8 xl:px-8">
           <div className="flex h-full min-h-0 min-w-0 flex-1 items-center justify-center">
             <Wheel round={round} previous={last?.result} clockOffset={clockOffset} />
           </div>
           <div className="w-36 shrink-0 sm:w-48 xl:w-64">
             <RoundPanel round={round} connected={connected} seconds={seconds} last={last} won={won} labels={labels} />
           </div>
-          <Badge tone="magenta" dot className="absolute top-3 right-3 sm:top-5 sm:right-5">
+          <Badge tone="accent2" dot className="absolute top-3 right-3 sm:top-5 sm:right-5">
             <span className="tracking-wide uppercase">{labels.live}</span>
             <span className="font-normal text-muted">{labels.players_count.replace('{count}', String(players))}</span>
           </Badge>

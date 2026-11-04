@@ -3,8 +3,8 @@ import { CHIPS } from '@/lib/roulette'
 // Solid colours with a dark ring, so that a chip stands out on red and black numbers alike.
 const COLORS: Record<number, string> = {
   1: 'bg-muted text-bg',
-  5: 'bg-cyan text-bg',
-  10: 'bg-magenta text-text',
+  5: 'bg-accent text-bg',
+  10: 'bg-accent2 text-text',
   25: 'bg-lime text-bg',
   100: 'bg-danger text-text',
   500: 'bg-text text-bg',

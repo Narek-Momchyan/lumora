@@ -3,6 +3,7 @@ import type { CrashBet, CrashPageLabels } from '@/types/crash'
 import type { Game, GameCategory, LobbyPageLabels } from '@/types/game'
 import type { HeaderLabels, Language, Logo, SidebarItem } from '@/types/header'
 import type { RoulettePageLabels, RouletteSlip } from '@/types/roulette'
+import type { SportsPageLabels } from '@/types/sports'
 import type { Wallet } from '@/types/wallet'
 import type {
   JackpotPool,
@@ -109,4 +110,8 @@ export function getHeaderLabels(lang: string) {
 
 export function getLobbyPageLabels(lang: string) {
   return firstRow<LobbyPageLabels>(`/lobby_page_labels?lang=${lang}`)
+}
+
+export function getSportsPageLabels(lang: string) {
+  return firstRow<SportsPageLabels>(`/sports_page_labels?lang=${lang}`)
 }

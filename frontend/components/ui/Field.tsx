@@ -20,7 +20,7 @@ export default function Field({ id, label, errors = [], className = '', ...input
         id={id}
         aria-invalid={hasErrors}
         aria-describedby={hasErrors ? errorId : undefined}
-        className={`h-11 w-full rounded-xl border bg-surface2 px-4 text-sm text-text outline-none placeholder:text-muted focus:border-cyan lg:h-12 lg:text-[15px] ${
+        className={`h-11 w-full rounded-xl border bg-surface2 px-4 text-sm text-text outline-none placeholder:text-muted focus:border-accent lg:h-12 lg:text-[15px] ${
           hasErrors ? 'border-danger' : 'border-border'
         }`}
         {...input}

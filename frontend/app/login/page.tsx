@@ -24,7 +24,7 @@ export default async function LoginPage() {
   ])
 
   return (
-    <main className="relative grid min-h-screen bg-linear-to-br from-magenta/10 via-bg to-bg lg:grid-cols-[3fr_2fr]">
+    <main className="relative grid min-h-screen bg-linear-to-br from-accent2/10 via-bg to-bg lg:grid-cols-[3fr_2fr]">
       <LoginHero logo={logo} games={games} labels={labels} />
 
       <section className="flex items-center justify-center px-6 pb-8 lg:bg-bg/60 lg:p-8">

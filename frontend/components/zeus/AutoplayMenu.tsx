@@ -54,7 +54,7 @@ export default function AutoplayMenu({ autoLeft, disabled, labels, onStart, onSt
                   setOpen(false)
                   onStart(spins)
                 }}
-                className="rounded-lg bg-surface2 px-2 py-2 text-sm font-semibold text-text hover:text-cyan"
+                className="rounded-lg bg-surface2 px-2 py-2 text-sm font-semibold text-text hover:text-accent"
               >
                 {spins}
               </button>

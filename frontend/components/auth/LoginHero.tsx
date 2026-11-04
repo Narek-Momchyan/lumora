@@ -13,7 +13,7 @@ function rtpRange(games: Game[]) {
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <div>
-      <dd className="font-heading text-2xl font-bold text-cyan">{value}</dd>
+      <dd className="font-heading text-2xl font-bold text-accent">{value}</dd>
       <dt className="mt-1 text-xs text-muted">{label}</dt>
     </div>
   )

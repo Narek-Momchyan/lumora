@@ -14,9 +14,12 @@ export interface Language {
 export interface SidebarItem {
   id: number
   lang: string
+  mode: 'sports' | 'casino'
+  group: '' | 'leagues' | 'my' // listed under this heading
   title: string
   url: string
-  category: string // '' or a game category: the item opens /?category=<code>
+  icon: string | null
+  category: string // '' or a game category: the casino item opens /casino?category=<code>
   order: number
   is_soon: boolean
 }
@@ -34,6 +37,11 @@ export interface HeaderLabels {
   menu_label: string
   open_menu_label: string
   close_menu_label: string
+  sports_mode: string
+  casino_mode: string
+  mode_switch_label: string
+  leagues_group: string
+  my_lumora_group: string
   language_label: string
   logout_button: string
   server_unreachable: string

@@ -41,7 +41,7 @@ export default function AvatarMenu({ name, languages, lang, labels }: AvatarMenu
         aria-label={labels.menu_label}
         aria-expanded={open}
         onClick={() => setOpen(!open)}
-        className="block size-10 rounded-full bg-linear-to-br from-magenta to-bg"
+        className="block size-10 rounded-full bg-linear-to-br from-accent2 to-bg"
       />
 
       {open && (

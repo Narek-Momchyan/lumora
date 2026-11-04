@@ -1,13 +1,15 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
-type Variant = 'primary' | 'ghost'
+type Variant = 'primary' | 'ghost' | 'outline'
 type Size = 'sm' | 'md' | 'lg'
 
 const VARIANTS: Record<Variant, string> = {
   // A closed or waiting action looks like the design's "Bets closed" button, not a faded gradient.
   primary:
-    'bg-linear-to-r from-cyan to-magenta font-semibold text-bg shadow-lg shadow-cyan/10 hover:enabled:opacity-90 disabled:border disabled:border-border disabled:from-surface2 disabled:to-surface2 disabled:text-muted disabled:shadow-none',
-  ghost: 'border border-border bg-surface2 font-medium text-text hover:enabled:border-cyan/60 disabled:opacity-40',
+    'bg-linear-to-r from-accent to-accent2 font-semibold text-bg shadow-lg shadow-accent/10 hover:enabled:opacity-90 disabled:border disabled:border-border disabled:from-surface2 disabled:to-surface2 disabled:text-muted disabled:shadow-none',
+  ghost: 'border border-border bg-surface2 font-medium text-text hover:enabled:border-accent/60 disabled:opacity-40',
+  // A second action next to a primary one: "Make predictions", "Save prediction" (design 06, 07).
+  outline: 'border border-accent/70 bg-transparent font-semibold text-accent hover:enabled:bg-accent/10 disabled:opacity-40',
 }
 
 const SIZES: Record<Size, string> = {

@@ -8,13 +8,15 @@ export const GAME_ROUTES: Record<string, string> = {
   'zeus-legacy': '/zeus-legacy',
 }
 
+export const LOBBY_PATH = '/casino'
+
 // Path → the page's title and category, for the top bar and the sidebar's active item.
 // A game's page belongs to its category, so on /crash the sidebar's Crash item is the active one.
 export function pagesByPath(games: Game[], items: SidebarItem[]) {
   const pages: Record<string, PageInfo> = {}
 
   for (const { url, title, category } of items) {
-    if (url !== '/' && !category) pages[url] = { title, category: '' }
+    if (!category) pages[url] = { title, category: '' }
   }
   for (const { slug, title, category } of games) {
     const route = GAME_ROUTES[slug]

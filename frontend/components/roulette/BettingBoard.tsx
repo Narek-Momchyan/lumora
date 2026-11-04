@@ -46,7 +46,7 @@ export default function BettingBoard({ round, isOpen, amounts, labels, onBet }: 
         disabled={!isOpen}
         onClick={() => onBet(spot)}
         aria-label={spotLabel(spot, labels)}
-        className={`absolute z-10 flex items-center justify-center rounded-sm hover:enabled:bg-cyan/40 ${className}`}
+        className={`absolute z-10 flex items-center justify-center rounded-sm hover:enabled:bg-accent/40 ${className}`}
       >
         {chip(spot)}
       </button>
@@ -60,8 +60,8 @@ export default function BettingBoard({ round, isOpen, amounts, labels, onBet }: 
         disabled={!isOpen}
         onClick={() => onBet(spot)}
         aria-label={spotLabel(spot, labels)}
-        className={`relative flex size-full min-h-0 min-w-0 items-center justify-center rounded-md leading-tight font-semibold transition-colors hover:enabled:ring-1 hover:enabled:ring-cyan ${className} ${
-          isWinner(spot) ? 'ring-2 ring-cyan' : ''
+        className={`relative flex size-full min-h-0 min-w-0 items-center justify-center rounded-md leading-tight font-semibold transition-colors hover:enabled:ring-1 hover:enabled:ring-accent ${className} ${
+          isWinner(spot) ? 'ring-2 ring-accent' : ''
         }`}
       >
         <span className={UPRIGHT}>{text}</span>

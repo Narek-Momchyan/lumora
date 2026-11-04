@@ -84,7 +84,7 @@ export default function YourBets({
               aria-label={String(value)}
               aria-pressed={chip === value}
               className={`rounded-full transition-opacity disabled:opacity-40 ${
-                chip === value ? 'ring-2 ring-cyan ring-offset-2 ring-offset-surface' : ''
+                chip === value ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface' : ''
               }`}
             >
               <Chip value={value} className="size-8 text-[10px] lg:size-10 lg:text-xs" />

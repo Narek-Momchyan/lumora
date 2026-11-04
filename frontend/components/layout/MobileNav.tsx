@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Logo from '@/components/Logo'
 import type { HeaderLabels, Logo as LogoData, PageInfo, SidebarItem } from '@/types/header'
+import ModeSwitch from './ModeSwitch'
 import SidebarNav from './SidebarNav'
 
 interface MobileNavProps {
@@ -76,7 +77,10 @@ export default function MobileNav({ logo, items, pages, labels }: MobileNavProps
               </button>
             </div>
 
-            <div className="mt-8">
+            <div className="mt-6">
+              <ModeSwitch labels={labels} onSwitch={() => setOpen(false)} />
+            </div>
+            <div className="mt-5">
               <SidebarNav items={items} pages={pages} labels={labels} onNavigate={() => setOpen(false)} />
             </div>
           </div>

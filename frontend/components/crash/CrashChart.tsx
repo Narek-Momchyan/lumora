@@ -14,7 +14,7 @@ const MIN_TOP_MULTIPLIER = 2
 const ROOM_AHEAD = 1.2
 
 function themeColor(name: string) {
-  return getComputedStyle(document.documentElement).getPropertyValue(`--color-${name}`).trim()
+  return getComputedStyle(document.documentElement).getPropertyValue(`--lumora-${name}`).trim()
 }
 
 function fitToScreen(canvas: HTMLCanvasElement) {
@@ -46,7 +46,7 @@ function drawCurve(context: CanvasRenderingContext2D, width: number, height: num
   const top = Math.max(MIN_TOP_MULTIPLIER, 1 + (curveAt(flight) - 1) * ROOM_AHEAD)
   const x = (ms: number) => PADDING + (ms / windowMs) * (width - PADDING * 2)
   const y = (ms: number) => height - PADDING - ((curveAt(ms) - 1) / (top - 1)) * (height - PADDING * 2)
-  const color = themeColor(crashed ? 'danger' : 'cyan')
+  const color = themeColor(crashed ? 'danger' : 'accent')
 
   context.strokeStyle = color
   context.shadowColor = color
@@ -61,7 +61,7 @@ function drawCurve(context: CanvasRenderingContext2D, width: number, height: num
   }
   context.stroke()
 
-  context.fillStyle = themeColor(crashed ? 'danger' : 'magenta')
+  context.fillStyle = themeColor(crashed ? 'danger' : 'accent2')
   context.shadowColor = context.fillStyle
   context.beginPath()
   context.arc(x(flight), y(flight), 8, 0, Math.PI * 2)
@@ -110,7 +110,7 @@ export default function CrashChart({ round, connected, clockOffset, labels }: Cr
   })
 
   return (
-    <section className="relative min-h-52 flex-1 overflow-hidden rounded-3xl border border-border bg-linear-to-b from-magenta/10 to-bg md:min-h-0">
+    <section className="relative min-h-52 flex-1 overflow-hidden rounded-3xl border border-border bg-linear-to-b from-accent2/10 to-bg md:min-h-0">
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 size-full" />
       <div className="relative p-5 sm:p-8 xl:px-16 xl:py-12">
         <p ref={multiplierRef} aria-live="off" className="font-heading text-5xl font-bold tabular-nums sm:text-7xl xl:text-8xl" />

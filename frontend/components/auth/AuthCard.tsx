@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Card from '@/components/ui/Card'
+import Tabs from '@/components/ui/Tabs'
 import type { LoginPageLabels } from '@/types/account'
 import LoginForm from './LoginForm'
 import SignupForm from './SignupForm'
@@ -18,22 +19,7 @@ export default function AuthCard({ labels }: { labels: LoginPageLabels }) {
 
   return (
     <Card as="div" large padding="none" className="w-full max-w-md p-6 sm:p-8">
-      <div role="tablist" className="grid grid-cols-2 gap-1 rounded-xl bg-surface2 p-1">
-        {tabs.map(({ id, label }) => (
-          <button
-            key={id}
-            type="button"
-            role="tab"
-            aria-selected={tab === id}
-            onClick={() => setTab(id)}
-            className={`rounded-lg py-2 text-sm font-medium transition-colors ${
-              tab === id ? 'bg-surface text-text' : 'text-muted hover:text-text'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <Tabs tabs={tabs} value={tab} onChange={setTab} />
 
       <div className="mt-6">
         {tab === 'login' ? (

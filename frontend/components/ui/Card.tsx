@@ -5,7 +5,7 @@ type Padding = 'none' | 'sm' | 'md' | 'lg'
 
 const TONES: Record<Tone, string> = {
   default: 'border border-border bg-surface',
-  hero: 'bg-linear-to-r from-magenta/30 via-surface2 to-cyan/60 shadow-2xl shadow-magenta/10',
+  hero: 'bg-linear-to-r from-accent2/30 via-surface2 to-accent/60 shadow-2xl shadow-accent2/10',
   lime: 'border border-lime/40 bg-lime/5',
 }
 

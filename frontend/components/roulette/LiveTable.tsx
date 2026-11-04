@@ -57,9 +57,9 @@ export default function LiveTable({ bets, payouts, round, mySeat, currency, labe
         {rows.map((row) => (
           <li key={row.seat} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_5rem] items-center gap-2 text-[13px] lg:text-sm">
             <p className="flex min-w-0 items-center gap-1.5">
-              <span className={`truncate ${row.seat === mySeat ? 'text-cyan' : ''}`}>{row.player}</span>
+              <span className={`truncate ${row.seat === mySeat ? 'text-accent' : ''}`}>{row.player}</span>
               {row.seat === mySeat && (
-                <Badge tone="cyan" small>
+                <Badge tone="accent" small>
                   {labels.you_badge}
                 </Badge>
               )}

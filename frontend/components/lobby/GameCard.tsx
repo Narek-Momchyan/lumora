@@ -16,7 +16,7 @@ export default function GameCard({ game, categoryLabel, labels }: GameCardProps)
 
   const card = (
     <>
-      <div className="relative aspect-[3/2] bg-linear-to-br from-magenta/40 via-surface2 to-cyan">
+      <div className="relative aspect-[3/2] bg-linear-to-br from-accent2/40 via-surface2 to-accent">
         {game.image && <Image src={game.image} alt="" fill unoptimized className="object-cover object-top" />}
         {!game.is_playable && (
           <span className="absolute top-3 right-3">
@@ -38,7 +38,7 @@ export default function GameCard({ game, categoryLabel, labels }: GameCardProps)
   const frame = `block overflow-hidden ${cardClass({ padding: 'none' })}`
 
   return route ? (
-    <Link href={route} className={`${frame} transition-colors hover:border-cyan`}>
+    <Link href={route} className={`${frame} transition-colors hover:border-accent`}>
       {card}
     </Link>
   ) : (

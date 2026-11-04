@@ -38,9 +38,9 @@ export default function Header({ logo, items, pages, labels, wallet, me, languag
         {wallet && (
           <p
             aria-label={labels.balance_label}
-            className="flex h-10 items-center gap-2 rounded-xl border border-cyan bg-surface px-3 text-sm font-semibold whitespace-nowrap tabular-nums sm:px-4 lg:text-[15px]"
+            className="flex h-10 items-center gap-2 rounded-xl border border-accent bg-surface px-3 text-sm font-semibold whitespace-nowrap tabular-nums sm:px-4 lg:text-[15px]"
           >
-            <span className="size-3.5 rounded-full bg-linear-to-r from-cyan to-magenta" aria-hidden="true" />
+            <span className="size-3.5 rounded-full bg-linear-to-r from-accent to-accent2" aria-hidden="true" />
             {formatBalance(wallet.balance)} {labels.currency}
           </p>
         )}

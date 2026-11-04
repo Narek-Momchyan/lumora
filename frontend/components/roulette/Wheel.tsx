@@ -108,13 +108,13 @@ export default function Wheel({ round, previous, clockOffset }: WheelProps) {
           />
         ))}
       </g>
-      <circle cx={CENTER} cy={CENTER} r="40" className="fill-cyan" />
-      <circle cx={CENTER} cy={CENTER} r="26" className="fill-magenta" />
+      <circle cx={CENTER} cy={CENTER} r="40" className="fill-accent" />
+      <circle cx={CENTER} cy={CENTER} r="26" className="fill-accent2" />
       <circle cx={CENTER} cy={CENTER} r="11" className="fill-bg" />
       <g ref={ballRef}>
         <circle ref={ballDotRef} cx={CENTER} cy={CENTER - BALL_IN} r="7" className="fill-text" />
       </g>
-      <path d={`M ${CENTER - 11} 0 L ${CENTER + 11} 0 L ${CENTER} 16 Z`} className="fill-cyan" />
+      <path d={`M ${CENTER - 11} 0 L ${CENTER + 11} 0 L ${CENTER} 16 Z`} className="fill-accent" />
     </svg>
   )
 }

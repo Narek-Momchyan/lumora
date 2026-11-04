@@ -2,24 +2,136 @@
 
 /*
   Colours from Figma "Lumora — Web Design", variable collection "Lumora Colors".
-  Use them as Tailwind classes: bg-bg, bg-surface, border-border, text-muted, text-cyan ...
+  Use them as Tailwind classes: bg-bg, bg-surface, border-border, text-muted, text-accent ...
+  One set of class names, two sets of values: the neon casino on :root, the green "night stadium"
+  under [data-theme='sports'] on <html> (design/sports-spec.md). Components never check the theme.
   If a colour changes in Figma, change it here too.
 */
-@theme {
-  --color-bg: #07080f;
-  --color-surface: #11131f;
-  --color-surface2: #191c2c;
-  --color-border: #272b45;
-  --color-text: #f2f4ff;
-  --color-muted: #8a90b3;
-  --color-cyan: #00e5ff;
-  --color-magenta: #ff2bd6;
-  --color-lime: #b6ff3b;
-  --color-danger: #ff4d6d;
+@theme inline {
+  --color-bg: var(--lumora-bg);
+  --color-surface: var(--lumora-surface);
+  --color-surface2: var(--lumora-surface2);
+  --color-border: var(--lumora-border);
+  --color-text: var(--lumora-text);
+  --color-muted: var(--lumora-muted);
+  --color-accent: var(--lumora-accent);
+  --color-accent2: var(--lumora-accent2);
+  --color-lime: var(--lumora-lime);
+  --color-danger: var(--lumora-danger);
+}
 
-  /* Fonts from next/font in app/layout.tsx: font-sans (Inter), font-heading (Sora). */
+/* Fonts from next/font in app/layout.tsx: font-sans (Inter), font-heading (Sora). */
+@theme {
   --font-sans: var(--font-inter), sans-serif;
   --font-heading: var(--font-sora), sans-serif;
+}
+
+/* Registered as colours, so switching the section cross-fades them instead of jumping. */
+@property --lumora-bg {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #07080f;
+}
+
+@property --lumora-surface {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #11131f;
+}
+
+@property --lumora-surface2 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #191c2c;
+}
+
+@property --lumora-border {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #272b45;
+}
+
+@property --lumora-text {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f2f4ff;
+}
+
+@property --lumora-muted {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #8a90b3;
+}
+
+@property --lumora-accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #00e5ff;
+}
+
+@property --lumora-accent2 {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ff2bd6;
+}
+
+@property --lumora-lime {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #b6ff3b;
+}
+
+@property --lumora-danger {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #ff4d6d;
+}
+
+:root,
+[data-theme='casino'] {
+  --lumora-bg: #07080f;
+  --lumora-surface: #11131f;
+  --lumora-surface2: #191c2c;
+  --lumora-border: #272b45;
+  --lumora-text: #f2f4ff;
+  --lumora-muted: #8a90b3;
+  --lumora-accent: #00e5ff;
+  --lumora-accent2: #ff2bd6;
+  --lumora-lime: #b6ff3b;
+  --lumora-danger: #ff4d6d;
+}
+
+:root {
+  transition:
+    --lumora-bg 600ms ease,
+    --lumora-surface 600ms ease,
+    --lumora-surface2 600ms ease,
+    --lumora-border 600ms ease,
+    --lumora-text 600ms ease,
+    --lumora-muted 600ms ease,
+    --lumora-accent 600ms ease,
+    --lumora-accent2 600ms ease,
+    --lumora-lime 600ms ease,
+    --lumora-danger 600ms ease;
+}
+
+[data-theme='sports'] {
+  --lumora-bg: #04100a;
+  --lumora-surface: #0a1a11;
+  --lumora-surface2: #0f2418;
+  --lumora-border: #1b3a27;
+  --lumora-text: #eefff3;
+  --lumora-muted: #7fa08d;
+  --lumora-accent: #b6ff3b;
+  --lumora-accent2: #1fd67a;
+  --lumora-lime: #b6ff3b;
+  --lumora-danger: #ff4d6d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    transition: none;
+  }
 }
 
 /*
@@ -64,4 +176,78 @@ html:lang(ru) {
 html:lang(hy) {
   --font-sans: var(--font-noto-armenian), sans-serif;
   --font-heading: var(--font-noto-armenian), sans-serif;
+}
+
+/*
+  The "night stadium" background (design/sports-spec.md, animation 2): faint vertical mowing
+  stripes that shimmer and two floodlight glows that drift. Only sports shows it; it pauses in a
+  hidden tab (SportsBackdrop sets data-paused) and stands still for reduced motion.
+*/
+.sports-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+[data-theme='sports'] .sports-backdrop {
+  opacity: 1;
+}
+
+.sports-backdrop-stripes {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--lumora-accent2) 5%, transparent) 0 72px,
+    transparent 72px 144px
+  );
+  animation: stripes-shimmer 9s ease-in-out infinite;
+}
+
+.sports-backdrop-glow {
+  position: absolute;
+  top: -22vh;
+  width: 60vw;
+  height: 60vh;
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--lumora-accent) 16%, transparent), transparent);
+  filter: blur(8px);
+  animation: glow-drift 18s ease-in-out infinite alternate;
+}
+
+.sports-backdrop-glow:nth-child(2) {
+  left: -12vw;
+}
+
+.sports-backdrop-glow:nth-child(3) {
+  right: -12vw;
+  animation-delay: -9s;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--lumora-accent2) 14%, transparent), transparent);
+}
+
+@keyframes stripes-shimmer {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes glow-drift {
+  to {
+    transform: translate(6vw, 5vh) scale(1.08);
+  }
+}
+
+html[data-paused] .sports-backdrop *,
+html:not([data-theme='sports']) .sports-backdrop * {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sports-backdrop * {
+    animation: none;
+  }
 }

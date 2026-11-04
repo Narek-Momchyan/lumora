@@ -15,7 +15,7 @@ export default function BuyBonusDialog({ price, labels, onConfirm, onCancel }: B
         role="dialog"
         aria-modal="true"
         aria-labelledby="buy-bonus-title"
-        className="w-full max-w-sm rounded-2xl border border-magenta bg-surface p-6"
+        className="w-full max-w-sm rounded-2xl border border-accent2 bg-surface p-6"
       >
         <h2 id="buy-bonus-title" className="font-heading text-xl font-bold">
           {labels.buy_bonus_title}

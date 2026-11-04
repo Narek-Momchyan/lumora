@@ -3,6 +3,7 @@ import { Inter, Noto_Sans_Armenian, Sora } from 'next/font/google'
 import { connection } from 'next/server'
 import type { ReactNode } from 'react'
 import { getLogo } from '@/lib/content'
+import { displayMode } from '@/lib/display-mode'
 import { displayLang, htmlLang } from '@/lib/lang'
 import './globals.css'
 
@@ -22,10 +23,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  const lang = await displayLang()
+  const [lang, mode] = await Promise.all([displayLang(), displayMode()])
 
+  // The section picks the colours: the neon casino or the green "night stadium" (globals.css).
   return (
-    <html lang={htmlLang(lang)} className={`${inter.variable} ${sora.variable} ${notoArmenian.variable}`}>
+    <html lang={htmlLang(lang)} data-theme={mode} className={`${inter.variable} ${sora.variable} ${notoArmenian.variable}`}>
       <body className="bg-bg text-text antialiased">{children}</body>
     </html>
   )
