@@ -33,8 +33,6 @@ export interface LobbyPageLabels {
   bonus_claiming: string
   bonus_claimed: string
   bonus_next: string
-  filter_all: string
-  filters_label: string
   section_popular: string
   section_all: string
   soon_badge: string

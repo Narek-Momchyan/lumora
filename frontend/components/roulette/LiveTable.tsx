@@ -1,3 +1,6 @@
+import Badge from '@/components/ui/Badge'
+import Card from '@/components/ui/Card'
+import SectionTitle from '@/components/ui/SectionTitle'
 import { spotLabel } from '@/lib/roulette'
 import { formatBalance, fromCents, toCents } from '@/lib/wallet'
 import type { RoulettePageLabels, RouletteRound, SeatPayout, TableBet, TableLine } from '@/types/roulette'
@@ -47,26 +50,21 @@ export default function LiveTable({ bets, payouts, round, mySeat, currency, labe
   }
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col rounded-2xl border border-border bg-surface p-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="truncate font-heading text-sm font-semibold">{labels.live_table}</h2>
-        <p className="shrink-0 text-xs text-muted">{labels.players_count.replace('{count}', String(rows.length))}</p>
-      </div>
+    <Card padding="md" className="flex min-h-0 flex-1 flex-col">
+      <SectionTitle title={labels.live_table} aside={labels.players_count.replace('{count}', String(rows.length))} />
 
-      <ul className="mt-2 max-h-40 min-h-0 flex-1 space-y-1.5 overflow-y-auto [scrollbar-width:none] md:max-h-none [&::-webkit-scrollbar]:hidden">
+      <ul className="mt-3 max-h-48 min-h-0 flex-1 space-y-2 overflow-y-auto [scrollbar-width:none] md:max-h-none [&::-webkit-scrollbar]:hidden">
         {rows.map((row) => (
-          <li key={row.seat} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_4.5rem] items-center gap-2 text-xs">
+          <li key={row.seat} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_5rem] items-center gap-2 text-[13px] lg:text-sm">
             <p className="flex min-w-0 items-center gap-1.5">
               <span className={`truncate ${row.seat === mySeat ? 'text-cyan' : ''}`}>{row.player}</span>
               {row.seat === mySeat && (
-                <span className="shrink-0 rounded-md bg-cyan/10 px-1 py-0.5 text-[10px] leading-none text-cyan">
+                <Badge tone="cyan" small>
                   {labels.you_badge}
-                </span>
+                </Badge>
               )}
               {row.is_bot && (
-                <span className="shrink-0 rounded-md bg-surface2 px-1 py-0.5 text-[10px] leading-none text-muted">
-                  {labels.bot_badge}
-                </span>
+                <Badge small>{labels.bot_badge}</Badge>
               )}
             </p>
             <p className="truncate text-muted">{summary(row)}</p>
@@ -78,6 +76,6 @@ export default function LiveTable({ bets, payouts, round, mySeat, currency, labe
           </li>
         ))}
       </ul>
-    </section>
+    </Card>
   )
 }

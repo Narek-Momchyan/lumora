@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { connection } from 'next/server'
 import BonusBanner from '@/components/lobby/BonusBanner'
-import GameFilters from '@/components/lobby/GameFilters'
 import GameGrid from '@/components/lobby/GameGrid'
 import { getGameCategories, getGames, getLobbyPageLabels, getWallet } from '@/lib/content'
 import { displayLang } from '@/lib/lang'
@@ -25,7 +24,6 @@ export default async function LobbyPage() {
   return (
     <div className="space-y-8">
       <BonusBanner wallet={wallet} ready={wallet !== null && isBonusReady(wallet)} labels={labels} />
-      <GameFilters games={games ?? []} categories={categories ?? []} labels={labels} />
       <GameGrid games={games ?? []} categories={categories ?? []} labels={labels} />
     </div>
   )

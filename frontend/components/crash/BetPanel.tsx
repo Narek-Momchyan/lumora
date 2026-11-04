@@ -2,18 +2,14 @@
 
 import { useRef, useState } from 'react'
 import type { RefObject } from 'react'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import Field from '@/components/ui/Field'
 import { FIRST_AMOUNT, PLUS_STEP_CENTS, multiplierAt, payoutAt } from '@/lib/crash'
 import { formatBalance, fromCents, toCents } from '@/lib/wallet'
 import type { CrashPageLabels, CrashRound } from '@/types/crash'
 import type { Game } from '@/types/game'
 import useFlightFrame from './useFlightFrame'
-
-const INPUT =
-  'w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm text-text outline-none placeholder:text-muted focus:border-cyan'
-const STEP_BUTTON =
-  'rounded-lg border border-border bg-surface2 py-1.5 text-xs font-medium transition-colors hover:border-cyan'
-const MAIN_BUTTON =
-  'w-full truncate rounded-lg bg-linear-to-r from-cyan to-magenta px-3 py-2.5 text-sm font-semibold text-bg transition-opacity hover:opacity-90 disabled:opacity-40'
 
 interface BetPanelProps {
   game: Game
@@ -68,16 +64,26 @@ export default function BetPanel({
   function mainButton() {
     if (canCashOut) {
       return (
-        <button type="button" disabled={pending} onClick={onCashOut} className={MAIN_BUTTON}>
-          {labels.cash_out} · <span ref={liveAmountRef} className="tabular-nums" /> {currency}
-        </button>
+        <Button
+          size="lg"
+          block
+          disabled={pending}
+          onClick={onCashOut}
+          suffix={
+            <>
+              · <span ref={liveAmountRef} className="tabular-nums" /> {currency}
+            </>
+          }
+        >
+          {labels.cash_out}
+        </Button>
       )
     }
     if (canBet) {
       return (
-        <button type="button" disabled={pending} onClick={() => onBet(amount, target)} className={MAIN_BUTTON}>
+        <Button size="lg" block disabled={pending} onClick={() => onBet(amount, target)}>
           {labels.place_bet}
-        </button>
+        </Button>
       )
     }
 
@@ -85,58 +91,46 @@ export default function BetPanel({
     if (cashedAt) text = labels.cashed_out.replace('{multiplier}', cashedAt)
     else if (betAmount && round?.status === 'betting') text = labels.bet_placed
     return (
-      <button type="button" disabled className={MAIN_BUTTON}>
+      <Button size="lg" block disabled>
         {text}
-      </button>
+      </Button>
     )
   }
 
-  return (
-    <section className="space-y-2.5 rounded-2xl border border-border bg-surface p-3">
-      <div className="grid grid-cols-2 gap-2">
-        <div className="min-w-0">
-          <label htmlFor="crash-amount" className="mb-1 block truncate text-xs text-muted">
-            {labels.bet_amount}
-          </label>
-          <input
-            id="crash-amount"
-            inputMode="decimal"
-            autoComplete="off"
-            value={amount}
-            onChange={(event) => setAmount(event.target.value)}
-            className={INPUT}
-          />
-        </div>
+  const steps = [
+    { label: labels.bet_half, cents: () => Math.floor(toCents(amount) / 2) },
+    { label: labels.bet_double, cents: () => toCents(amount) * 2 },
+    { label: labels.bet_plus, cents: () => toCents(amount) + PLUS_STEP_CENTS },
+    { label: labels.bet_max, cents: () => Number.MAX_SAFE_INTEGER },
+  ]
 
-        <div className="min-w-0">
-          <label htmlFor="crash-target" className="mb-1 block truncate text-xs text-muted">
-            {labels.auto_cash_out_at}
-          </label>
-          <input
-            id="crash-target"
-            inputMode="decimal"
-            autoComplete="off"
-            value={target}
-            onChange={(event) => setTarget(event.target.value)}
-            className={INPUT}
-          />
-        </div>
-      </div>
+  return (
+    <Card className="space-y-4">
+      <Field
+        id="crash-amount"
+        label={labels.bet_amount}
+        inputMode="decimal"
+        autoComplete="off"
+        value={amount}
+        onChange={(event) => setAmount(event.target.value)}
+      />
 
       <div className="grid grid-cols-4 gap-2">
-        <button type="button" onClick={() => scaleAmount(Math.floor(toCents(amount) / 2))} className={STEP_BUTTON}>
-          {labels.bet_half}
-        </button>
-        <button type="button" onClick={() => scaleAmount(toCents(amount) * 2)} className={STEP_BUTTON}>
-          {labels.bet_double}
-        </button>
-        <button type="button" onClick={() => scaleAmount(toCents(amount) + PLUS_STEP_CENTS)} className={STEP_BUTTON}>
-          {labels.bet_plus}
-        </button>
-        <button type="button" onClick={() => scaleAmount(Number.MAX_SAFE_INTEGER)} className={STEP_BUTTON}>
-          {labels.bet_max}
-        </button>
+        {steps.map(({ label, cents }) => (
+          <Button key={label} variant="ghost" onClick={() => scaleAmount(cents())}>
+            {label}
+          </Button>
+        ))}
       </div>
+
+      <Field
+        id="crash-target"
+        label={labels.auto_cash_out_at}
+        inputMode="decimal"
+        autoComplete="off"
+        value={target}
+        onChange={(event) => setTarget(event.target.value)}
+      />
 
       {mainButton()}
 
@@ -145,6 +139,6 @@ export default function BetPanel({
           {error}
         </p>
       )}
-    </section>
+    </Card>
   )
 }

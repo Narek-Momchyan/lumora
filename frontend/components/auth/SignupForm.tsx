@@ -3,10 +3,11 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import Button from '@/components/ui/Button'
+import Field from '@/components/ui/Field'
 import { ApiError, apiFetch, errorDetail, fieldErrors } from '@/lib/api'
 import type { FieldErrors } from '@/lib/api'
 import type { LoginPageLabels, Player, RegisterPayload } from '@/types/account'
-import TextField from './TextField'
 
 interface SignupFormProps {
   labels: LoginPageLabels
@@ -54,26 +55,29 @@ export default function SignupForm({ labels, onLogin }: SignupFormProps) {
       <p className="mt-1 text-sm text-muted">{labels.signup_subtitle}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <TextField
-          label={labels.email_label}
+        <Field
+          id="email"
           name="email"
+          label={labels.email_label}
           type="email"
           placeholder={labels.email_placeholder}
           autoComplete="email"
           required
           errors={errors.email}
         />
-        <TextField
-          label={labels.password_label}
+        <Field
+          id="password"
           name="password"
+          label={labels.password_label}
           type="password"
           autoComplete="new-password"
           required
           errors={errors.password}
         />
-        <TextField
-          label={labels.display_name_label}
+        <Field
+          id="display_name"
           name="display_name"
+          label={labels.display_name_label}
           autoComplete="nickname"
           errors={errors.display_name}
         />
@@ -84,24 +88,16 @@ export default function SignupForm({ labels, onLogin }: SignupFormProps) {
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-xl bg-linear-to-r from-cyan to-magenta px-4 py-3 text-sm font-semibold text-bg shadow-lg shadow-cyan/20 transition-opacity hover:opacity-90 disabled:opacity-60"
-        >
+        <Button type="submit" disabled={pending} size="lg" block>
           {pending ? labels.signup_pending : labels.signup_button}
-        </button>
+        </Button>
       </form>
 
       <p className="my-4 text-center text-xs text-muted">{labels.or_text}</p>
 
-      <button
-        type="button"
-        onClick={onLogin}
-        className="w-full rounded-xl border border-border bg-surface2 px-4 py-3 text-sm font-medium text-text transition-colors hover:border-muted"
-      >
+      <Button variant="ghost" size="lg" block onClick={onLogin}>
         {labels.have_account_button}
-      </button>
+      </Button>
     </>
   )
 }

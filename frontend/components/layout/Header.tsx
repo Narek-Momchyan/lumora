@@ -1,13 +1,17 @@
 import Logo from '@/components/Logo'
+import Badge from '@/components/ui/Badge'
 import { formatBalance } from '@/lib/wallet'
 import type { Player } from '@/types/account'
-import type { HeaderLabels, Language, Logo as LogoData } from '@/types/header'
+import type { HeaderLabels, Language, Logo as LogoData, PageInfo, SidebarItem } from '@/types/header'
 import type { Wallet } from '@/types/wallet'
 import AvatarMenu from './AvatarMenu'
-import SearchBox from './SearchBox'
+import HeaderTitle from './HeaderTitle'
+import MobileNav from './MobileNav'
 
 interface HeaderProps {
   logo: LogoData | null
+  items: SidebarItem[]
+  pages: Record<string, PageInfo>
   labels: HeaderLabels
   wallet: Wallet | null
   me: Player | null
@@ -15,24 +19,26 @@ interface HeaderProps {
   lang: string
 }
 
-export default function Header({ logo, labels, wallet, me, languages, lang }: HeaderProps) {
+// The top bar of every page: title or search on the left, demo badge, balance and account on the right.
+export default function Header({ logo, items, pages, labels, wallet, me, languages, lang }: HeaderProps) {
   return (
-    <header className="flex flex-wrap items-center gap-3 px-4 py-5 sm:px-6 lg:flex-nowrap lg:px-10">
-      <div className="lg:hidden">
+    <header className="flex flex-wrap items-center gap-3 px-4 py-4 sm:px-6 lg:h-22 lg:flex-nowrap lg:gap-4 lg:px-10 lg:py-0">
+      <MobileNav logo={logo} items={items} pages={pages} labels={labels} />
+      <div className="min-w-0 lg:hidden">
         <Logo logo={logo} />
       </div>
 
-      <SearchBox placeholder={labels.search_placeholder} />
+      <HeaderTitle pages={pages} searchPlaceholder={labels.search_placeholder} />
 
-      <div className="ml-auto flex items-center gap-3">
-        <span className="hidden rounded-full bg-lime/10 px-3 py-1.5 text-xs font-semibold whitespace-nowrap text-lime sm:inline">
-          {labels.demo_badge}
+      <div className="ml-auto flex shrink-0 items-center gap-3 lg:gap-4">
+        <span className="hidden sm:block">
+          <Badge tone="lime">{labels.demo_badge}</Badge>
         </span>
 
         {wallet && (
           <p
             aria-label={labels.balance_label}
-            className="flex items-center gap-2 rounded-xl border border-cyan bg-surface px-3 py-2 text-sm font-semibold whitespace-nowrap"
+            className="flex h-10 items-center gap-2 rounded-xl border border-cyan bg-surface px-3 text-sm font-semibold whitespace-nowrap tabular-nums sm:px-4 lg:text-[15px]"
           >
             <span className="size-3.5 rounded-full bg-linear-to-r from-cyan to-magenta" aria-hidden="true" />
             {formatBalance(wallet.balance)} {labels.currency}

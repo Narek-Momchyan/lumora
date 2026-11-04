@@ -1,3 +1,4 @@
+import Button from '@/components/ui/Button'
 import type { ZeusPageLabels } from '@/types/zeus'
 
 interface BuyBonusDialogProps {
@@ -22,20 +23,12 @@ export default function BuyBonusDialog({ price, labels, onConfirm, onCancel }: B
         <p className="mt-2 text-sm text-muted">{labels.buy_bonus_text.replace('{amount}', price)}</p>
 
         <div className="mt-6 grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-xl border border-border bg-surface2 px-4 py-3 text-sm font-medium text-text hover:border-muted"
-          >
+          <Button variant="ghost" size="lg" onClick={onCancel}>
             {labels.cancel}
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="rounded-xl bg-linear-to-r from-cyan to-magenta px-4 py-3 text-sm font-semibold text-bg"
-          >
+          </Button>
+          <Button size="lg" onClick={onConfirm}>
             {labels.buy_bonus_confirm}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

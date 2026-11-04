@@ -1,3 +1,6 @@
+import Badge from '@/components/ui/Badge'
+import Card from '@/components/ui/Card'
+import SectionTitle from '@/components/ui/SectionTitle'
 import { formatBalance } from '@/lib/wallet'
 import type { CrashPageLabels, CrashRound, LiveBet } from '@/types/crash'
 
@@ -12,21 +15,16 @@ export default function LiveBets({ bets, round, currency, labels }: LiveBetsProp
   const crashed = round?.status === 'crashed'
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col rounded-2xl border border-border bg-surface p-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="truncate font-heading text-sm font-semibold">{labels.live_bets}</h2>
-        <p className="shrink-0 text-xs text-muted">{labels.players_count.replace('{count}', String(bets.length))}</p>
-      </div>
+    <Card padding="md" className="flex min-h-0 flex-1 flex-col">
+      <SectionTitle title={labels.live_bets} aside={labels.players_count.replace('{count}', String(bets.length))} />
 
-      <ul className="mt-2 max-h-20 min-h-0 flex-1 space-y-1.5 overflow-y-auto [scrollbar-width:none] md:max-h-none [&::-webkit-scrollbar]:hidden">
+      <ul className="mt-3 max-h-40 min-h-0 flex-1 space-y-2 overflow-y-auto [scrollbar-width:none] md:max-h-none [&::-webkit-scrollbar]:hidden">
         {bets.map((bet) => (
-          <li key={bet.id} className="grid grid-cols-[minmax(0,1fr)_auto_6.5rem] items-center gap-2 text-xs">
+          <li key={bet.id} className="grid grid-cols-[minmax(0,1fr)_auto_7rem] items-center gap-2 text-[13px] lg:text-sm">
             <p className="flex min-w-0 items-center gap-1.5">
               <span className="truncate">{bet.player}</span>
               {bet.is_bot && (
-                <span className="shrink-0 rounded-md bg-surface2 px-1 py-0.5 text-[10px] leading-none text-muted">
-                  {labels.bot_badge}
-                </span>
+                <Badge small>{labels.bot_badge}</Badge>
               )}
             </p>
             <p className="text-right whitespace-nowrap text-muted tabular-nums">
@@ -43,6 +41,6 @@ export default function LiveBets({ bets, round, currency, labels }: LiveBetsProp
           </li>
         ))}
       </ul>
-    </section>
+    </Card>
   )
 }

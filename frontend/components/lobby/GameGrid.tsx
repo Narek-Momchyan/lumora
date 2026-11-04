@@ -1,6 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
+import SectionTitle from '@/components/ui/SectionTitle'
 import type { Game, GameCategory, LobbyPageLabels } from '@/types/game'
 import GameCard from './GameCard'
 
@@ -23,9 +24,12 @@ export default function GameGrid({ games, categories, labels }: GameGridProps) {
       (!query || game.title.toLowerCase().includes(query) || cardLabel(game.category).toLowerCase().includes(query)),
   )
 
+  // The sidebar's category opens the lobby filtered: the section is named after it.
+  const categoryTitle = categories.find((item) => item.code === category)?.filter_label
+
   const sections =
     category || query
-      ? [{ title: labels.section_all, games: matches }]
+      ? [{ title: categoryTitle ?? labels.section_all, games: matches }]
       : [
           { title: labels.section_popular, games: matches.filter((game) => game.is_featured) },
           { title: labels.section_all, games: matches.filter((game) => !game.is_featured) },
@@ -39,8 +43,8 @@ export default function GameGrid({ games, categories, labels }: GameGridProps) {
         .filter((section) => section.games.length > 0)
         .map((section) => (
           <section key={section.title}>
-            <h2 className="mb-4 font-heading text-xl font-bold">{section.title}</h2>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+            <SectionTitle title={section.title} large />
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-5">
               {section.games.map((game) => (
                 <GameCard key={game.id} game={game} categoryLabel={cardLabel(game.category)} labels={labels} />
               ))}

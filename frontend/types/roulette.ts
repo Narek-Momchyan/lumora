@@ -3,7 +3,6 @@ export interface RoulettePageLabels {
   lang: string
   page_title: string
   page_description: string
-  game_title: string
   live: string
   players_count: string
   bets_close_in: string

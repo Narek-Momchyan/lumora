@@ -1,12 +1,10 @@
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import SectionTitle from '@/components/ui/SectionTitle'
 import { CHIPS, multiplierOf, spotKey, spotLabel } from '@/lib/roulette'
 import { formatBalance, fromCents, toCents } from '@/lib/wallet'
 import type { DraftLine, RoulettePageLabels, RouletteRound, SlipLine } from '@/types/roulette'
 import Chip from './Chip'
-
-const STEP_BUTTON =
-  'rounded-lg border border-border bg-surface2 py-1.5 text-xs font-medium transition-colors hover:enabled:border-cyan disabled:opacity-40'
-const MAIN_BUTTON =
-  'w-full truncate rounded-lg bg-linear-to-r from-cyan to-magenta px-3 py-2.5 text-sm font-semibold text-bg transition-opacity hover:enabled:opacity-90 disabled:from-surface2 disabled:to-surface2 disabled:text-muted'
 
 interface YourBetsProps {
   round: RouletteRound | null
@@ -60,22 +58,22 @@ export default function YourBets({
     return `${labels.bets_count.replace('{count}', String(count))} · ${number}`
   }
 
-  function buttonText() {
-    if (isOpen) return `${labels.place_bets} · ${formatBalance(fromCents(draftCents))} ${currency}`
-    if (settled) return labels.next_round_in.replace('{seconds}', String(seconds))
+  // The amount or the seconds go after the cut, so a long translation never hides them.
+  function buttonText(): [string, string] {
+    if (isOpen) return [labels.place_bets, `· ${formatBalance(fromCents(draftCents))} ${currency}`]
+    if (settled) return [labels.next_round_in.replace('{seconds}', String(seconds)), '']
     const waiting = labels.result_in.replace('{seconds}', String(seconds))
-    return `${labels.bets_closed} · ${waiting}`
+    return [labels.bets_closed, `· ${waiting}`]
   }
 
+  const [buttonLabel, buttonSuffix] = buttonText()
+
   return (
-    <section className="flex min-h-0 flex-col gap-2 rounded-2xl border border-border bg-surface p-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="truncate font-heading text-sm font-semibold">{labels.your_bets}</h2>
-        <p className="shrink-0 text-xs text-muted">{statusText()}</p>
-      </div>
+    <Card className="flex min-h-0 shrink-0 flex-col gap-3 lg:gap-4">
+      <SectionTitle title={labels.your_bets} aside={statusText()} />
 
       <div>
-        <p className="mb-1 text-xs text-muted">{labels.chip_value}</p>
+        <p className="mb-2 text-xs text-muted lg:text-[13px]">{labels.chip_value}</p>
         <div className="flex justify-between gap-1">
           {CHIPS.map((value) => (
             <button
@@ -89,14 +87,14 @@ export default function YourBets({
                 chip === value ? 'ring-2 ring-cyan ring-offset-2 ring-offset-surface' : ''
               }`}
             >
-              <Chip value={value} className="size-8 text-[10px]" />
+              <Chip value={value} className="size-8 text-[10px] lg:size-10 lg:text-xs" />
             </button>
           ))}
         </div>
       </div>
 
       {count > 0 && (
-        <ul className="max-h-24 min-h-0 space-y-1 overflow-y-auto rounded-lg bg-surface2 p-2 text-xs [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <ul className="max-h-36 min-h-0 space-y-1.5 overflow-y-auto rounded-xl bg-surface2 px-3 py-2.5 text-xs lg:px-3.5 lg:text-[13px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {placed.map((line) => {
             const won = toCents(line.payout) > 0
             return (
@@ -122,24 +120,25 @@ export default function YourBets({
         </ul>
       )}
 
-      <div className="grid grid-cols-4 gap-1.5">
-        <button type="button" disabled={!isOpen || !draft.length} onClick={onUndo} className={STEP_BUTTON}>
+      {/* One row in English; a longer translation wraps to two rows instead of being cut. */}
+      <div className="flex flex-wrap gap-2">
+        <Button variant="ghost" className="flex-auto" disabled={!isOpen || !draft.length} onClick={onUndo}>
           {labels.undo}
-        </button>
-        <button type="button" disabled={!isOpen || !draft.length} onClick={onClear} className={STEP_BUTTON}>
+        </Button>
+        <Button variant="ghost" className="flex-auto" disabled={!isOpen || !draft.length} onClick={onClear}>
           {labels.clear}
-        </button>
-        <button type="button" disabled={!isOpen || !draft.length} onClick={onDouble} className={STEP_BUTTON}>
+        </Button>
+        <Button variant="ghost" className="flex-auto" disabled={!isOpen || !draft.length} onClick={onDouble}>
           {labels.double}
-        </button>
-        <button type="button" disabled={!isOpen || pending} onClick={onRebet} className={STEP_BUTTON}>
+        </Button>
+        <Button variant="ghost" className="flex-auto" disabled={!isOpen || pending} onClick={onRebet}>
           {labels.rebet}
-        </button>
+        </Button>
       </div>
 
-      <div className="flex items-baseline justify-between gap-3 text-xs">
+      <div className="flex items-baseline justify-between gap-3 text-xs lg:text-[13px]">
         <span className="text-muted">{settled ? labels.total_win : labels.total_bet}</span>
-        <span className={`text-sm font-semibold tabular-nums ${paid && winCents ? 'text-lime' : ''}`}>
+        <span className={`text-sm font-semibold tabular-nums lg:text-base ${paid && winCents ? 'text-lime' : ''}`}>
           {paid
             ? `${winCents ? '+' : ''}${formatBalance(fromCents(winCents))}`
             : formatBalance(fromCents(settled ? 0 : placedCents + draftCents))}{' '}
@@ -147,15 +146,15 @@ export default function YourBets({
         </span>
       </div>
 
-      <button type="button" disabled={!isOpen || pending || !draft.length} onClick={onPlace} className={MAIN_BUTTON}>
-        {buttonText()}
-      </button>
+      <Button size="lg" block disabled={!isOpen || pending || !draft.length} suffix={buttonSuffix} onClick={onPlace}>
+        {buttonLabel}
+      </Button>
 
       {error && (
         <p role="alert" className="text-xs text-danger">
           {error}
         </p>
       )}
-    </section>
+    </Card>
   )
 }

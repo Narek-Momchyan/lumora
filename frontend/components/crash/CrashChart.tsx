@@ -110,11 +110,11 @@ export default function CrashChart({ round, connected, clockOffset, labels }: Cr
   })
 
   return (
-    <section className="relative min-h-40 flex-1 overflow-hidden rounded-2xl md:min-h-0 border border-border bg-linear-to-b from-surface2 to-bg">
+    <section className="relative min-h-52 flex-1 overflow-hidden rounded-3xl border border-border bg-linear-to-b from-magenta/10 to-bg md:min-h-0">
       <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 size-full" />
-      <div className="relative p-4 sm:p-6">
-        <p ref={multiplierRef} aria-live="off" className="font-heading text-4xl font-bold tabular-nums sm:text-6xl" />
-        <p ref={statusRef} className="mt-1 text-xs text-muted sm:text-sm" />
+      <div className="relative p-5 sm:p-8 xl:px-16 xl:py-12">
+        <p ref={multiplierRef} aria-live="off" className="font-heading text-5xl font-bold tabular-nums sm:text-7xl xl:text-8xl" />
+        <p ref={statusRef} className="mt-2 text-sm text-muted sm:text-base" />
       </div>
     </section>
   )

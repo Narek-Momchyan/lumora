@@ -1,12 +1,10 @@
 'use client'
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useState } from 'react'
-import { GAME_ROUTES } from '@/lib/games'
 
+// Lives only in the lobby's top bar (HeaderTitle), so it filters the lobby in place.
 export default function SearchBox({ placeholder }: { placeholder: string }) {
-  const router = useRouter()
-  const pathname = usePathname()
   const searchParams = useSearchParams()
   const query = searchParams.get('q') ?? ''
   const [value, setValue] = useState(query)
@@ -24,26 +22,19 @@ export default function SearchBox({ placeholder }: { placeholder: string }) {
     const params = new URLSearchParams(searchParams)
     if (text) params.set('q', text)
     else params.delete('q')
-    const url = params.size > 0 ? `/?${params}` : '/'
 
     // The lobby filters on the client, so typing doesn't need a request to the server.
-    if (pathname === '/') window.history.replaceState(null, '', url)
-    else router.push(url)
+    window.history.replaceState(null, '', params.size > 0 ? `/?${params}` : '/')
   }
 
-  // Searching looks for games, so a game's own page doesn't need it.
-  if (Object.values(GAME_ROUTES).includes(pathname)) return null
-
   return (
-    <div className="order-last w-full lg:order-none lg:flex-1">
-      <input
-        type="search"
-        value={value}
-        onChange={(event) => search(event.target.value)}
-        placeholder={placeholder}
-        aria-label={placeholder}
-        className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-text outline-none placeholder:text-muted focus:border-cyan"
-      />
-    </div>
+    <input
+      type="search"
+      value={value}
+      onChange={(event) => search(event.target.value)}
+      placeholder={placeholder}
+      aria-label={placeholder}
+      className="h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-text outline-none placeholder:text-muted focus:border-cyan"
+    />
   )
 }

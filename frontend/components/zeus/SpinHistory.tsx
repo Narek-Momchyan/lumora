@@ -1,3 +1,5 @@
+import Card from '@/components/ui/Card'
+import SectionTitle from '@/components/ui/SectionTitle'
 import { formatBalance, formatDateTime } from '@/lib/wallet'
 import { jackpotLabel } from '@/lib/zeus'
 import type { SlotSpinRecord, ZeusPageLabels } from '@/types/zeus'
@@ -23,8 +25,8 @@ export default function SpinHistory({ spins, currency, labels }: SpinHistoryProp
   const money = (value: string) => `${formatBalance(value)} ${currency}`
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-4">
-      <h2 className="font-heading text-lg font-bold">{labels.history_title}</h2>
+    <Card>
+      <SectionTitle title={labels.history_title} />
       {spins.length === 0 && <p className="mt-2 text-sm text-muted">{labels.history_empty}</p>}
 
       <ul className="mt-3 max-h-96 space-y-2 overflow-y-auto">
@@ -60,6 +62,6 @@ export default function SpinHistory({ spins, currency, labels }: SpinHistoryProp
           </li>
         ))}
       </ul>
-    </section>
+    </Card>
   )
 }

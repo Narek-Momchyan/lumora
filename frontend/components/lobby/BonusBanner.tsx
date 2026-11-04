@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
 import { ApiError, apiFetch, errorDetail } from '@/lib/api'
 import { formatDateTime } from '@/lib/wallet'
 import type { LobbyPageLabels } from '@/types/game'
@@ -38,23 +40,18 @@ export default function BonusBanner({ wallet, ready, labels }: BonusBannerProps)
   const nextBonus = wallet?.bonus_available_at
 
   return (
-    <section className="flex flex-col gap-6 rounded-3xl bg-linear-to-r from-magenta/30 via-surface2 to-cyan/60 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-10">
+    <Card tone="hero" large padding="none" className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:justify-between sm:p-10">
       <div>
-        <p className="text-xs font-semibold text-lime">{labels.bonus_eyebrow}</p>
-        <h1 className="mt-2 font-heading text-3xl font-bold sm:text-4xl">{labels.bonus_title}</h1>
-        <p className="mt-2 text-sm text-text">{labels.bonus_text}</p>
+        <p className="text-xs font-semibold tracking-wide text-lime uppercase">{labels.bonus_eyebrow}</p>
+        <h2 className="mt-2 font-heading text-3xl font-bold sm:text-4xl">{labels.bonus_title}</h2>
+        <p className="mt-2 text-sm text-text sm:text-[15px]">{labels.bonus_text}</p>
       </div>
 
       <div className="shrink-0 space-y-2 sm:text-right">
         {ready && (
-          <button
-            type="button"
-            disabled={pending}
-            onClick={claim}
-            className="rounded-xl bg-linear-to-r from-cyan to-magenta px-6 py-3 text-sm font-semibold text-bg shadow-lg shadow-cyan/20 transition-opacity hover:opacity-90 disabled:opacity-60"
-          >
+          <Button size="lg" disabled={pending} onClick={claim} className="px-6">
             {pending ? labels.bonus_claiming : labels.bonus_claim_button}
-          </button>
+          </Button>
         )}
 
         {claimed && <p className="text-sm font-semibold text-lime">{labels.bonus_claimed}</p>}
@@ -72,6 +69,6 @@ export default function BonusBanner({ wallet, ready, labels }: BonusBannerProps)
           </p>
         )}
       </div>
-    </section>
+    </Card>
   )
 }

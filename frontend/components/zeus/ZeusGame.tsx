@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import Button from '@/components/ui/Button'
 import { formatBalance } from '@/lib/wallet'
 import { BET_STEPS, SPEEDS, bonusCost, payToLc } from '@/lib/zeus'
 import type { Game } from '@/types/game'
@@ -126,31 +127,27 @@ export default function ZeusGame({ game, symbols, sounds, pools, spins, balance,
         }`}
       >
         <div className="flex items-center justify-between gap-3">
+          {/* The game's name is in the top bar; here only the free spins announce themselves. */}
           <div className="min-w-0">
-            <motion.h1
-              animate={round.inBonus ? { scale: [1, 1.02, 1] } : { scale: 1 }}
-              transition={round.inBonus ? { duration: 2.5, repeat: Infinity } : undefined}
-              className={`truncate font-heading text-lg font-bold sm:text-2xl ${
-                round.inBonus ? 'text-zeus-lilac' : 'zeus-gold-text'
-              }`}
-            >
-              {round.inBonus ? labels.free_spins_title : labels.game_title}
-            </motion.h1>
-            <p className="truncate text-xs text-muted">
+            {round.inBonus && (
+              <motion.p
+                animate={{ scale: [1, 1.02, 1] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
+                className="truncate font-heading text-lg font-bold text-zeus-lilac sm:text-2xl"
+              >
+                {labels.free_spins_title}
+              </motion.p>
+            )}
+            <p className="truncate text-sm text-muted">
               {round.inBonus
                 ? labels.free_spins_left.replace('{count}', String(round.freeSpinsLeft))
                 : labels.tagline}
             </p>
           </div>
 
-          <button
-            type="button"
-            aria-pressed={audio.muted}
-            onClick={audio.toggleMuted}
-            className="shrink-0 rounded-xl border border-border bg-surface px-3 py-2 text-xs text-muted hover:text-text"
-          >
+          <Button variant="ghost" size="sm" className="shrink-0" aria-pressed={audio.muted} onClick={audio.toggleMuted}>
             {audio.muted ? labels.unmute : labels.mute}
-          </button>
+          </Button>
         </div>
 
         <JackpotPanel pools={poolAmounts} currency={header.currency} labels={labels} />

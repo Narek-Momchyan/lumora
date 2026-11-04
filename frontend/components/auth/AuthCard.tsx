@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Card from '@/components/ui/Card'
 import type { LoginPageLabels } from '@/types/account'
 import LoginForm from './LoginForm'
 import SignupForm from './SignupForm'
@@ -16,7 +17,7 @@ export default function AuthCard({ labels }: { labels: LoginPageLabels }) {
   ]
 
   return (
-    <div className="w-full max-w-md rounded-3xl border border-border bg-surface p-6 sm:p-8">
+    <Card as="div" large padding="none" className="w-full max-w-md p-6 sm:p-8">
       <div role="tablist" className="grid grid-cols-2 gap-1 rounded-xl bg-surface2 p-1">
         {tabs.map(({ id, label }) => (
           <button
@@ -41,6 +42,6 @@ export default function AuthCard({ labels }: { labels: LoginPageLabels }) {
           <SignupForm labels={labels} onLogin={() => setTab('login')} />
         )}
       </div>
-    </div>
+    </Card>
   )
 }

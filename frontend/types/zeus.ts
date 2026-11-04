@@ -77,7 +77,6 @@ export interface ZeusPageLabels {
   lang: string
   page_title: string
   page_description: string
-  game_title: string
   tagline: string
   free_spins_title: string
   free_spins_left: string

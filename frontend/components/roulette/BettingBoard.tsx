@@ -7,6 +7,9 @@ const COLUMNS = Array.from({ length: 12 }, (_, index) => index)
 const ROWS = [3, 2, 1] // the board's top row is 3, 6, 9 ...
 const CHIP_ON_BOARD = 'pointer-events-none size-7 shrink-0 text-[10px] max-md:-rotate-90'
 const CELL_COLORS = { red: 'bg-danger', black: 'bg-surface2', green: 'bg-lime text-bg' }
+// Numbers are big as in the design; the words outside them stay smaller, so a translation fits.
+const NUMBER_TEXT = 'text-[11px] sm:text-sm lg:text-[15px]'
+const WORD_TEXT = 'text-[11px] sm:text-sm'
 
 // On a phone the same board stands upright, so it fits the width. The text turns back.
 const UPRIGHT = 'max-md:-rotate-90'
@@ -57,7 +60,7 @@ export default function BettingBoard({ round, isOpen, amounts, labels, onBet }: 
         disabled={!isOpen}
         onClick={() => onBet(spot)}
         aria-label={spotLabel(spot, labels)}
-        className={`relative flex size-full min-h-0 min-w-0 items-center justify-center rounded-md text-[11px] leading-tight font-semibold transition-colors hover:enabled:ring-1 hover:enabled:ring-cyan sm:text-sm ${className} ${
+        className={`relative flex size-full min-h-0 min-w-0 items-center justify-center rounded-md leading-tight font-semibold transition-colors hover:enabled:ring-1 hover:enabled:ring-cyan ${className} ${
           isWinner(spot) ? 'ring-2 ring-cyan' : ''
         }`}
       >
@@ -92,7 +95,7 @@ export default function BettingBoard({ round, isOpen, amounts, labels, onBet }: 
 
     return (
       <div key={number} className="relative min-h-0 min-w-0" style={{ gridColumn: column + 2, gridRow: 4 - row }}>
-        {cell({ bet_type: 'straight', value: [number] }, number, CELL_COLORS[colorOf(number)])}
+        {cell({ bet_type: 'straight', value: [number] }, number, `${CELL_COLORS[colorOf(number)]} ${NUMBER_TEXT}`)}
         {edges}
       </div>
     )
@@ -125,7 +128,7 @@ export default function BettingBoard({ round, isOpen, amounts, labels, onBet }: 
         }}
       >
         <div className="relative min-h-0 min-w-0" style={{ gridColumn: 1, gridRow: '1 / span 3' }}>
-          {cell({ bet_type: 'straight', value: [0] }, 0, CELL_COLORS.green)}
+          {cell({ bet_type: 'straight', value: [0] }, 0, `${CELL_COLORS.green} ${NUMBER_TEXT}`)}
         </div>
 
         {COLUMNS.map((column) => ROWS.map((row) => numberCell(column, row)))}
@@ -138,13 +141,13 @@ export default function BettingBoard({ round, isOpen, amounts, labels, onBet }: 
 
         {dozens.map(([dozen, name], index) => (
           <div key={dozen} className="min-h-0 min-w-0" style={{ gridColumn: `${index * 4 + 2} / span 4`, gridRow: 4 }}>
-            {cell({ bet_type: 'dozen', value: [dozen] }, name, 'bg-surface2')}
+            {cell({ bet_type: 'dozen', value: [dozen] }, name, `bg-surface2 ${WORD_TEXT}`)}
           </div>
         ))}
 
         {outside.map(([spot, name, color], index) => (
           <div key={spot.bet_type} className="min-h-0 min-w-0" style={{ gridColumn: `${index * 2 + 2} / span 2`, gridRow: 5 }}>
-            {cell(spot, name, color)}
+            {cell(spot, name, `${color} ${WORD_TEXT}`)}
           </div>
         ))}
       </div>

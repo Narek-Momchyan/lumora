@@ -3,10 +3,11 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import Button from '@/components/ui/Button'
+import Field from '@/components/ui/Field'
 import { ApiError, errorDetail, fieldErrors, login } from '@/lib/api'
 import type { FieldErrors } from '@/lib/api'
 import type { LoginPageLabels } from '@/types/account'
-import TextField from './TextField'
 
 interface LoginFormProps {
   labels: LoginPageLabels
@@ -46,18 +47,20 @@ export default function LoginForm({ labels, onCreateAccount }: LoginFormProps) {
       <p className="mt-1 text-sm text-muted">{labels.login_subtitle}</p>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-        <TextField
-          label={labels.email_label}
+        <Field
+          id="email"
           name="email"
+          label={labels.email_label}
           type="email"
           placeholder={labels.email_placeholder}
           autoComplete="email"
           required
           errors={errors.email}
         />
-        <TextField
-          label={labels.password_label}
+        <Field
+          id="password"
           name="password"
+          label={labels.password_label}
           type="password"
           autoComplete="current-password"
           required
@@ -70,24 +73,16 @@ export default function LoginForm({ labels, onCreateAccount }: LoginFormProps) {
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-xl bg-linear-to-r from-cyan to-magenta px-4 py-3 text-sm font-semibold text-bg shadow-lg shadow-cyan/20 transition-opacity hover:opacity-90 disabled:opacity-60"
-        >
+        <Button type="submit" disabled={pending} size="lg" block>
           {pending ? labels.login_pending : labels.login_button}
-        </button>
+        </Button>
       </form>
 
       <p className="my-4 text-center text-xs text-muted">{labels.or_text}</p>
 
-      <button
-        type="button"
-        onClick={onCreateAccount}
-        className="w-full rounded-xl border border-border bg-surface2 px-4 py-3 text-sm font-medium text-text transition-colors hover:border-muted"
-      >
+      <Button variant="ghost" size="lg" block onClick={onCreateAccount}>
         {labels.create_account_button}
-      </button>
+      </Button>
     </>
   )
 }

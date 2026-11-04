@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import Badge from '@/components/ui/Badge'
 import { ApiError, apiFetch, errorDetail } from '@/lib/api'
 import { FIRST_CHIP, PAUSE_MS, spotKey } from '@/lib/roulette'
 import { fromCents, toCents } from '@/lib/wallet'
@@ -124,63 +125,61 @@ export default function RouletteGame({ game, slips, mySeat, currency, labels }: 
   const shown = round?.status === 'settled' ? history.slice(1) : history
   const last = shown[0] ?? null
 
+  const players = new Set(bets.map((bet) => bet.seat)).size
+
   return (
     // On a laptop everything stays on one screen. A phone's upright board is too tall for that.
-    <div className="flex flex-col gap-3 md:h-[calc(100dvh-10rem)] md:min-h-96">
-      <div className="flex min-w-0 items-center gap-4">
-        <h1 className="shrink-0 font-heading text-xl font-bold sm:text-2xl">{labels.game_title}</h1>
+    <div className="grid gap-4 md:h-[calc(100dvh-12rem)] md:min-h-[34rem] md:grid-cols-[minmax(0,1fr)_18rem] lg:h-[calc(100dvh-9.5rem)] lg:grid-cols-[minmax(0,1fr)_22.5rem] lg:gap-6">
+      <div className="relative flex min-h-0 min-w-0 flex-col gap-4">
         <ResultHistory results={history} />
-      </div>
 
-      <div className="grid min-h-0 flex-1 gap-3 md:grid-cols-[minmax(0,1fr)_18rem] lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-4">
-        <div className="relative flex min-h-0 min-w-0 flex-col gap-2">
-          <section className="relative flex h-56 min-h-0 items-center gap-3 overflow-hidden rounded-2xl border border-border bg-linear-to-b from-surface2 to-bg p-2 sm:p-3 md:h-auto md:flex-[1.15]">
-            <div className="flex h-full min-h-0 min-w-0 flex-1 items-center justify-center">
-              <Wheel round={round} previous={last?.result} clockOffset={clockOffset} />
-            </div>
-            <div className="w-36 shrink-0 sm:w-44 xl:w-56">
-              <RoundPanel round={round} connected={connected} seconds={seconds} last={last} won={won} labels={labels} />
-            </div>
-            <p className="absolute top-2 left-2 rounded-full bg-magenta/10 px-2 py-0.5 text-[10px] whitespace-nowrap text-magenta">
-              {labels.live} · {labels.players_count.replace('{count}', String(new Set(bets.map((bet) => bet.seat)).size))}
-            </p>
-          </section>
-
-          <div className="min-h-0 md:flex-1">
-            <BettingBoard
-              round={round}
-              isOpen={isOpen}
-              amounts={amounts}
-              labels={labels}
-              onBet={(spot) => slip.add(spot, chip * 100)}
-            />
+        <section className="relative flex h-72 min-h-0 items-center gap-4 overflow-hidden rounded-3xl border border-border bg-linear-to-b from-magenta/10 to-bg px-3 pt-11 pb-3 sm:p-5 sm:pt-5 md:h-auto md:flex-[1.6] xl:gap-8 xl:px-8">
+          <div className="flex h-full min-h-0 min-w-0 flex-1 items-center justify-center">
+            <Wheel round={round} previous={last?.result} clockOffset={clockOffset} />
           </div>
+          <div className="w-36 shrink-0 sm:w-48 xl:w-64">
+            <RoundPanel round={round} connected={connected} seconds={seconds} last={last} won={won} labels={labels} />
+          </div>
+          <Badge tone="magenta" dot className="absolute top-3 right-3 sm:top-5 sm:right-5">
+            <span className="tracking-wide uppercase">{labels.live}</span>
+            <span className="font-normal text-muted">{labels.players_count.replace('{count}', String(players))}</span>
+          </Badge>
+        </section>
 
-          <RoundFooter round={round} rtp={game.rtp} labels={labels} />
-        </div>
-
-        <div className="flex min-h-0 min-w-0 flex-col gap-3">
-          <YourBets
+        <div className="min-h-0 md:flex-1">
+          <BettingBoard
             round={round}
             isOpen={isOpen}
-            seconds={seconds}
-            chip={chip}
-            draft={slip.lines}
-            placed={placed}
-            paid={paidRound === round?.number}
-            pending={pending}
-            error={error}
-            currency={currency}
+            amounts={amounts}
             labels={labels}
-            onChip={setChip}
-            onUndo={slip.undo}
-            onClear={slip.clear}
-            onDouble={slip.double}
-            onRebet={rebet}
-            onPlace={placeBets}
+            onBet={(spot) => slip.add(spot, chip * 100)}
           />
-          <LiveTable bets={bets} payouts={payouts} round={round} mySeat={mySeat} currency={currency} labels={labels} />
         </div>
+
+        <RoundFooter round={round} rtp={game.rtp} labels={labels} />
+      </div>
+
+      <div className="flex min-h-0 min-w-0 flex-col gap-4">
+        <YourBets
+          round={round}
+          isOpen={isOpen}
+          seconds={seconds}
+          chip={chip}
+          draft={slip.lines}
+          placed={placed}
+          paid={paidRound === round?.number}
+          pending={pending}
+          error={error}
+          currency={currency}
+          labels={labels}
+          onChip={setChip}
+          onUndo={slip.undo}
+          onClear={slip.clear}
+          onDouble={slip.double}
+          onRebet={rebet}
+          onPlace={placeBets}
+        />
+        <LiveTable bets={bets} payouts={payouts} round={round} mySeat={mySeat} currency={currency} labels={labels} />
       </div>
     </div>
   )

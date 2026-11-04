@@ -5,6 +5,7 @@ export const WS_URL = process.env.NEXT_PUBLIC_ROULETTE_WS_URL ?? 'ws://127.0.0.1
 export const CHIPS = [1, 5, 10, 25, 100, 500]
 export const FIRST_CHIP = 10
 export const PAUSE_MS = 4000
+export const BETTING_SECONDS = 18 // backend roulette/engine.py BETTING_SECONDS
 
 // The same as backend/roulette/engine.py: the wheel clockwise, and the red numbers.
 export const WHEEL = [

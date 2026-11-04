@@ -3,7 +3,6 @@ export interface CrashPageLabels {
   lang: string
   page_title: string
   page_description: string
-  game_title: string
   tab_manual: string
   tab_auto: string
   bet_amount: string

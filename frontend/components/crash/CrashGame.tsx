@@ -66,38 +66,32 @@ export default function CrashGame({ game, balance, lastBet, currency, labels }: 
   }
 
   return (
-    // Everything stays on one screen: the header, the footer and the page's padding take the rest.
+    // Everything stays on one screen: the top bar, the footer and the page's padding take the rest.
     // A very short phone scrolls a little instead of squeezing the chart.
-    <div className="flex min-h-[calc(100dvh-10rem)] flex-col gap-3 md:h-[calc(100dvh-10rem)] md:min-h-80">
-      <div className="flex min-w-0 items-center gap-4">
-        <h1 className="shrink-0 font-heading text-xl font-bold sm:text-2xl">{labels.game_title}</h1>
+    <div className="grid min-h-[calc(100dvh-12rem)] grid-rows-[minmax(14rem,1fr)_auto] gap-4 md:h-[calc(100dvh-12rem)] md:min-h-96 md:grid-cols-[minmax(0,1fr)_18rem] md:grid-rows-1 lg:h-[calc(100dvh-9.5rem)] lg:grid-cols-[minmax(0,1fr)_22.5rem] lg:gap-6">
+      <div className="relative flex min-h-0 min-w-0 flex-col gap-4">
         <CrashHistory points={history} title={labels.history_title} />
+        <CrashChart round={round} connected={connected} clockOffset={clockOffset} labels={labels} />
+        <RoundFooter round={round} rtp={game.rtp} labels={labels} />
       </div>
 
-      <div className="grid flex-1 grid-rows-[minmax(11.5rem,1fr)_auto] gap-3 md:min-h-0 md:grid-cols-[minmax(0,1fr)_18rem] md:grid-rows-1 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-4">
-        <div className="relative flex min-h-0 min-w-0 flex-col gap-2">
-          <CrashChart round={round} connected={connected} clockOffset={clockOffset} labels={labels} />
-          <RoundFooter round={round} rtp={game.rtp} labels={labels} />
-        </div>
-
-        <div className="flex min-h-0 min-w-0 flex-col gap-3">
-          <BetPanel
-            game={game}
-            round={round}
-            connected={connected}
-            clockOffset={clockOffset}
-            balance={wallet}
-            betAmount={bet?.amount ?? null}
-            cashedAt={cashedAt}
-            pending={pending}
-            error={error}
-            currency={currency}
-            labels={labels}
-            onBet={placeBet}
-            onCashOut={() => send('/crash_bets/cash_out')}
-          />
-          <LiveBets bets={bets} round={round} currency={currency} labels={labels} />
-        </div>
+      <div className="flex min-h-0 min-w-0 flex-col gap-4">
+        <BetPanel
+          game={game}
+          round={round}
+          connected={connected}
+          clockOffset={clockOffset}
+          balance={wallet}
+          betAmount={bet?.amount ?? null}
+          cashedAt={cashedAt}
+          pending={pending}
+          error={error}
+          currency={currency}
+          labels={labels}
+          onBet={placeBet}
+          onCashOut={() => send('/crash_bets/cash_out')}
+        />
+        <LiveBets bets={bets} round={round} currency={currency} labels={labels} />
       </div>
     </div>
   )
