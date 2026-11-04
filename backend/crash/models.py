@@ -136,7 +136,6 @@ class CrashPageLabel(models.Model):
     lang = models.CharField(max_length=10, choices=LANG_CHOICES, db_index=True)
     page_title = models.CharField(max_length=100)
     page_description = models.CharField(max_length=255)
-    game_title = models.CharField(max_length=100)
     tab_manual = models.CharField(max_length=50)
     tab_auto = models.CharField(max_length=50)
     bet_amount = models.CharField(max_length=50)

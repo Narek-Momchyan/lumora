@@ -30,7 +30,7 @@ class SlotSoundAdmin(admin.ModelAdmin):
 
 @admin.register(ZeusPageLabel)
 class ZeusPageLabelAdmin(admin.ModelAdmin):
-    list_display = ["lang", "game_title", "spin"]
+    list_display = ["lang", "page_title", "spin"]
     list_filter = ["lang"]
 
 

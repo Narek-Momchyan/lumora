@@ -64,5 +64,5 @@ class RouletteBotSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(RoulettePageLabel)
 class RoulettePageLabelAdmin(admin.ModelAdmin):
-    list_display = ["lang", "game_title", "place_bets"]
+    list_display = ["lang", "page_title", "place_bets"]
     list_filter = ["lang"]

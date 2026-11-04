@@ -1,7 +1,9 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from base.constants import LANG_CHOICES
 from base.fields import IMAGE_VALIDATORS
+from games.models import Game
 
 
 class Logo(models.Model):
@@ -33,9 +35,21 @@ class Language(models.Model):
 
 
 class SidebarItem(models.Model):
+    """A link of the sidebar, the site's only navigation.
+
+    An item with a `category` opens the lobby filtered by it (`/?category=<code>`) and is the
+    active one on the pages of that category's games.
+    """
+
     lang = models.CharField(max_length=10, choices=LANG_CHOICES, db_index=True)
     title = models.CharField(max_length=100)
     url = models.CharField(max_length=255)
+    category = models.CharField(
+        max_length=16,
+        choices=Game.Category.choices,
+        blank=True,
+        help_text="Set: the item filters the lobby, its url must be /?category=<code>",
+    )
     order = models.PositiveSmallIntegerField(default=0)
     is_soon = models.BooleanField(default=False, help_text="On: shown disabled, with the soon label")
 
@@ -48,6 +62,14 @@ class SidebarItem(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.lang})"
+
+    def clean(self):
+        if self.category and self.url != category_url(self.category):
+            raise ValidationError({"url": f"A category item opens {category_url(self.category)}."})
+
+
+def category_url(code):
+    return f"/?category={code}"
 
 
 class HeaderLabel(models.Model):
@@ -62,6 +84,8 @@ class HeaderLabel(models.Model):
     balance_label = models.CharField(max_length=50)
     currency = models.CharField(max_length=10)
     menu_label = models.CharField(max_length=50)
+    open_menu_label = models.CharField(max_length=50)
+    close_menu_label = models.CharField(max_length=50)
     language_label = models.CharField(max_length=50)
     logout_button = models.CharField(max_length=50)
     server_unreachable = models.CharField(max_length=255)

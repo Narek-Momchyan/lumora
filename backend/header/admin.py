@@ -20,8 +20,8 @@ class LanguageAdmin(admin.ModelAdmin):
 
 @admin.register(SidebarItem)
 class SidebarItemAdmin(admin.ModelAdmin):
-    list_display = ["title", "url", "lang", "order", "is_soon"]
-    list_filter = ["lang", "is_soon"]
+    list_display = ["title", "url", "category", "lang", "order", "is_soon"]
+    list_filter = ["lang", "category", "is_soon"]
 
 
 @admin.register(HeaderLabel)

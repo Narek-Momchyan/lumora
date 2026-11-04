@@ -162,11 +162,11 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
 | GET | `/api/leaderboard` | – | top 20 of the last 7 days by net game result |
 | GET | `/api/logos` | – | the logo as one object, `{}` before one is added |
 | GET | `/api/languages` | – | languages for the language switcher, in `order` |
-| GET | `/api/sidebar_items` | – | sidebar links with their `order` and `is_soon`; `?lang=` |
+| GET | `/api/sidebar_items` | – | the site's navigation with `order`, `is_soon` and `category` (an item with a category opens `/?category=<code>` and is active on that category's game pages); `?lang=` |
 | GET | `/api/header_labels` | – | every text of the sidebar and the header; `?lang=` |
 | GET | `/api/login_page_labels` | – | every text of the login page; `?lang=` |
 | GET | `/api/lobby_page_labels` | – | every text of the lobby page; `?lang=` |
-| GET | `/api/game_categories` | – | category names for filters and game cards; `?lang=` |
+| GET | `/api/game_categories` | – | category names: the filtered lobby's title and game cards; `?lang=` |
 | GET | `/api/slot_spins` | cookie | the player's last 50 slot rounds, newest first, without `result` |
 | POST | `/api/slot_spins` | cookie | `{game, amount, bonus_buy?}` → plays one round with all its free spins: the round, `result`, `balance` and `jackpot_pools` |
 | GET | `/api/slot_spins/<id>` | cookie | one round with its `result` |

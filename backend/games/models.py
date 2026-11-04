@@ -35,7 +35,7 @@ class Game(models.Model):
 
 
 class GameCategory(models.Model):
-    """A category's names in one language: `filter_label` on lobby filters, `card_label` on game cards."""
+    """A category's names in one language: `filter_label` titles the filtered lobby, `card_label` is on cards."""
 
     lang = models.CharField(max_length=10, choices=LANG_CHOICES, db_index=True)
     code = models.CharField(max_length=16, choices=Game.Category.choices)
@@ -68,8 +68,6 @@ class LobbyPageLabel(models.Model):
     bonus_claiming = models.CharField(max_length=50)
     bonus_claimed = models.CharField(max_length=100)
     bonus_next = models.CharField(max_length=100, help_text="{time} is replaced with the date and time")
-    filter_all = models.CharField(max_length=50)
-    filters_label = models.CharField(max_length=50)
     section_popular = models.CharField(max_length=100)
     section_all = models.CharField(max_length=100)
     soon_badge = models.CharField(max_length=30)

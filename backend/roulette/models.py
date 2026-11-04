@@ -145,7 +145,6 @@ class RoulettePageLabel(models.Model):
     lang = models.CharField(max_length=10, choices=LANG_CHOICES, db_index=True)
     page_title = models.CharField(max_length=100)
     page_description = models.CharField(max_length=255)
-    game_title = models.CharField(max_length=100)
     live = models.CharField(max_length=20)
     players_count = models.CharField(max_length=50, help_text="{count} is replaced with the number")
     bets_close_in = models.CharField(max_length=50)

@@ -49,5 +49,5 @@ class CrashBotSettingsAdmin(admin.ModelAdmin):
 
 @admin.register(CrashPageLabel)
 class CrashPageLabelAdmin(admin.ModelAdmin):
-    list_display = ["lang", "game_title", "cash_out"]
+    list_display = ["lang", "page_title", "cash_out"]
     list_filter = ["lang"]

@@ -80,7 +80,6 @@ class ZeusPageLabel(models.Model):
     lang = models.CharField(max_length=10, choices=LANG_CHOICES, db_index=True)
     page_title = models.CharField(max_length=100)
     page_description = models.CharField(max_length=255)
-    game_title = models.CharField(max_length=100)
     tagline = models.CharField(max_length=255)
     free_spins_title = models.CharField(max_length=100)
     free_spins_left = models.CharField(max_length=100, help_text="{count} is replaced with the number")
