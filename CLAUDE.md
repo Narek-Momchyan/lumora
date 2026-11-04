@@ -11,19 +11,32 @@
 
 ## What Lumora is
 
-A casino-style gaming platform with **demo coins only**. Players get free Lumora Coins
-(LC). **LC has no cash value. There are no deposits, withdrawals, payments or prizes,
-and we never add any.** It is a portfolio project for iGaming backend / full-stack
-roles, so clean code, tests and clear maths matter more than the number of features.
+A **football-first** gaming platform with **demo coins only**: demo bets on top football
+leagues (odds from our own model), free score predictions with leaderboards, and club
+forums. The casino games (Neon Crash, Zeus Legacy, Lumora Roulette) stay as a second
+section, "Casino", at `/casino`. Every product decision for football is in
+`design/sports-spec.md`; read it before any sports work.
+
+Players get free Lumora Coins (LC). **LC has no cash value. There are no deposits,
+withdrawals, payments or prizes, and we never add any.** It is a portfolio project for
+iGaming backend / full-stack roles, so clean code, tests and clear maths matter more
+than the number of features.
 
 Languages: **en (default), am, ru**. The chosen language lives in the `lang` cookie,
 like in Fruit Food (`am` is our code for Armenian; the HTML `lang` attribute is `hy`).
 
 Design: Figma "Lumora — Web Design",
-https://www.figma.com/design/FxLkT26ijHMkKgX87RjLyM — screens 01 Login, 02 Lobby,
-03 Game · Neon Crash, 04 Wallet. PNG exports of these screens are in `design/`
-(open them before building a page). The colour variables ("Lumora Colors") are the
-Tailwind tokens in `frontend/app/globals.css`; keep both in sync. Fonts: Sora for
+https://www.figma.com/design/FxLkT26ijHMkKgX87RjLyM. PNG exports are in `design/`
+(open them before building a page): casino 01 Login, 02 Lobby, 03 Neon Crash,
+04 Wallet, 05/05b/05c Roulette (betting, spin, result); football 06 Sports home,
+07 Match, 08 My bets, 09 Predictions, 10 League table, 11 Club forum, 12 Forum topic.
+The spec for 06–12 is `design/sports-spec.md`.
+
+Two themes, one set of Tailwind class names: the colour tokens (`bg`, `surface`,
+`surface2`, `border`, `text`, `muted`, `accent`, `accent2`, `lime`, `danger`) are CSS
+variables in `frontend/app/globals.css`. The neon casino values sit on `:root`, the
+green "night stadium" values under `[data-theme="sports"]` on `<html>`; keep both in
+sync with Figma. Fonts: Sora for
 headings, Inter for text. Build only what the API supports; if the design shows
 something the backend does not have yet (forgot password, reset balance, live bets,
 wagered stats), leave it out and list it for Narek instead of faking it.
@@ -127,6 +140,9 @@ npm run build
   requests send Django's CSRF token in the `X-CSRFToken` header.
 - `frontend/proxy.ts` sends every page except `/login` to `/login` when there is no
   session cookie, before the page renders. Logged-in players who open `/login` go to `/`.
+- `proxy.ts` also picks the section: football routes are `sports`, casino routes (and
+  `/login`) are `casino`, shared pages (Wallet, Leaderboard) keep the last one. It saves
+  it in the `mode` cookie, and the root layout sets `<html data-theme>` from it.
 
 ## Rules — do not break these
 
@@ -157,11 +173,23 @@ npm run build
     pure engines, `TransactionTestCase` for real parallel requests).
     `python manage.py test` must pass before every commit. Create test users without
     a password (fast); only the `accounts` tests use real passwords.
-11. Frontend: Tailwind tokens (`bg-surface`, `text-muted`, `text-cyan` ...), never raw
+11. Frontend: Tailwind tokens (`bg-surface`, `text-muted`, `text-accent` ...), never raw
     hex. Show "Demo mode · LC has no cash value" wherever a balance is shown.
 12. No text or image is hard-coded in the frontend: it comes from the backend in the
     current language and can be changed in the admin.
 13. Tokens only in httpOnly cookies. No page except `/login` opens without a session.
+14. **Odds come only from our model** (`sports/engine.py`), never from a provider or a
+    bookmaker, and are frozen at kickoff.
+15. **Settlement uses only football-data.org's final score** (status FINISHED, regular
+    time), in an idempotent job; postponed, cancelled or abandoned matches are void as in
+    `design/sports-spec.md`.
+16. **The frontend never calls a football provider.** Sync jobs store everything in our
+    database and the browser reads only our API. Tests never use the network: they read
+    recorded JSON fixtures.
+17. Club crests come only from football-data.org's `crest` (saved in `Team.crest`,
+    replaceable in the admin), with the club's initials in its colours as the fallback.
+    We never use league logos: leagues show country flags (a star for the Champions League).
+18. Components never check the theme: colours only through the tokens.
 
 ## Frontend conventions
 
@@ -171,6 +199,9 @@ npm run build
   request's cookies to Django. `types/` holds the interfaces that mirror the backend
   serializers.
 - Native `fetch`, no axios.
+- Shared UI lives in `components/ui/` (Card, Button primary/ghost/outline, Badge, Chip,
+  Tabs, PageTitle, SectionTitle, Field, ProgressBar, OddsButton). Pages use these
+  instead of repeating classes.
 - Style: no semicolons, single quotes in TS, double quotes in JSX attributes.
 - Next.js 16 has breaking changes compared with older versions. When unsure about an
   API, read the guide in `frontend/node_modules/next/dist/docs/` first. `next dev`
@@ -230,5 +261,15 @@ Each phase ends with something that works and can be shown.
 ### Phase 6 — Mobile (React Native / Expo)
 - [ ] Shared API client, Lobby, Neon Crash, Wallet
 
-### Phase 7 — Sports (demo predictions)
-- [ ] Match data from a public sports API, pick the winner with demo coins
+### Football (design/sports-spec.md, one session per phase)
+- [ ] S0 Theme tokens + Sports | Casino switch + both sidebars + shared UI kit
+      (`components/ui/`) + casino pages consistent with designs 01–05
+- [ ] S1 `sports` backend data: competitions, teams (colours, aliases, crests), matches,
+      standings, football-data sync with rate limits, admin, tests on recorded JSON
+- [ ] S2 Odds engine, markets, bets (single/express), settlement, void rules, tests and
+      the 200,000-match simulation
+- [ ] S3 Frontend: Football home, match page, bet slip, My bets (designs 06–08) +
+      animations 1–4
+- [ ] S4 Predictions and leaderboards (design 09), league pages (design 10)
+- [ ] S5 Live scores (API-Football, budget guard) over `/ws/sports`, live page
+- [ ] S6 Club forums with moderation (designs 11–12)
