@@ -31,6 +31,7 @@ from header.urls import header_router
 from leaderboard.urls import leaderboard_router
 from roulette.urls import roulette_router
 from slots.urls import slots_router
+from sports.urls import sports_router
 from wallet.urls import wallet_router
 
 
@@ -58,6 +59,7 @@ router.registry.extend(slots_router.registry)
 router.registry.extend(leaderboard_router.registry)
 router.registry.extend(header_router.registry)
 router.registry.extend(errors_router.registry)
+router.registry.extend(sports_router.registry)
 
 urlpatterns = [
     path("admin/", admin.site.urls),

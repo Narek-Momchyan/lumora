@@ -258,7 +258,9 @@ class ApiContractTests(TestCase):
 
     def test_sidebar_and_categories_have_the_same_rows_in_every_language(self):
         expected = {
-            "sidebar_items": lambda row: (row["url"], row["category"], row["order"], row["is_soon"]),
+            "sidebar_items": lambda row: (
+                row["mode"], row["group"], row["url"], row["icon"], row["category"], row["order"], row["is_soon"]
+            ),
             "game_categories": lambda row: (row["code"], row["order"], row["is_soon"]),
         }
         for name, key in expected.items():
@@ -267,20 +269,37 @@ class ApiContractTests(TestCase):
                 self.assertEqual(rows[0], rows[1])
                 self.assertEqual(rows[0], rows[2])
 
-    def test_sidebar_is_the_whole_navigation(self):
-        expected = [
-            "/",
-            "/?category=slot",
-            "/?category=crash",
-            "/?category=table",
-            "/?category=sports",
-            "/wallet",
-            "/leaderboard",
-        ]
+    def test_each_section_has_its_own_sidebar(self):
+        expected = {
+            "sports": [
+                "/",
+                "/live",
+                "/leagues/PL",
+                "/leagues/PD",
+                "/leagues/SA",
+                "/leagues/BL1",
+                "/leagues/FL1",
+                "/leagues/CL",
+                "/my-bets",
+                "/predictions",
+                "/forums",
+                "/leaderboard",
+                "/wallet",
+            ],
+            "casino": [
+                "/casino",
+                "/casino?category=slot",
+                "/casino?category=crash",
+                "/casino?category=table",
+                "/wallet",
+                "/leaderboard",
+            ],
+        }
         for lang in LANGS:
-            with self.subTest(lang=lang):
-                urls = [row["url"] for row in self.client.get(f"/api/sidebar_items?lang={lang}").json()]
-                self.assertEqual(urls, expected)
+            rows = self.client.get(f"/api/sidebar_items?lang={lang}").json()
+            for mode, urls in expected.items():
+                with self.subTest(lang=lang, mode=mode):
+                    self.assertEqual([row["url"] for row in rows if row["mode"] == mode], urls)
 
     def test_every_game_category_has_names(self):
         codes = {code for code, _ in Game.Category.choices}

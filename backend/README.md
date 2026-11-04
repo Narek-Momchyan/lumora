@@ -112,7 +112,7 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
   Next `/media` rewrite.
 - Every endpoint needs a login except `register`, `token`, `token/refresh`,
   `logout`, `games`, `leaderboard`, `error_messages` and the site content: `logos`,
-  `languages`, `sidebar_items`, `header_labels`, `login_page_labels`,
+  `languages`, `sidebar_items`, `header_labels`, `sports_page_labels`, `login_page_labels`,
   `lobby_page_labels`, `game_categories`, `slot_symbols`, `slot_symbol_names`,
   `slot_sounds`, `jackpot_pools`, `zeus_page_labels`, `crash_rounds`,
   `crash_page_labels`, `roulette_rounds` and `roulette_page_labels`.
@@ -162,8 +162,9 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
 | GET | `/api/leaderboard` | – | top 20 of the last 7 days by net game result |
 | GET | `/api/logos` | – | the logo as one object, `{}` before one is added |
 | GET | `/api/languages` | – | languages for the language switcher, in `order` |
-| GET | `/api/sidebar_items` | – | the site's navigation with `order`, `is_soon` and `category` (an item with a category opens `/?category=<code>` and is active on that category's game pages); `?lang=` |
-| GET | `/api/header_labels` | – | every text of the sidebar and the header; `?lang=` |
+| GET | `/api/sidebar_items` | – | the navigation of both sections: `mode` (`sports`/`casino`), `group` (`leagues`, `my` or none), `icon`, `order`, `is_soon` and `category` (a casino item with a category opens `/casino?category=<code>` and is active on that category's game pages); `?lang=` |
+| GET | `/api/header_labels` | – | every text of the sidebar (with the Sports / Casino switch and the group headings) and the header; `?lang=` |
+| GET | `/api/sports_page_labels` | – | every text of the football home page; `?lang=` |
 | GET | `/api/login_page_labels` | – | every text of the login page; `?lang=` |
 | GET | `/api/lobby_page_labels` | – | every text of the lobby page; `?lang=` |
 | GET | `/api/game_categories` | – | category names: the filtered lobby's title and game cards; `?lang=` |

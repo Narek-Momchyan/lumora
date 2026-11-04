@@ -37,39 +37,56 @@ class Language(models.Model):
 class SidebarItem(models.Model):
     """A link of the sidebar, the site's only navigation.
 
-    An item with a `category` opens the lobby filtered by it (`/?category=<code>`) and is the
-    active one on the pages of that category's games.
+    Each section (Sports, Casino) has its own items. A casino item with a `category` opens the
+    casino lobby filtered by it (`/casino?category=<code>`) and is the active one on the pages of
+    that category's games. Items with a `group` are listed under its heading (Leagues, My Lumora).
     """
 
+    class Mode(models.TextChoices):
+        SPORTS = "sports", "Sports"
+        CASINO = "casino", "Casino"
+
+    class Group(models.TextChoices):
+        NONE = "", "None"
+        LEAGUES = "leagues", "Leagues"
+        MY = "my", "My Lumora"
+
     lang = models.CharField(max_length=10, choices=LANG_CHOICES, db_index=True)
+    mode = models.CharField(max_length=10, choices=Mode.choices, default=Mode.CASINO, db_index=True)
+    group = models.CharField(max_length=10, choices=Group.choices, blank=True)
     title = models.CharField(max_length=100)
     url = models.CharField(max_length=255)
+    icon = models.FileField(
+        upload_to="images/sidebar/", max_length=255, blank=True, validators=IMAGE_VALIDATORS
+    )
     category = models.CharField(
         max_length=16,
         choices=Game.Category.choices,
         blank=True,
-        help_text="Set: the item filters the lobby, its url must be /?category=<code>",
+        help_text="Casino only. Set: the item filters the lobby, its url must be /casino?category=<code>",
     )
     order = models.PositiveSmallIntegerField(default=0)
     is_soon = models.BooleanField(default=False, help_text="On: shown disabled, with the soon label")
 
     class Meta:
         verbose_name_plural = "Sidebar items"
-        ordering = ["order", "id"]
+        ordering = ["mode", "order", "id"]
         constraints = [
-            models.UniqueConstraint(fields=["lang", "url"], name="unique_sidebar_item_lang_url"),
+            models.UniqueConstraint(fields=["lang", "mode", "url"], name="unique_sidebar_item_lang_mode_url"),
         ]
 
     def __str__(self):
-        return f"{self.title} ({self.lang})"
+        return f"{self.title} ({self.mode}, {self.lang})"
 
     def clean(self):
+        if self.category and self.mode != self.Mode.CASINO:
+            raise ValidationError({"category": "Only a casino item filters the casino lobby."})
         if self.category and self.url != category_url(self.category):
             raise ValidationError({"url": f"A category item opens {category_url(self.category)}."})
 
 
 def category_url(code):
-    return f"/?category={code}"
+    return f"/casino?category={code}"
 
 
 class HeaderLabel(models.Model):
@@ -86,6 +103,11 @@ class HeaderLabel(models.Model):
     menu_label = models.CharField(max_length=50)
     open_menu_label = models.CharField(max_length=50)
     close_menu_label = models.CharField(max_length=50)
+    sports_mode = models.CharField(max_length=30)
+    casino_mode = models.CharField(max_length=30)
+    mode_switch_label = models.CharField(max_length=50)
+    leagues_group = models.CharField(max_length=50)
+    my_lumora_group = models.CharField(max_length=50)
     language_label = models.CharField(max_length=50)
     logout_button = models.CharField(max_length=50)
     server_unreachable = models.CharField(max_length=255)

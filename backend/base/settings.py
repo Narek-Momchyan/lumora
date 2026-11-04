@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "slots",
     "leaderboard",
     "header",
+    "sports",
     "errors",
 ]
 
