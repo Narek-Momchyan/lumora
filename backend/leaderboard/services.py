@@ -5,7 +5,8 @@ from django.utils import timezone
 
 from wallet.models import Transaction
 
-GAME_KINDS = [Transaction.Kind.BET, Transaction.Kind.WIN, Transaction.Kind.JACKPOT]
+# A refund gives a void bet's stake back, so it counts too: the void bet nets to zero.
+GAME_KINDS = [Transaction.Kind.BET, Transaction.Kind.WIN, Transaction.Kind.JACKPOT, Transaction.Kind.REFUND]
 
 
 def weekly_top(limit=20, now=None):

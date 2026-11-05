@@ -36,12 +36,19 @@ class RunserverTests(SimpleTestCase):
     def test_runserver_is_ours(self):
         self.assertEqual(get_commands()["runserver"], "base")
 
-    def test_it_starts_both_games(self):
+    def started_runners(self):
         with mock.patch.object(runserver.Thread, "start", autospec=True) as start:
             with mock.patch.object(runserver.DaphneRunserver, "inner_run"):
-                runserver.Command().inner_run()
-        modules = [call.args[0]._args[1].__module__ for call in start.call_args_list]
-        self.assertEqual(modules, ["crash.runner", "roulette.runner"])
+                runserver.Command(stdout=StringIO()).inner_run()
+        return [call.args[0]._args[1].__module__ for call in start.call_args_list]
+
+    @override_settings(FOOTBALL_DATA_TOKEN="")
+    def test_it_starts_both_games(self):
+        self.assertEqual(self.started_runners(), ["crash.runner", "roulette.runner"])
+
+    @override_settings(FOOTBALL_DATA_TOKEN="token")
+    def test_with_a_football_token_it_also_syncs_football(self):
+        self.assertEqual(self.started_runners(), ["crash.runner", "roulette.runner", "sports.runner"])
 
     def run_until_the_third_wait(self, acquire, runner_class):
         with mock.patch.object(live.time, "sleep", side_effect=[None, None, KeyboardInterrupt]):

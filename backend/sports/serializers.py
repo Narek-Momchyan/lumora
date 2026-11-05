@@ -1,7 +1,19 @@
 from rest_framework import serializers
 
 from base.serializers import ModelSerializer
-from .models import Competition, Match, SportsPageLabel, Standing, Team
+from .betting import MAX_PICKS
+from .models import (
+    Bet,
+    BetLabel,
+    BetSelection,
+    Competition,
+    Market,
+    Match,
+    Selection,
+    SportsPageLabel,
+    Standing,
+    Team,
+)
 
 
 class SportsPageLabelSerializer(ModelSerializer):
@@ -107,3 +119,65 @@ class StandingSerializer(ModelSerializer):
             "points",
             "form",
         ]
+
+
+class BetLabelSerializer(ModelSerializer):
+    class Meta:
+        model = BetLabel
+        fields = "__all__"
+
+
+class SelectionSerializer(ModelSerializer):
+    class Meta:
+        model = Selection
+        fields = ["id", "code", "odds", "previous_odds", "probability", "result"]
+
+
+class MarketSerializer(ModelSerializer):
+    selections = SelectionSerializer(many=True)
+
+    class Meta:
+        model = Market
+        fields = ["id", "match", "kind", "line", "status", "selections"]
+
+
+class BetSelectionSerializer(ModelSerializer):
+    market = serializers.CharField(source="selection.market.kind")
+    line = serializers.DecimalField(source="selection.market.line", max_digits=4, decimal_places=1, allow_null=True)
+    code = serializers.CharField(source="selection.code")
+    match = MatchSerializer()
+
+    class Meta:
+        model = BetSelection
+        fields = ["id", "selection", "market", "line", "code", "odds", "result", "match"]
+
+
+class BetSerializer(ModelSerializer):
+    picks = BetSelectionSerializer(many=True)
+
+    class Meta:
+        model = Bet
+        fields = [
+            "id",
+            "key",
+            "kind",
+            "stake",
+            "total_odds",
+            "potential_win",
+            "status",
+            "payout",
+            "created_at",
+            "settled_at",
+            "picks",
+        ]
+
+
+class PickRequestSerializer(serializers.Serializer):
+    selection = serializers.IntegerField()
+    odds = serializers.DecimalField(max_digits=7, decimal_places=2)
+
+
+class BetRequestSerializer(serializers.Serializer):
+    key = serializers.CharField(max_length=40)
+    stake = serializers.DecimalField(max_digits=12, decimal_places=2)
+    selections = PickRequestSerializer(many=True, allow_empty=False, max_length=MAX_PICKS)

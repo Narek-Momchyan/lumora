@@ -24,7 +24,7 @@ class Wallet(models.Model):
 
 
 class Transaction(models.Model):
-    """Append-only ledger. amount is signed: negative = bet, positive = win / bonus / signup.
+    """Append-only ledger. amount is signed: negative = bet, positive = win / refund / bonus / signup.
 
     The sum of a wallet's transactions always equals its balance (tested).
     """
@@ -35,6 +35,7 @@ class Transaction(models.Model):
         BET = "bet", "Bet"
         WIN = "win", "Win"
         JACKPOT = "jackpot", "Jackpot"
+        REFUND = "refund", "Refund"
 
     wallet = models.ForeignKey(Wallet, related_name="transactions", on_delete=models.CASCADE)
     kind = models.CharField(max_length=16, choices=Kind.choices)

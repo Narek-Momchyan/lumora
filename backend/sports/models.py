@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 from base.constants import LANG_CHOICES
@@ -246,3 +247,164 @@ class SyncRun(models.Model):
 
     def __str__(self):
         return f"{self.kind} {self.started_at:%Y-%m-%d %H:%M}"
+
+
+class ModelRun(models.Model):
+    """One fit of the odds model (sports/engine.py): when, on how many matches, and its ratings."""
+
+    fitted_at = models.DateTimeField(auto_now_add=True)
+    matches_used = models.PositiveIntegerField()
+    rho = models.FloatField()
+    params = models.JSONField(help_text="base and home per competition, attack and defence per team id")
+    priced_matches = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name_plural = "Model runs"
+        ordering = ["-fitted_at"]
+
+    def __str__(self):
+        return f"Model {self.fitted_at:%Y-%m-%d %H:%M} ({self.matches_used} matches)"
+
+
+class Market(models.Model):
+    """A match's market. Its odds follow the model until kickoff, then they are frozen."""
+
+    class Kind(models.TextChoices):
+        ONE_X_TWO = "1x2", "Match result"
+        DOUBLE_CHANCE = "double_chance", "Double chance"
+        TOTAL = "total", "Total goals"
+        BTTS = "btts", "Both teams to score"
+        CORRECT_SCORE = "correct_score", "Correct score"
+
+    class Status(models.TextChoices):
+        OPEN = "open", "Open"
+        CLOSED = "closed", "Closed at kickoff"
+        SETTLED = "settled", "Settled"
+        VOID = "void", "Void"
+
+    match = models.ForeignKey(Match, related_name="markets", on_delete=models.CASCADE)
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    line = models.DecimalField(max_digits=4, decimal_places=1, null=True, blank=True, help_text="Total goals only")
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Markets"
+        ordering = ["match", "id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["match", "kind", "line"], nulls_distinct=False, name="unique_market_match_kind_line"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.match} · {self.kind}{f' {self.line}' if self.line is not None else ''}"
+
+
+class Selection(models.Model):
+    class Result(models.TextChoices):
+        PENDING = "pending", "Pending"
+        WON = "won", "Won"
+        LOST = "lost", "Lost"
+        VOID = "void", "Void"
+
+    market = models.ForeignKey(Market, related_name="selections", on_delete=models.CASCADE)
+    code = models.CharField(max_length=10, help_text="home, draw, away, 1X, 12, X2, over, under, yes, no, 2-1, other")
+    odds = models.DecimalField(max_digits=7, decimal_places=2)
+    previous_odds = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True)
+    probability = models.DecimalField(max_digits=5, decimal_places=4, help_text="The model's fair probability")
+    result = models.CharField(max_length=10, choices=Result.choices, default=Result.PENDING)
+
+    class Meta:
+        verbose_name_plural = "Selections"
+        ordering = ["market", "id"]
+        constraints = [models.UniqueConstraint(fields=["market", "code"], name="unique_selection_market_code")]
+
+    def __str__(self):
+        return f"{self.market} · {self.code} @ {self.odds}"
+
+
+class Bet(models.Model):
+    """A player's single (one pick) or express (2-10 picks from different matches)."""
+
+    class Kind(models.TextChoices):
+        SINGLE = "single", "Single"
+        EXPRESS = "express", "Express"
+
+    class Status(models.TextChoices):
+        OPEN = "open", "Open"
+        WON = "won", "Won"
+        LOST = "lost", "Lost"
+        VOID = "void", "Void (stake returned)"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="sport_bets", on_delete=models.CASCADE)
+    key = models.CharField(max_length=64, help_text="The client's idempotency key")
+    kind = models.CharField(max_length=10, choices=Kind.choices)
+    stake = models.DecimalField(max_digits=12, decimal_places=2)
+    total_odds = models.DecimalField(max_digits=10, decimal_places=2)
+    potential_win = models.DecimalField(max_digits=14, decimal_places=2)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN, db_index=True)
+    payout = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    settled_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Bets"
+        ordering = ["-created_at", "-id"]
+        constraints = [models.UniqueConstraint(fields=["user", "key"], name="unique_sport_bet_user_key")]
+
+    def __str__(self):
+        return f"{self.kind} {self.stake} @ {self.total_odds} ({self.status})"
+
+
+class BetSelection(models.Model):
+    bet = models.ForeignKey(Bet, related_name="picks", on_delete=models.CASCADE)
+    selection = models.ForeignKey(Selection, related_name="picks", on_delete=models.PROTECT)
+    match = models.ForeignKey(Match, related_name="picks", on_delete=models.PROTECT)
+    odds = models.DecimalField(max_digits=7, decimal_places=2, help_text="The odds when the bet was placed")
+    result = models.CharField(max_length=10, choices=Selection.Result.choices, default=Selection.Result.PENDING)
+
+    class Meta:
+        verbose_name_plural = "Bet selections"
+        ordering = ["bet", "id"]
+        constraints = [models.UniqueConstraint(fields=["bet", "match"], name="unique_bet_selection_match")]
+
+    def __str__(self):
+        return f"{self.selection} in bet {self.bet_id}"
+
+
+class BetLabel(models.Model):
+    """Names of the markets and picks in one language ({line} is the goal line, e.g. Over 2.5)."""
+
+    lang = models.CharField(max_length=10, choices=LANG_CHOICES, db_index=True)
+    match_result = models.CharField(max_length=50)
+    double_chance = models.CharField(max_length=50)
+    total_goals = models.CharField(max_length=50)
+    both_teams_to_score = models.CharField(max_length=50)
+    correct_score = models.CharField(max_length=50)
+    home = models.CharField(max_length=30, help_text="1X2 pick when the team's name doesn't fit")
+    draw = models.CharField(max_length=30)
+    away = models.CharField(max_length=30)
+    home_or_draw = models.CharField(max_length=30)
+    home_or_away = models.CharField(max_length=30)
+    draw_or_away = models.CharField(max_length=30)
+    over = models.CharField(max_length=30, help_text="{line} is replaced with the line")
+    under = models.CharField(max_length=30, help_text="{line} is replaced with the line")
+    yes = models.CharField(max_length=20)
+    no = models.CharField(max_length=20)
+    other_score = models.CharField(max_length=30)
+    single = models.CharField(max_length=30)
+    express = models.CharField(max_length=30)
+    status_open = models.CharField(max_length=30)
+    status_won = models.CharField(max_length=30)
+    status_lost = models.CharField(max_length=30)
+    status_void = models.CharField(max_length=30)
+    model_label = models.CharField(max_length=50, help_text="Shown next to the fair probabilities")
+
+    class Meta:
+        verbose_name_plural = "Bet labels"
+        ordering = ["id"]
+        constraints = [models.UniqueConstraint(fields=["lang"], name="unique_bet_label_lang")]
+
+    def __str__(self):
+        return f"Bet labels ({self.lang})"

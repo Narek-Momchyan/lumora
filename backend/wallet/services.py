@@ -95,6 +95,18 @@ def credit(wallet, amount, *, game, round_id="", idempotency_key=None):
     )
 
 
+def refund(wallet, amount, *, game, round_id="", idempotency_key=None):
+    """Give a stake back when its bet is void (a postponed or cancelled match)."""
+    return _apply(
+        wallet.id,
+        Transaction.Kind.REFUND,
+        _money(amount),
+        game=game,
+        round_id=round_id,
+        idempotency_key=idempotency_key,
+    )
+
+
 def add_to_jackpots(contributions, seeds):
     """Grow the shared pools. `contributions` and `seeds` are {tier: amount}."""
     with transaction.atomic():

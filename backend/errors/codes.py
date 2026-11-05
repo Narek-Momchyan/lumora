@@ -27,6 +27,17 @@ GAME_CODES = [
     "round_limit_exceeded",
 ]
 
+SPORTS_CODES = [
+    "odds_changed",
+    "market_closed",
+    "same_match_twice",
+    "too_many_selections",
+    "stake_too_low",
+    "stake_too_high",
+    "odds_too_high",
+    "win_too_high",
+]
+
 FIELD_CODES = [
     "email_taken",
     "required",
@@ -53,4 +64,4 @@ REQUEST_CODES = [
     "throttled",
 ]
 
-ERROR_CODES = AUTH_CODES + GAME_CODES + FIELD_CODES + REQUEST_CODES
+ERROR_CODES = AUTH_CODES + GAME_CODES + SPORTS_CODES + FIELD_CODES + REQUEST_CODES

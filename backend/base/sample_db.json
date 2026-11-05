@@ -2062,6 +2062,89 @@
       "hero_text": "Демо-ставки на монеты Lumora, бесплатные прогнозы счёта и форумы клубов топовых лиг. Без реальных денег, только игра."
     }
   ],
+  "bet_labels": [
+    {
+      "id": 1,
+      "lang": "en",
+      "match_result": "Match result",
+      "double_chance": "Double chance",
+      "total_goals": "Total goals",
+      "both_teams_to_score": "Both teams to score",
+      "correct_score": "Correct score",
+      "home": "Home",
+      "draw": "Draw",
+      "away": "Away",
+      "home_or_draw": "Home or draw",
+      "home_or_away": "Home or away",
+      "draw_or_away": "Draw or away",
+      "over": "Over {line}",
+      "under": "Under {line}",
+      "yes": "Yes",
+      "no": "No",
+      "other_score": "Other",
+      "single": "Single",
+      "express": "Express",
+      "status_open": "Open",
+      "status_won": "Won",
+      "status_lost": "Lost",
+      "status_void": "Void",
+      "model_label": "Lumora model"
+    },
+    {
+      "id": 2,
+      "lang": "am",
+      "match_result": "Հանդիպման արդյունք",
+      "double_chance": "Կրկնակի շանս",
+      "total_goals": "Ընդհանուր գոլեր",
+      "both_teams_to_score": "Երկու թիմն էլ կխփեն",
+      "correct_score": "Ճշգրիտ հաշիվ",
+      "home": "Տանտեր",
+      "draw": "Ոչ-ոքի",
+      "away": "Հյուր",
+      "home_or_draw": "Տանտեր կամ ոչ-ոքի",
+      "home_or_away": "Տանտեր կամ հյուր",
+      "draw_or_away": "Ոչ-ոքի կամ հյուր",
+      "over": "Ավելի {line}",
+      "under": "Պակաս {line}",
+      "yes": "Այո",
+      "no": "Ոչ",
+      "other_score": "Այլ",
+      "single": "Օրդինար",
+      "express": "Էքսպրես",
+      "status_open": "Բաց",
+      "status_won": "Շահած",
+      "status_lost": "Պարտված",
+      "status_void": "Չեղարկված",
+      "model_label": "Lumora մոդել"
+    },
+    {
+      "id": 3,
+      "lang": "ru",
+      "match_result": "Исход матча",
+      "double_chance": "Двойной шанс",
+      "total_goals": "Тотал голов",
+      "both_teams_to_score": "Обе забьют",
+      "correct_score": "Точный счёт",
+      "home": "Хозяева",
+      "draw": "Ничья",
+      "away": "Гости",
+      "home_or_draw": "Хозяева или ничья",
+      "home_or_away": "Хозяева или гости",
+      "draw_or_away": "Ничья или гости",
+      "over": "Больше {line}",
+      "under": "Меньше {line}",
+      "yes": "Да",
+      "no": "Нет",
+      "other_score": "Другой",
+      "single": "Ординар",
+      "express": "Экспресс",
+      "status_open": "Открыта",
+      "status_won": "Выиграла",
+      "status_lost": "Проиграла",
+      "status_void": "Возврат",
+      "model_label": "Модель Lumora"
+    }
+  ],
   "error_messages": [
     {
       "id": 1,
@@ -2800,6 +2883,150 @@
       "code": "round_limit_exceeded",
       "lang": "ru",
       "text": "Не больше {max} LC за раунд."
+    },
+    {
+      "id": 124,
+      "code": "odds_changed",
+      "lang": "en",
+      "text": "The odds have changed. Check the new odds and place the bet again."
+    },
+    {
+      "id": 125,
+      "code": "odds_changed",
+      "lang": "am",
+      "text": "Գործակիցները փոխվել են։ Ստուգեք նոր գործակիցները և նորից կատարեք խաղադրույքը։"
+    },
+    {
+      "id": 126,
+      "code": "odds_changed",
+      "lang": "ru",
+      "text": "Коэффициенты изменились. Проверьте новые коэффициенты и сделайте ставку ещё раз."
+    },
+    {
+      "id": 127,
+      "code": "market_closed",
+      "lang": "en",
+      "text": "Bets on this match are closed."
+    },
+    {
+      "id": 128,
+      "code": "market_closed",
+      "lang": "am",
+      "text": "Այս հանդիպման խաղադրույքները փակ են։"
+    },
+    {
+      "id": 129,
+      "code": "market_closed",
+      "lang": "ru",
+      "text": "Ставки на этот матч закрыты."
+    },
+    {
+      "id": 130,
+      "code": "same_match_twice",
+      "lang": "en",
+      "text": "An express can have only one pick from each match."
+    },
+    {
+      "id": 131,
+      "code": "same_match_twice",
+      "lang": "am",
+      "text": "Էքսպրեսում ամեն հանդիպումից կարող է լինել միայն մեկ ընտրություն։"
+    },
+    {
+      "id": 132,
+      "code": "same_match_twice",
+      "lang": "ru",
+      "text": "В экспрессе может быть только один выбор из каждого матча."
+    },
+    {
+      "id": 133,
+      "code": "too_many_selections",
+      "lang": "en",
+      "text": "A bet has 1 to {max} picks."
+    },
+    {
+      "id": 134,
+      "code": "too_many_selections",
+      "lang": "am",
+      "text": "Խաղադրույքն ունի 1-ից {max} ընտրություն։"
+    },
+    {
+      "id": 135,
+      "code": "too_many_selections",
+      "lang": "ru",
+      "text": "В ставке от 1 до {max} выборов."
+    },
+    {
+      "id": 136,
+      "code": "stake_too_low",
+      "lang": "en",
+      "text": "The smallest stake is {min} LC."
+    },
+    {
+      "id": 137,
+      "code": "stake_too_low",
+      "lang": "am",
+      "text": "Նվազագույն խաղադրույքը {min} LC է։"
+    },
+    {
+      "id": 138,
+      "code": "stake_too_low",
+      "lang": "ru",
+      "text": "Минимальная ставка {min} LC."
+    },
+    {
+      "id": 139,
+      "code": "stake_too_high",
+      "lang": "en",
+      "text": "The largest stake is {max} LC."
+    },
+    {
+      "id": 140,
+      "code": "stake_too_high",
+      "lang": "am",
+      "text": "Առավելագույն խաղադրույքը {max} LC է։"
+    },
+    {
+      "id": 141,
+      "code": "stake_too_high",
+      "lang": "ru",
+      "text": "Максимальная ставка {max} LC."
+    },
+    {
+      "id": 142,
+      "code": "odds_too_high",
+      "lang": "en",
+      "text": "Total odds can be at most {max}."
+    },
+    {
+      "id": 143,
+      "code": "odds_too_high",
+      "lang": "am",
+      "text": "Ընդհանուր գործակիցը կարող է լինել առավելագույնը {max}։"
+    },
+    {
+      "id": 144,
+      "code": "odds_too_high",
+      "lang": "ru",
+      "text": "Общий коэффициент не может быть больше {max}."
+    },
+    {
+      "id": 145,
+      "code": "win_too_high",
+      "lang": "en",
+      "text": "A bet can win at most {max} LC."
+    },
+    {
+      "id": 146,
+      "code": "win_too_high",
+      "lang": "am",
+      "text": "Խաղադրույքը կարող է շահել առավելագույնը {max} LC։"
+    },
+    {
+      "id": 147,
+      "code": "win_too_high",
+      "lang": "ru",
+      "text": "Ставка может выиграть не больше {max} LC."
     }
   ]
 }

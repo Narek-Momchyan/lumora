@@ -83,7 +83,7 @@ to start.
 python manage.py sync_football --full                  # the whole season: teams, crests, matches, tables
 python manage.py sync_football                         # yesterday to tomorrow, and the tables
 python manage.py sync_football --competition PL --full
-python manage.py run_sports                            # keeps it fresh: one full sync a day after 03:00 UTC,
+python manage.py run_sports                            # production: one full sync a day after 03:00 UTC,
                                                        # today's matches every SPORTS_SYNC_INTERVAL_MINUTES on match days
 ```
 
@@ -100,8 +100,38 @@ python manage.py run_sports                            # keeps it fresh: one ful
   replaced (`crest_locked`). Badge colours start from `clubColors` and can be changed.
 - Club and competition names come from the provider in English; `TeamName` and
   `CompetitionName` in the admin give the am/ru names, English is the fallback.
-- `run_sports` is not started by `runserver` (unlike the live games), so a dev server
-  never spends the request budget. One runner at a time (PostgreSQL advisory lock).
+- `runserver` starts the sync by itself when `FOOTBALL_DATA_TOKEN` is set (like the live
+  games); the first full sync runs at once when the database has none. One runner at a
+  time (PostgreSQL advisory lock), so `run_sports` in production or a second server waits.
+
+### Odds and bets
+
+`sports/engine.py` is the model, pure Python: each team has an attack and a defence
+rating, each competition a base rate and a home advantage;
+`λ_home = exp(base + home + attack_home − defence_away)`,
+`λ_away = exp(base + attack_away − defence_home)`, goals are Poisson, and the
+Dixon–Coles factor `τ(ρ)` corrects 0-0, 1-0, 0-1 and 1-1. The ratings are fitted on
+every finished match (regular time) by maximum likelihood, with a 120-day half-life and
+an L2 pull towards the average for teams with few matches. All six competitions are
+fitted together, so Champions League matches put the leagues on one scale.
+
+Odds are `1 / (p · (1 + margin))` rounded down to 0.01, at least 1.01: margin 5.5 % on
+1X2, double chance, totals 0.5–4.5 and both teams to score, 15 % on correct score.
+
+- After every sync (`runserver`, `run_sports`, `sync_football`) finished matches are
+  settled, the model is fitted again and the next 14 days are repriced
+  (`sports/odds.py`, also `python manage.py price_football`). A market closes at kickoff
+  and its odds never change again. Each fit is a `ModelRun` in the admin.
+- `sports/betting.py` places and settles bets. Locks: placing takes the selection rows,
+  then the wallet; settling takes the bet, then the wallet.
+- Settlement uses `home_regular` / `away_regular`. Postponed, cancelled and awarded
+  matches, and matches suspended for 48 hours, are void: a single gets its stake back
+  (`Transaction.Kind.REFUND`), a void pick counts as 1.00 in an express, one lost pick
+  loses it. Ledger rows have `game="football"`.
+- `python manage.py backtest_football` predicts each day only from the days before it
+  and prints the 1X2 log loss and Brier score against a league-frequency baseline.
+- `python manage.py test --tag slow` runs the 200,000-match simulation: a bettor gets
+  back 1/(1 + margin).
 
 ## Packages
 
@@ -145,11 +175,11 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
   Next `/media` rewrite.
 - Every endpoint needs a login except `register`, `token`, `token/refresh`,
   `logout`, `games`, `leaderboard`, `error_messages` and the site content: `logos`,
-  `languages`, `sidebar_items`, `header_labels`, `sports_page_labels`, `login_page_labels`,
+  `languages`, `sidebar_items`, `header_labels`, `sports_page_labels`, `bet_labels`, `login_page_labels`,
   `lobby_page_labels`, `game_categories`, `slot_symbols`, `slot_symbol_names`,
   `slot_sounds`, `jackpot_pools`, `zeus_page_labels`, `crash_rounds`,
   `crash_page_labels`, `roulette_rounds` and `roulette_page_labels`, and the football
-  data: `competitions`, `teams`, `matches` and `standings`.
+  data: `competitions`, `teams`, `matches`, `standings` and `markets`.
 - The JWTs live only in httpOnly cookies, never in a response body and never in an
   `Authorization` header. `register` and `token` set `lumora_access` (30 minutes)
   and `lumora_refresh` (7 days), both `SameSite=Lax`, and `Secure` when
@@ -203,6 +233,11 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
 | GET | `/api/teams` | – | clubs with `tla`, badge colours and crest; `?competition=PL`; names in `?lang=` (English fallback) |
 | GET | `/api/matches` | – | matches with both teams, status and every score (full, half, regular time, extra time, penalties); `?competition=`, `?date=YYYY-MM-DD` (UTC day), `?status=`, `?team=<id>`; at most 300 |
 | GET | `/api/standings` | – | the current season's tables; `?competition=` |
+| GET | `/api/markets` | – | `?match=<id>`: the match's markets (`1x2`, `double_chance`, `total` with `line`, `btts`, `correct_score`) with every selection's `odds`, `previous_odds` (for ▲ / ▼) and the model's fair `probability`; without `?match=` every open market |
+| GET | `/api/bet_labels` | – | names of the markets, picks and bet statuses; `?lang=` |
+| GET | `/api/sport_bets` | cookie | my football bets, newest first, with their picks and matches; `?status=open\|won\|lost\|void\|settled`; at most 100 |
+| POST | `/api/sport_bets` | cookie | `{key, stake, selections: [{selection, odds}]}`: one pick is a single, 2–10 from different matches an express; `201` with the bet and `balance` (`200` for a repeated `key`); `409` `odds_changed` with `selections: [{selection, odds}]` when the odds moved; `market_closed` after kickoff; `same_match_twice`, `too_many_selections`, `stake_too_low`, `stake_too_high` (1–5,000 LC), `odds_too_high` (1,000), `win_too_high` (100,000 LC), `not_enough_lc` |
+| GET | `/api/sport_bets/summary` | cookie | the last 7 days: `staked`, `returned`, `profit` (of settled bets), `won`, `open`, `bets` |
 | GET | `/api/login_page_labels` | – | every text of the login page; `?lang=` |
 | GET | `/api/lobby_page_labels` | – | every text of the lobby page; `?lang=` |
 | GET | `/api/game_categories` | – | category names: the filtered lobby's title and game cards; `?lang=` |
@@ -544,7 +579,7 @@ doesn't touch them. The codes are:
 | `roulette` | Live Lumora Roulette: `engine.py` (pure maths), `services.py` (bets, round changes), `runner.py` and `run_roulette` (the loop), `bots.py`, `feed.py` and `consumers.py` (WebSocket), `RouletteChain`, `RouletteRound`, `RouletteSlip`, `RouletteLine`, `RouletteBotBet`, `RouletteBotSettings`, `RoulettePageLabel` |
 | `slots` | Zeus Legacy: `engine.py` (pure maths), `services.py` (plays a round), `simulation.py`, `SlotSpin`, `SlotSymbol`, `SlotSymbolName`, `SlotSound`, `ZeusPageLabel` |
 | `leaderboard` | weekly leaderboard from the ledger |
-| `sports` | Football data: `Competition`, `Season`, `Team` (+ `TeamName`, `TeamAlias`), `Match`, `Standing`, `SyncRun`; `providers/` (football-data.org adapter, rate limiter, crests), `services.py` (the sync), `runner.py`, `sync_football` and `run_sports`; `SportsPageLabel` |
+| `sports` | Football: `Competition`, `Season`, `Team` (+ `TeamName`, `TeamAlias`), `Match`, `Standing`, `SyncRun`; `providers/` (football-data.org adapter, rate limiter, crests), `services.py` (the sync), `runner.py`, `sync_football` and `run_sports`; `engine.py` (the odds model), `odds.py` (pricing), `betting.py` (bets and settlement), `ModelRun`, `Market`, `Selection`, `Bet`, `BetSelection`, `price_football`, `backtest_football`; `SportsPageLabel`, `BetLabel` |
 
 `base/` holds the settings, the URLs (`OptionalSlashRouter`),
 `FilteredReadOnlyViewSet`, `LangFilteredViewSet`, `SingleObjectViewSet`, what the live

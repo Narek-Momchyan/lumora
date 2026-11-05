@@ -3,10 +3,16 @@ from django.utils.html import format_html
 
 from wallet.admin import ReadOnlyAdmin
 from .models import (
+    Bet,
+    BetLabel,
+    BetSelection,
     Competition,
     CompetitionName,
+    Market,
     Match,
+    ModelRun,
     Season,
+    Selection,
     SportsPageLabel,
     Standing,
     SyncRun,
@@ -102,3 +108,52 @@ class StandingAdmin(ReadOnlyAdmin):
 class SyncRunAdmin(ReadOnlyAdmin):
     list_display = ["started_at", "kind", "competition", "requests", "created", "updated", "ok"]
     list_filter = ["kind", "ok", "competition"]
+
+
+@admin.register(BetLabel)
+class BetLabelAdmin(admin.ModelAdmin):
+    list_display = ["lang", "match_result", "total_goals", "correct_score"]
+    list_filter = ["lang"]
+
+
+@admin.register(ModelRun)
+class ModelRunAdmin(ReadOnlyAdmin):
+    list_display = ["fitted_at", "matches_used", "priced_matches", "rho"]
+
+
+class SelectionInline(admin.TabularInline):
+    model = Selection
+    extra = 0
+    can_delete = False
+    readonly_fields = ["code", "odds", "previous_odds", "probability", "result"]
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(Market)
+class MarketAdmin(ReadOnlyAdmin):
+    list_display = ["match", "kind", "line", "status", "updated_at"]
+    list_filter = ["kind", "status", "match__competition"]
+    search_fields = ["match__home__name", "match__away__name"]
+    inlines = [SelectionInline]
+
+
+class BetSelectionInline(admin.TabularInline):
+    model = BetSelection
+    extra = 0
+    can_delete = False
+    readonly_fields = ["selection", "match", "odds", "result"]
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(Bet)
+class BetAdmin(ReadOnlyAdmin):
+    """Bets and their money are never edited by hand (Rule 9)."""
+
+    list_display = ["created_at", "user", "kind", "stake", "total_odds", "status", "payout"]
+    list_filter = ["kind", "status"]
+    search_fields = ["user__email", "key"]
+    inlines = [BetSelectionInline]

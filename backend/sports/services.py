@@ -151,8 +151,12 @@ def sync_competition(client, competition, kind, today=None):
             home = teams.get(data.home.provider_id) or save_team(client, data.home, competition, counts)
             away = teams.get(data.away.provider_id) or save_team(client, data.away, competition, counts)
             teams[home.provider_id], teams[away.provider_id] = home, away
-            match_season = season if data.season_id == season.provider_id else Season.objects.get(provider_id=data.season_id)
-            upsert(Match, {"provider_id": data.provider_id}, match_values(data, competition, match_season, home, away), counts)
+            if data.season_id == season.provider_id:
+                match_season = season
+            else:
+                match_season = Season.objects.get(provider_id=data.season_id)
+            values = match_values(data, competition, match_season, home, away)
+            upsert(Match, {"provider_id": data.provider_id}, values, counts)
 
         for row in client.standings(competition.code):
             team = teams.get(row.team_id) or Team.objects.filter(provider_id=row.team_id).first()
@@ -209,3 +213,12 @@ def has_matches_today(today=None):
     """Whether any of our matches kicks off today (UTC), so the runner syncs every few minutes."""
     today = today or timezone.now().date()
     return Match.objects.filter(competition__is_active=True, kickoff__date=today).exists()
+
+
+def after_sync(now=None):
+    """New results are in: settle what finished, then fit the model again and reprice."""
+    from . import betting, odds  # here, so the sync itself stays independent of betting
+
+    now = now or timezone.now()
+    betting.settle(now)
+    return odds.refresh_odds(now)

@@ -30,3 +30,9 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f"{line} - {run.errors}"))
             if run.ok and run.errors:
                 self.stdout.write(self.style.WARNING(run.errors))
+
+        model = services.after_sync()
+        self.stdout.write(
+            f"Settled finished matches; model fitted on {model.matches_used} matches, "
+            f"{model.priced_matches} matches priced."
+        )

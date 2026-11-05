@@ -1,7 +1,8 @@
 """Keeps the football data fresh: one full sync a day, today's matches every few minutes on match days.
 
-Like the live games' runners, only one runs at a time (a PostgreSQL advisory lock). It is not
-started by runserver: every sync spends requests of the free plan, so it runs only when asked.
+Like the live games' runners, only one runs at a time (a PostgreSQL advisory lock). runserver
+starts it when FOOTBALL_DATA_TOKEN is set; in production run_sports keeps it going. The first
+full sync runs at once when the database has none.
 """
 
 import time
@@ -37,8 +38,10 @@ class Runner:
         return run.started_at if run else None
 
     def full_is_due(self, now):
+        if self.last_full is None:
+            return True  # never synced: fill the database now, don't wait for the night
         due_from = datetime.combine(now.date(), FULL_SYNC_AFTER, tzinfo=now.tzinfo)
-        return now >= due_from and (self.last_full is None or self.last_full < due_from)
+        return now >= due_from and self.last_full < due_from
 
     def today_is_due(self, now):
         interval = timedelta(minutes=settings.SPORTS_SYNC_INTERVAL_MINUTES)
@@ -51,10 +54,12 @@ class Runner:
         now = self.clock()
         if self.full_is_due(now):
             services.run_sync(self.client, SyncRun.Kind.FULL, today=now.date())
+            services.after_sync(now)
             self.last_full = self.last_today = now
             return SyncRun.Kind.FULL
         if self.today_is_due(now):
             services.run_sync(self.client, SyncRun.Kind.TODAY, today=now.date())
+            services.after_sync(now)
             self.last_today = now
             return SyncRun.Kind.TODAY
         return None
