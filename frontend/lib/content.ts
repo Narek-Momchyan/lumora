@@ -3,16 +3,20 @@ import type { CrashBet, CrashPageLabels } from '@/types/crash'
 import type { Game, GameCategory, LobbyPageLabels } from '@/types/game'
 import type { HeaderLabels, Language, Logo, SidebarItem } from '@/types/header'
 import type { RoulettePageLabels, RouletteSlip } from '@/types/roulette'
-import type { SportsPageLabels } from '@/types/sports'
-import type { Wallet } from '@/types/wallet'
 import type {
-  JackpotPool,
-  SlotSound,
-  SlotSpinRecord,
-  SlotSymbol,
-  SlotSymbolName,
-  ZeusPageLabels,
-} from '@/types/zeus'
+  Bet,
+  BetLabels,
+  BetSummary,
+  Competition,
+  Market,
+  Match,
+  MatchDetail,
+  PopularPick,
+  SportsPageLabels,
+  SportsUiLabels,
+} from '@/types/sports'
+import type { Wallet } from '@/types/wallet'
+import type { JackpotPool, SlotSound, SlotSpinRecord, SlotSymbol, SlotSymbolName, ZeusPageLabels } from '@/types/zeus'
 import { serverFetch } from './server-api'
 
 async function fetchOrNull<T>(path: string) {
@@ -114,4 +118,40 @@ export function getLobbyPageLabels(lang: string) {
 
 export function getSportsPageLabels(lang: string) {
   return firstRow<SportsPageLabels>(`/sports_page_labels?lang=${lang}`)
+}
+
+export function getSportsUiLabels(lang: string) {
+  return firstRow<SportsUiLabels>(`/sports_ui_labels?lang=${lang}`)
+}
+
+export function getBetLabels(lang: string) {
+  return firstRow<BetLabels>(`/bet_labels?lang=${lang}`)
+}
+
+export function getCompetitions(lang: string) {
+  return fetchOrNull<Competition[]>(`/competitions?lang=${lang}`)
+}
+
+export function getMatches(query: string, lang: string) {
+  return fetchOrNull<Match[]>(`/matches?${query}&lang=${lang}`)
+}
+
+export function getMatch(id: string, lang: string) {
+  return fetchOrNull<MatchDetail>(`/matches/${id}?lang=${lang}`)
+}
+
+export function getMarkets(query: string) {
+  return fetchOrNull<Market[]>(`/markets?${query}`)
+}
+
+export function getPopularPicks(lang: string) {
+  return fetchOrNull<PopularPick[]>(`/popular_picks?lang=${lang}`)
+}
+
+export function getBets(status: string, lang: string) {
+  return fetchOrNull<Bet[]>(`/sport_bets?lang=${lang}${status ? `&status=${status}` : ''}`)
+}
+
+export function getBetSummary() {
+  return fetchOrNull<BetSummary>('/sport_bets/summary')
 }

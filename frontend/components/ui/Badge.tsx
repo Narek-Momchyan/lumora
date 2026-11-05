@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
 
-type Tone = 'lime' | 'accent' | 'accent2' | 'muted'
+type Tone = 'lime' | 'accent' | 'accent2' | 'danger' | 'muted'
 
 const TONES: Record<Tone, string> = {
   lime: 'bg-lime/10 text-lime',
   accent: 'bg-accent/10 text-accent',
   accent2: 'bg-accent2/10 text-accent2',
+  danger: 'bg-danger/15 text-danger',
   muted: 'bg-surface2 text-muted',
 }
 
