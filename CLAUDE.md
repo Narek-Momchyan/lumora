@@ -158,14 +158,19 @@ npm run build
    Store `server_seed_hash`, `client_seed` and `nonce` on every bet. The live games
    (Neon Crash, Lumora Roulette) are the exception: their rounds are shared, so their seeds
    come from a hash chain (`fairness/chain.py`) and live on the round, not on the bet.
+   Football is outside this rule: its results are real matches, not RNG.
 5. **Game maths lives in a pure `engine.py`** (no Django, no database).
    `services.py` glues engine + wallet + fairness.
 6. **Bet and settle in one database transaction.** If anything fails, nothing is
    charged and the nonce is not used. The live games have them apart by nature: each
    step is its own transaction that first locks the round's row (order: round, bet, wallet).
+   Football: placing a bet locks the selection rows (by id) then the wallet; settling locks
+   the bet then the wallet; pricing locks only selection rows.
 7. **Every game ships with an RTP simulation test** (at least 200,000 rounds) that
    asserts its RTP. A test too slow for `python manage.py test` is tagged `slow` and
    runs with `python manage.py test --tag slow`; run it after changing that game's maths.
+   Football: a 200,000-match simulation from the model shows that a bettor gets back
+   1/(1 + margin) (`--tag slow`).
 8. Endpoints need a JWT by default; public ones set `permission_classes = [AllowAny]`.
 9. The admin never edits money or history: wallets, transactions, seed pairs and bets
    are read-only there.
