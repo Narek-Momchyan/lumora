@@ -159,6 +159,7 @@ export interface Competition {
   name: string
   flag: string | null
   order: number
+  season: { start_date: string; end_date: string; current_matchday: number | null } | null
 }
 
 export type MarketKind = '1x2' | 'double_chance' | 'total' | 'btts' | 'correct_score'

@@ -2,6 +2,15 @@ import type { LoginPageLabels, Player } from '@/types/account'
 import type { CrashBet, CrashPageLabels } from '@/types/crash'
 import type { Game, GameCategory, LobbyPageLabels } from '@/types/game'
 import type { HeaderLabels, Language, Logo, SidebarItem } from '@/types/header'
+import type {
+  Leaderboard,
+  Matchday,
+  PredictionEntry,
+  PredictionLabels,
+  PredictionStats,
+  StandingRow,
+  StandingZone,
+} from '@/types/predictions'
 import type { RoulettePageLabels, RouletteSlip } from '@/types/roulette'
 import type {
   Bet,
@@ -154,4 +163,34 @@ export function getBets(status: string, lang: string) {
 
 export function getBetSummary() {
   return fetchOrNull<BetSummary>('/sport_bets/summary')
+}
+
+export function getPredictionLabels(lang: string) {
+  return firstRow<PredictionLabels>(`/prediction_labels?lang=${lang}`)
+}
+
+export function getMatchdays(code: string) {
+  return fetchOrNull<Matchday[]>(`/matchdays?competition=${code}`)
+}
+
+export function getPredictions(code: string, matchday: number, lang: string) {
+  return fetchOrNull<PredictionEntry[]>(`/predictions?competition=${code}&matchday=${matchday}&lang=${lang}`)
+}
+
+export function getLeaderboard(code: string, matchday?: number) {
+  return fetchOrNull<Leaderboard>(
+    `/prediction_leaderboard?competition=${code}${matchday === undefined ? '' : `&matchday=${matchday}`}`,
+  )
+}
+
+export function getPredictionStats(code: string) {
+  return fetchOrNull<PredictionStats>(`/prediction_stats?competition=${code}`)
+}
+
+export function getStandings(code: string, lang: string) {
+  return fetchOrNull<StandingRow[]>(`/standings?competition=${code}&lang=${lang}`)
+}
+
+export function getStandingZones(code: string) {
+  return fetchOrNull<StandingZone[]>(`/standing_zones?competition=${code}`)
 }

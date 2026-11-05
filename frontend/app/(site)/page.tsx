@@ -8,6 +8,7 @@ import FeaturedMatch from '@/components/sports/FeaturedMatch'
 import LumoraModelCard from '@/components/sports/LumoraModelCard'
 import MatchRow from '@/components/sports/MatchRow'
 import PopularPicks from '@/components/sports/PopularPicks'
+import PredictionsCard from '@/components/sports/PredictionsCard'
 import WatchOdds from '@/components/sports/WatchOdds'
 import {
   getBetLabels,
@@ -16,6 +17,7 @@ import {
   getMatch,
   getMatches,
   getPopularPicks,
+  getPredictionLabels,
   getSportsPageLabels,
   getSportsUiLabels,
 } from '@/lib/content'
@@ -35,7 +37,7 @@ export default async function FootballPage({ searchParams }: { searchParams: Pro
   const { date } = await searchParams
   const day = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : utcDay(0)
 
-  const [ui, bet, competitions, matches, markets, scheduled, openMarkets, live, popular] = await Promise.all([
+  const [ui, bet, competitions, matches, markets, scheduled, openMarkets, live, popular, predict] = await Promise.all([
     getSportsUiLabels(lang),
     getBetLabels(lang),
     getCompetitions(lang),
@@ -45,6 +47,7 @@ export default async function FootballPage({ searchParams }: { searchParams: Pro
     getMarkets('kind=1x2'),
     getMatches('status=live', lang),
     getPopularPicks(lang),
+    getPredictionLabels(lang),
   ])
 
   // The featured match: the nearest scheduled one that has prices (matches come in kickoff order).
@@ -134,6 +137,11 @@ export default async function FootballPage({ searchParams }: { searchParams: Pro
       <aside className="min-w-0 space-y-6">
         <BetSlip />
         <PopularPicks picks={popular ?? []} labels={ui} bet={bet} />
+        <PredictionsCard
+          open={(matches ?? []).filter((match) => match.status === 'scheduled').length}
+          league={leagues[0]?.code ?? (competitions ?? [])[0]?.code ?? 'PL'}
+          labels={predict}
+        />
         <LumoraModelCard labels={ui} />
       </aside>
     </div>

@@ -5,12 +5,15 @@ import BetSlip from '@/components/sports/BetSlip'
 import LumoraModelCard from '@/components/sports/LumoraModelCard'
 import MarketGrid from '@/components/sports/MarketGrid'
 import MatchHero, { Breadcrumb } from '@/components/sports/MatchHero'
+import PredictScoreCard from '@/components/sports/PredictScoreCard'
 import WatchOdds from '@/components/sports/WatchOdds'
 import {
   getBetLabels,
   getCompetitions,
   getMarkets,
   getMatch,
+  getPredictionLabels,
+  getPredictions,
   getSportsPageLabels,
   getSportsUiLabels,
 } from '@/lib/content'
@@ -38,6 +41,9 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
     getSportsPageLabels(lang),
   ])
   if (!match) notFound()
+  const predict = await getPredictionLabels(lang)
+  const entries = match.matchday === null ? null : await getPredictions(match.competition, match.matchday, lang)
+  const entry = entries?.find((row) => row.match.id === match.id) ?? null
 
   const competition = competitions?.find((item) => item.code === match.competition)
   const main = markets?.find((market) => market.kind === '1x2')
@@ -66,6 +72,7 @@ export default async function MatchPage({ params }: { params: Promise<{ id: stri
 
         <aside className="min-w-0 space-y-6">
           <BetSlip />
+          {match.matchday !== null && <PredictScoreCard match={match} entry={entry} labels={predict} />}
           <LumoraModelCard labels={ui} />
         </aside>
       </div>
