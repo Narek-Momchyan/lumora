@@ -47,8 +47,8 @@ class RunserverTests(SimpleTestCase):
         self.assertEqual(self.started_runners(), ["crash.runner", "roulette.runner"])
 
     @override_settings(FOOTBALL_DATA_TOKEN="token")
-    def test_with_a_football_token_it_also_syncs_football(self):
-        self.assertEqual(self.started_runners(), ["crash.runner", "roulette.runner", "sports.runner"])
+    def test_the_football_sync_never_starts_with_runserver(self):
+        self.assertNotIn("sports.runner", self.started_runners())
 
     def run_until_the_third_wait(self, acquire, runner_class):
         with mock.patch.object(live.time, "sleep", side_effect=[None, None, KeyboardInterrupt]):

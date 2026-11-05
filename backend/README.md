@@ -83,7 +83,7 @@ to start.
 python manage.py sync_football --full                  # the whole season: teams, crests, matches, tables
 python manage.py sync_football                         # yesterday to tomorrow, and the tables
 python manage.py sync_football --competition PL --full
-python manage.py run_sports                            # production: one full sync a day after 03:00 UTC,
+python manage.py run_sports                            # one full sync a day after 03:00 UTC,
                                                        # today's matches every SPORTS_SYNC_INTERVAL_MINUTES on match days
 ```
 
@@ -100,9 +100,11 @@ python manage.py run_sports                            # production: one full sy
   replaced (`crest_locked`). Badge colours start from `clubColors` and can be changed.
 - Club and competition names come from the provider in English; `TeamName` and
   `CompetitionName` in the admin give the am/ru names, English is the fallback.
-- `runserver` starts the sync by itself when `FOOTBALL_DATA_TOKEN` is set (like the live
-  games); the first full sync runs at once when the database has none. One runner at a
-  time (PostgreSQL advisory lock), so `run_sports` in production or a second server waits.
+- `runserver` does **not** start the sync (unlike the live games): it spends the
+  provider's request budget. In development run `python manage.py run_sports` in a separate
+  terminal next to `runserver`; in production keep one running. The first full sync runs at
+  once when the database has none. One runner at a time (PostgreSQL advisory lock): a second
+  `run_sports` refuses to start.
 
 ### Odds and bets
 
@@ -118,7 +120,7 @@ fitted together, so Champions League matches put the leagues on one scale.
 Odds are `1 / (p · (1 + margin))` rounded down to 0.01, at least 1.01: margin 5.5 % on
 1X2, double chance, totals 0.5–4.5 and both teams to score, 15 % on correct score.
 
-- After every sync (`runserver`, `run_sports`, `sync_football`) finished matches are
+- After every sync (`run_sports`, `sync_football`) finished matches are
   settled, the model is fitted again and the next 14 days are repriced
   (`sports/odds.py`, also `python manage.py price_football`). A market closes at kickoff
   and its odds never change again. Each fit is a `ModelRun` in the admin.

@@ -1,8 +1,8 @@
 """Keeps the football data fresh: one full sync a day, today's matches every few minutes on match days.
 
-Like the live games' runners, only one runs at a time (a PostgreSQL advisory lock). runserver
-starts it when FOOTBALL_DATA_TOKEN is set; in production run_sports keeps it going. The first
-full sync runs at once when the database has none.
+Like run_crash, only one runs at a time (a PostgreSQL advisory lock). `runserver` does not start
+it: every sync spends requests of the provider's plan, so `python manage.py run_sports` runs on its
+own, in dev in a separate terminal. The first full sync runs at once when the database has none.
 """
 
 import time

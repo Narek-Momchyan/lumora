@@ -251,3 +251,23 @@ html:not([data-theme='sports']) .sports-backdrop * {
     animation: none;
   }
 }
+
+/* Thin scrollbars in the text colour of the current theme (casino or sports). */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklab, var(--lumora-text) 20%, transparent) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in oklab, var(--lumora-text) 15%, transparent);
+  border-radius: 10px;
+}
