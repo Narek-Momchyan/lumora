@@ -1,7 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 
-# No SVG: /media/ is served from the site's own origin, and an SVG can carry scripts.
+from .svg import is_safe_svg
+
+# Plain images. SVG only through IMAGE_OR_SVG_VALIDATORS: /media/ is served from the site's own
+# origin, and an SVG can carry scripts, so it must pass base.svg first.
 IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "gif"]
 MAX_IMAGE_SIZE_MB = 5
 
@@ -31,6 +34,27 @@ def validate_image_content(file):
 
 
 IMAGE_VALIDATORS = [FileExtensionValidator(IMAGE_EXTENSIONS), validate_image_size, validate_image_content]
+
+
+def validate_image_or_svg_content(file):
+    """Like validate_image_content, plus an SVG that is already safe (see base.svg)."""
+    if getattr(file, "_committed", True):
+        return
+    if file.name.lower().endswith(".svg"):
+        data = file.read()
+        file.seek(0)
+        if not is_safe_svg(data):
+            raise ValidationError("This SVG has scripts, links or parts we don't allow. Upload a plain drawing.")
+        return
+    validate_image_content(file)
+
+
+# Icons and crests may also be SVG: drawn in one colour by the frontend, sharp at any size.
+IMAGE_OR_SVG_VALIDATORS = [
+    FileExtensionValidator([*IMAGE_EXTENSIONS, "svg"]),
+    validate_image_size,
+    validate_image_or_svg_content,
+]
 
 AUDIO_EXTENSIONS = ["mp3", "ogg", "wav"]
 MAX_AUDIO_SIZE_MB = 10

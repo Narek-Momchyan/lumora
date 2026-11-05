@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from base.constants import LANG_CHOICES
-from base.fields import IMAGE_VALIDATORS
+from base.fields import IMAGE_OR_SVG_VALIDATORS, IMAGE_VALIDATORS
 from games.models import Game
 
 
@@ -57,7 +57,12 @@ class SidebarItem(models.Model):
     title = models.CharField(max_length=100)
     url = models.CharField(max_length=255)
     icon = models.FileField(
-        upload_to="images/sidebar/", max_length=255, blank=True, validators=IMAGE_VALIDATORS
+        upload_to="images/sidebar/",
+        max_length=255,
+        blank=True,
+        validators=IMAGE_OR_SVG_VALIDATORS,
+        help_text="A one-colour SVG is drawn in the text colour (the active item in the accent); "
+        "a PNG (a flag) keeps its colours.",
     )
     category = models.CharField(
         max_length=16,

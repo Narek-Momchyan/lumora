@@ -19,7 +19,17 @@ interface SidebarNavProps {
 const ROW = 'flex items-center gap-2 rounded-xl py-2.5 pr-2 pl-2.5 text-[15px] whitespace-nowrap text-text transition-colors'
 
 function Marker({ item, active }: { item: SidebarItem; active: boolean }) {
-  // An icon or a flag from the admin; without one, the design's small dot.
+  // A one-colour SVG icon from the admin is used as a mask, so it takes the text colour (the
+  // accent when active) in both themes. A PNG (a flag) keeps its own colours.
+  if (item.icon?.toLowerCase().endsWith('.svg')) {
+    return (
+      <span
+        aria-hidden="true"
+        className={`size-5 shrink-0 bg-current mask-contain mask-center mask-no-repeat ${active ? 'text-accent' : 'text-text'}`}
+        style={{ maskImage: `url("${item.icon}")` }}
+      />
+    )
+  }
   if (item.icon) {
     return <Image src={item.icon} alt="" width={20} height={20} unoptimized className="size-5 shrink-0 object-contain" />
   }

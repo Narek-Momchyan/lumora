@@ -23,6 +23,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.routers import APIRootView, DefaultRouter
 
 from accounts.urls import accounts_router
+from base.media import serve_media
 from crash.urls import crash_router
 from errors.urls import errors_router
 from fairness.urls import fairness_router
@@ -64,4 +65,4 @@ router.registry.extend(sports_router.registry)
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, view=serve_media, document_root=settings.MEDIA_ROOT)

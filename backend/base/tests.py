@@ -29,7 +29,7 @@ from wallet.services import claim_daily_bonus, open_wallet
 from . import live
 from .fields import MAX_IMAGE_SIZE_MB
 from .management.commands import runserver
-from .sample import COLLECTIONS, LANGS, load_sample, read_sample
+from .sample import COLLECTIONS, LANGS, NATURAL_KEYS, load_sample, read_sample
 
 
 class RunserverTests(SimpleTestCase):
@@ -318,10 +318,35 @@ class ApiContractTests(TestCase):
 
 
 class LoadSampleTests(TestCase):
-    def test_it_can_run_twice_and_replaces_content(self):
+    def test_it_adds_missing_rows_and_keeps_admin_edits(self):
+        call_command("load_sample", stdout=StringIO())
+        ErrorMessage.objects.filter(code="not_found", lang="en").update(text="Edited")
+        HeaderLabel.objects.filter(lang="ru").delete()
+
+        call_command("load_sample", stdout=StringIO())
+
+        self.assertEqual(ErrorMessage.objects.get(code="not_found", lang="en").text, "Edited")
+        self.assertTrue(HeaderLabel.objects.filter(lang="ru").exists())
+
+    def test_every_collection_has_a_natural_key(self):
+        self.assertEqual(set(NATURAL_KEYS), set(COLLECTIONS))
+
+    def test_running_it_twice_adds_nothing(self):
+        call_command("load_sample", stdout=StringIO())
+        counts = {name: model.objects.count() for name, model in COLLECTIONS.items()}
+        call_command("load_sample", stdout=StringIO())
+
+        sample = read_sample()
+        for name, model in COLLECTIONS.items():
+            with self.subTest(name=name):
+                expected = 1 if isinstance(sample[name], dict) else len(sample[name])
+                self.assertEqual(model.objects.count(), counts[name])
+                self.assertEqual(counts[name], expected)
+
+    def test_reset_replaces_the_content(self):
         call_command("load_sample", stdout=StringIO())
         ErrorMessage.objects.filter(code="not_found").update(text="Edited")
-        call_command("load_sample", stdout=StringIO())
+        call_command("load_sample", "--reset", stdout=StringIO())
 
         self.assertEqual(ErrorMessage.objects.count(), len(read_sample()["error_messages"]))
         self.assertFalse(ErrorMessage.objects.filter(text="Edited").exists())

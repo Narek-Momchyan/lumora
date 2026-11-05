@@ -100,7 +100,7 @@
       "group": "",
       "title": "Lobby",
       "url": "/casino",
-      "icon": "/media/images/sidebar/lobby.png",
+      "icon": "/media/images/sidebar/lobby.svg",
       "category": "",
       "order": 1,
       "is_soon": false
@@ -112,7 +112,7 @@
       "group": "",
       "title": "Slots",
       "url": "/casino?category=slot",
-      "icon": "/media/images/sidebar/slots.png",
+      "icon": "/media/images/sidebar/slots.svg",
       "category": "slot",
       "order": 2,
       "is_soon": false
@@ -124,7 +124,7 @@
       "group": "",
       "title": "Crash",
       "url": "/casino?category=crash",
-      "icon": "/media/images/sidebar/crash.png",
+      "icon": "/media/images/sidebar/crash.svg",
       "category": "crash",
       "order": 3,
       "is_soon": false
@@ -136,7 +136,7 @@
       "group": "",
       "title": "Table games",
       "url": "/casino?category=table",
-      "icon": "/media/images/sidebar/table.png",
+      "icon": "/media/images/sidebar/table.svg",
       "category": "table",
       "order": 4,
       "is_soon": false
@@ -148,7 +148,7 @@
       "group": "",
       "title": "Wallet",
       "url": "/wallet",
-      "icon": "/media/images/sidebar/wallet.png",
+      "icon": "/media/images/sidebar/wallet.svg",
       "category": "",
       "order": 5,
       "is_soon": true
@@ -160,7 +160,7 @@
       "group": "",
       "title": "Leaderboard",
       "url": "/leaderboard",
-      "icon": "/media/images/sidebar/leaderboard.png",
+      "icon": "/media/images/sidebar/leaderboard.svg",
       "category": "",
       "order": 6,
       "is_soon": true
@@ -172,7 +172,7 @@
       "group": "",
       "title": "Football",
       "url": "/",
-      "icon": "/media/images/sidebar/football.png",
+      "icon": "/media/images/sidebar/football.svg",
       "category": "",
       "order": 1,
       "is_soon": false
@@ -184,7 +184,7 @@
       "group": "",
       "title": "Live",
       "url": "/live",
-      "icon": "/media/images/sidebar/live.png",
+      "icon": "/media/images/sidebar/live.svg",
       "category": "",
       "order": 2,
       "is_soon": true
@@ -268,7 +268,7 @@
       "group": "my",
       "title": "My bets",
       "url": "/my-bets",
-      "icon": "/media/images/sidebar/my-bets.png",
+      "icon": "/media/images/sidebar/my-bets.svg",
       "category": "",
       "order": 9,
       "is_soon": true
@@ -280,7 +280,7 @@
       "group": "my",
       "title": "Predictions",
       "url": "/predictions",
-      "icon": "/media/images/sidebar/predictions.png",
+      "icon": "/media/images/sidebar/predictions.svg",
       "category": "",
       "order": 10,
       "is_soon": true
@@ -292,7 +292,7 @@
       "group": "my",
       "title": "Club forums",
       "url": "/forums",
-      "icon": "/media/images/sidebar/forums.png",
+      "icon": "/media/images/sidebar/forums.svg",
       "category": "",
       "order": 11,
       "is_soon": true
@@ -304,7 +304,7 @@
       "group": "my",
       "title": "Leaderboard",
       "url": "/leaderboard",
-      "icon": "/media/images/sidebar/leaderboard.png",
+      "icon": "/media/images/sidebar/leaderboard.svg",
       "category": "",
       "order": 12,
       "is_soon": true
@@ -316,7 +316,7 @@
       "group": "my",
       "title": "Wallet",
       "url": "/wallet",
-      "icon": "/media/images/sidebar/wallet.png",
+      "icon": "/media/images/sidebar/wallet.svg",
       "category": "",
       "order": 13,
       "is_soon": true
@@ -328,7 +328,7 @@
       "group": "",
       "title": "Լոբբի",
       "url": "/casino",
-      "icon": "/media/images/sidebar/lobby.png",
+      "icon": "/media/images/sidebar/lobby.svg",
       "category": "",
       "order": 1,
       "is_soon": false
@@ -340,7 +340,7 @@
       "group": "",
       "title": "Սլոթեր",
       "url": "/casino?category=slot",
-      "icon": "/media/images/sidebar/slots.png",
+      "icon": "/media/images/sidebar/slots.svg",
       "category": "slot",
       "order": 2,
       "is_soon": false
@@ -352,7 +352,7 @@
       "group": "",
       "title": "Crash",
       "url": "/casino?category=crash",
-      "icon": "/media/images/sidebar/crash.png",
+      "icon": "/media/images/sidebar/crash.svg",
       "category": "crash",
       "order": 3,
       "is_soon": false
@@ -364,7 +364,7 @@
       "group": "",
       "title": "Սեղանի խաղեր",
       "url": "/casino?category=table",
-      "icon": "/media/images/sidebar/table.png",
+      "icon": "/media/images/sidebar/table.svg",
       "category": "table",
       "order": 4,
       "is_soon": false
@@ -376,7 +376,7 @@
       "group": "",
       "title": "Դրամապանակ",
       "url": "/wallet",
-      "icon": "/media/images/sidebar/wallet.png",
+      "icon": "/media/images/sidebar/wallet.svg",
       "category": "",
       "order": 5,
       "is_soon": true
@@ -388,7 +388,7 @@
       "group": "",
       "title": "Առաջատարներ",
       "url": "/leaderboard",
-      "icon": "/media/images/sidebar/leaderboard.png",
+      "icon": "/media/images/sidebar/leaderboard.svg",
       "category": "",
       "order": 6,
       "is_soon": true
@@ -400,7 +400,7 @@
       "group": "",
       "title": "Ֆուտբոլ",
       "url": "/",
-      "icon": "/media/images/sidebar/football.png",
+      "icon": "/media/images/sidebar/football.svg",
       "category": "",
       "order": 1,
       "is_soon": false
@@ -412,7 +412,7 @@
       "group": "",
       "title": "Ուղիղ",
       "url": "/live",
-      "icon": "/media/images/sidebar/live.png",
+      "icon": "/media/images/sidebar/live.svg",
       "category": "",
       "order": 2,
       "is_soon": true
@@ -496,7 +496,7 @@
       "group": "my",
       "title": "Իմ խաղադրույքները",
       "url": "/my-bets",
-      "icon": "/media/images/sidebar/my-bets.png",
+      "icon": "/media/images/sidebar/my-bets.svg",
       "category": "",
       "order": 9,
       "is_soon": true
@@ -508,7 +508,7 @@
       "group": "my",
       "title": "Կանխատեսումներ",
       "url": "/predictions",
-      "icon": "/media/images/sidebar/predictions.png",
+      "icon": "/media/images/sidebar/predictions.svg",
       "category": "",
       "order": 10,
       "is_soon": true
@@ -520,7 +520,7 @@
       "group": "my",
       "title": "Ակումբների ֆորումներ",
       "url": "/forums",
-      "icon": "/media/images/sidebar/forums.png",
+      "icon": "/media/images/sidebar/forums.svg",
       "category": "",
       "order": 11,
       "is_soon": true
@@ -532,7 +532,7 @@
       "group": "my",
       "title": "Առաջատարներ",
       "url": "/leaderboard",
-      "icon": "/media/images/sidebar/leaderboard.png",
+      "icon": "/media/images/sidebar/leaderboard.svg",
       "category": "",
       "order": 12,
       "is_soon": true
@@ -544,7 +544,7 @@
       "group": "my",
       "title": "Դրամապանակ",
       "url": "/wallet",
-      "icon": "/media/images/sidebar/wallet.png",
+      "icon": "/media/images/sidebar/wallet.svg",
       "category": "",
       "order": 13,
       "is_soon": true
@@ -556,7 +556,7 @@
       "group": "",
       "title": "Лобби",
       "url": "/casino",
-      "icon": "/media/images/sidebar/lobby.png",
+      "icon": "/media/images/sidebar/lobby.svg",
       "category": "",
       "order": 1,
       "is_soon": false
@@ -568,7 +568,7 @@
       "group": "",
       "title": "Слоты",
       "url": "/casino?category=slot",
-      "icon": "/media/images/sidebar/slots.png",
+      "icon": "/media/images/sidebar/slots.svg",
       "category": "slot",
       "order": 2,
       "is_soon": false
@@ -580,7 +580,7 @@
       "group": "",
       "title": "Краш",
       "url": "/casino?category=crash",
-      "icon": "/media/images/sidebar/crash.png",
+      "icon": "/media/images/sidebar/crash.svg",
       "category": "crash",
       "order": 3,
       "is_soon": false
@@ -592,7 +592,7 @@
       "group": "",
       "title": "Настольные игры",
       "url": "/casino?category=table",
-      "icon": "/media/images/sidebar/table.png",
+      "icon": "/media/images/sidebar/table.svg",
       "category": "table",
       "order": 4,
       "is_soon": false
@@ -604,7 +604,7 @@
       "group": "",
       "title": "Кошелёк",
       "url": "/wallet",
-      "icon": "/media/images/sidebar/wallet.png",
+      "icon": "/media/images/sidebar/wallet.svg",
       "category": "",
       "order": 5,
       "is_soon": true
@@ -616,7 +616,7 @@
       "group": "",
       "title": "Лидеры",
       "url": "/leaderboard",
-      "icon": "/media/images/sidebar/leaderboard.png",
+      "icon": "/media/images/sidebar/leaderboard.svg",
       "category": "",
       "order": 6,
       "is_soon": true
@@ -628,7 +628,7 @@
       "group": "",
       "title": "Футбол",
       "url": "/",
-      "icon": "/media/images/sidebar/football.png",
+      "icon": "/media/images/sidebar/football.svg",
       "category": "",
       "order": 1,
       "is_soon": false
@@ -640,7 +640,7 @@
       "group": "",
       "title": "Лайв",
       "url": "/live",
-      "icon": "/media/images/sidebar/live.png",
+      "icon": "/media/images/sidebar/live.svg",
       "category": "",
       "order": 2,
       "is_soon": true
@@ -724,7 +724,7 @@
       "group": "my",
       "title": "Мои ставки",
       "url": "/my-bets",
-      "icon": "/media/images/sidebar/my-bets.png",
+      "icon": "/media/images/sidebar/my-bets.svg",
       "category": "",
       "order": 9,
       "is_soon": true
@@ -736,7 +736,7 @@
       "group": "my",
       "title": "Прогнозы",
       "url": "/predictions",
-      "icon": "/media/images/sidebar/predictions.png",
+      "icon": "/media/images/sidebar/predictions.svg",
       "category": "",
       "order": 10,
       "is_soon": true
@@ -748,7 +748,7 @@
       "group": "my",
       "title": "Форумы клубов",
       "url": "/forums",
-      "icon": "/media/images/sidebar/forums.png",
+      "icon": "/media/images/sidebar/forums.svg",
       "category": "",
       "order": 11,
       "is_soon": true
@@ -760,7 +760,7 @@
       "group": "my",
       "title": "Лидеры",
       "url": "/leaderboard",
-      "icon": "/media/images/sidebar/leaderboard.png",
+      "icon": "/media/images/sidebar/leaderboard.svg",
       "category": "",
       "order": 12,
       "is_soon": true
@@ -772,7 +772,7 @@
       "group": "my",
       "title": "Кошелёк",
       "url": "/wallet",
-      "icon": "/media/images/sidebar/wallet.png",
+      "icon": "/media/images/sidebar/wallet.svg",
       "category": "",
       "order": 13,
       "is_soon": true
