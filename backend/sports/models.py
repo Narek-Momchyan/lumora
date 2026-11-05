@@ -483,3 +483,133 @@ class SportsUiLabel(models.Model):
 
     def __str__(self):
         return f"Sports UI labels ({self.lang})"
+
+
+class Prediction(models.Model):
+    """A player's free score prediction (no LC). One per player per match, editable until kickoff."""
+
+    class Outcome(models.TextChoices):
+        PENDING = "pending", "Pending"
+        EXACT = "exact", "Exact score (3)"
+        RESULT = "result", "Right result (1)"
+        WRONG = "wrong", "Wrong (0)"
+        VOID = "void", "Void (match not played)"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="predictions", on_delete=models.CASCADE)
+    match = models.ForeignKey(Match, related_name="predictions", on_delete=models.CASCADE)
+    home_goals = models.PositiveSmallIntegerField()
+    away_goals = models.PositiveSmallIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True, help_text="First save: the tie-break, earlier wins")
+    updated_at = models.DateTimeField(auto_now=True)
+    outcome = models.CharField(max_length=10, choices=Outcome.choices, default=Outcome.PENDING, db_index=True)
+    points = models.PositiveSmallIntegerField(default=0)
+    scored_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "Predictions"
+        ordering = ["-created_at", "-id"]
+        constraints = [models.UniqueConstraint(fields=["user", "match"], name="unique_prediction_user_match")]
+
+    def __str__(self):
+        return f"{self.user} {self.home_goals}-{self.away_goals} ({self.match_id})"
+
+
+class StandingZone(models.Model):
+    """A band of the league table (Champions League places, relegation ...), edited per league in the admin."""
+
+    class Kind(models.TextChoices):
+        CHAMPIONS_LEAGUE = "champions_league", "Champions League"
+        EUROPA_LEAGUE = "europa_league", "Europa League"
+        CONFERENCE_LEAGUE = "conference_league", "Conference League"
+        PLAYOFF = "playoff", "Playoff"
+        RELEGATION = "relegation", "Relegation"
+
+    competition = models.ForeignKey(Competition, related_name="zones", on_delete=models.CASCADE)
+    kind = models.CharField(max_length=20, choices=Kind.choices)
+    from_position = models.PositiveSmallIntegerField()
+    to_position = models.PositiveSmallIntegerField()
+
+    class Meta:
+        verbose_name_plural = "Standing zones"
+        ordering = ["competition", "from_position"]
+        constraints = [
+            models.UniqueConstraint(fields=["competition", "from_position"], name="unique_zone_competition_from"),
+            models.CheckConstraint(
+                condition=models.Q(to_position__gte=models.F("from_position")), name="zone_to_not_before_from"
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.competition.code} {self.from_position}-{self.to_position} {self.kind}"
+
+
+class PredictionLabel(models.Model):
+    """The texts of the predictions and league pages in one language."""
+
+    lang = models.CharField(max_length=10, choices=LANG_CHOICES, db_index=True)
+    exact_score = models.CharField(max_length=120)
+    right_result = models.CharField(max_length=120)
+    predicted_of = models.CharField(max_length=120, help_text="{done}, {total} are replaced")
+    matchday = models.CharField(max_length=120, help_text="{n} is replaced")
+    previous = models.CharField(max_length=120)
+    next = models.CharField(max_length=120)
+    saved = models.CharField(max_length=120)
+    not_saved = models.CharField(max_length=120)
+    locked = models.CharField(max_length=120)
+    live_score = models.CharField(max_length=120, help_text="{score} is replaced")
+    final_score = models.CharField(max_length=120, help_text="{score} is replaced")
+    exact_badge = models.CharField(max_length=120)
+    result_badge = models.CharField(max_length=120)
+    wrong_badge = models.CharField(max_length=120)
+    void_badge = models.CharField(max_length=120)
+    unsaved_changes = models.CharField(max_length=160, help_text="{count} is replaced")
+    all_saved = models.CharField(max_length=160)
+    save_predictions = models.CharField(max_length=120)
+    saving = models.CharField(max_length=120)
+    leaderboard = models.CharField(max_length=120)
+    players = models.CharField(max_length=120, help_text="{count} is replaced")
+    tab_matchday = models.CharField(max_length=120, help_text="{n} is replaced")
+    tab_season = models.CharField(max_length=120)
+    exact_short = models.CharField(max_length=120, help_text="{count} is replaced")
+    pts = models.CharField(max_length=120, help_text="{points} is replaced")
+    you = models.CharField(max_length=120)
+    your_season = models.CharField(max_length=120)
+    points = models.CharField(max_length=120)
+    rank = models.CharField(max_length=120)
+    exact_scores = models.CharField(max_length=120)
+    right_results = models.CharField(max_length=120)
+    empty_board = models.CharField(max_length=160)
+    no_matches = models.CharField(max_length=160)
+    predict_title = models.CharField(max_length=120)
+    predict_hint = models.CharField(max_length=160)
+    predict_save = models.CharField(max_length=120)
+    make_predictions = models.CharField(max_length=120)
+    open_left = models.CharField(max_length=160, help_text="{count} is replaced")
+    tab_matches = models.CharField(max_length=120)
+    tab_table = models.CharField(max_length=120)
+    tab_results = models.CharField(max_length=120)
+    season_after = models.CharField(max_length=160, help_text="{season}, {matchday} are replaced")
+    next_matchday = models.CharField(max_length=120)
+    col_club = models.CharField(max_length=60)
+    col_played = models.CharField(max_length=60)
+    col_won = models.CharField(max_length=60)
+    col_draw = models.CharField(max_length=60)
+    col_lost = models.CharField(max_length=60)
+    col_goals = models.CharField(max_length=60)
+    col_diff = models.CharField(max_length=60)
+    col_points = models.CharField(max_length=60)
+    col_form = models.CharField(max_length=60)
+    zone_champions_league = models.CharField(max_length=60)
+    zone_europa_league = models.CharField(max_length=60)
+    zone_conference_league = models.CharField(max_length=60)
+    zone_playoff = models.CharField(max_length=60)
+    zone_relegation = models.CharField(max_length=60)
+    no_results = models.CharField(max_length=160)
+
+    class Meta:
+        verbose_name_plural = "Prediction labels"
+        ordering = ["id"]
+        constraints = [models.UniqueConstraint(fields=["lang"], name="unique_prediction_label_lang")]
+
+    def __str__(self):
+        return f"Prediction labels ({self.lang})"

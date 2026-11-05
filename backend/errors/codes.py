@@ -36,6 +36,9 @@ SPORTS_CODES = [
     "stake_too_high",
     "odds_too_high",
     "win_too_high",
+    "prediction_locked",
+    "prediction_invalid",
+    "match_not_found",
 ]
 
 FIELD_CODES = [

@@ -217,8 +217,9 @@ def has_matches_today(today=None):
 
 def after_sync(now=None):
     """New results are in: settle what finished, then fit the model again and reprice."""
-    from . import betting, odds  # here, so the sync itself stays independent of betting
+    from . import betting, odds, predictions  # here, so the sync itself stays independent of betting
 
     now = now or timezone.now()
     betting.settle(now)
+    predictions.score_predictions(now)
     return odds.refresh_odds(now)

@@ -199,7 +199,7 @@
       "icon": "/media/images/sidebar/flag-england.png",
       "category": "",
       "order": 3,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 10,
@@ -211,7 +211,7 @@
       "icon": "/media/images/sidebar/flag-spain.png",
       "category": "",
       "order": 4,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 11,
@@ -223,7 +223,7 @@
       "icon": "/media/images/sidebar/flag-italy.png",
       "category": "",
       "order": 5,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 12,
@@ -235,7 +235,7 @@
       "icon": "/media/images/sidebar/flag-germany.png",
       "category": "",
       "order": 6,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 13,
@@ -247,7 +247,7 @@
       "icon": "/media/images/sidebar/flag-france.png",
       "category": "",
       "order": 7,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 14,
@@ -259,7 +259,7 @@
       "icon": "/media/images/sidebar/champions-league.png",
       "category": "",
       "order": 8,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 15,
@@ -283,7 +283,7 @@
       "icon": "/media/images/sidebar/predictions.svg",
       "category": "",
       "order": 10,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 17,
@@ -427,7 +427,7 @@
       "icon": "/media/images/sidebar/flag-england.png",
       "category": "",
       "order": 3,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 29,
@@ -439,7 +439,7 @@
       "icon": "/media/images/sidebar/flag-spain.png",
       "category": "",
       "order": 4,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 30,
@@ -451,7 +451,7 @@
       "icon": "/media/images/sidebar/flag-italy.png",
       "category": "",
       "order": 5,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 31,
@@ -463,7 +463,7 @@
       "icon": "/media/images/sidebar/flag-germany.png",
       "category": "",
       "order": 6,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 32,
@@ -475,7 +475,7 @@
       "icon": "/media/images/sidebar/flag-france.png",
       "category": "",
       "order": 7,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 33,
@@ -487,7 +487,7 @@
       "icon": "/media/images/sidebar/champions-league.png",
       "category": "",
       "order": 8,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 34,
@@ -511,7 +511,7 @@
       "icon": "/media/images/sidebar/predictions.svg",
       "category": "",
       "order": 10,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 36,
@@ -655,7 +655,7 @@
       "icon": "/media/images/sidebar/flag-england.png",
       "category": "",
       "order": 3,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 48,
@@ -667,7 +667,7 @@
       "icon": "/media/images/sidebar/flag-spain.png",
       "category": "",
       "order": 4,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 49,
@@ -679,7 +679,7 @@
       "icon": "/media/images/sidebar/flag-italy.png",
       "category": "",
       "order": 5,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 50,
@@ -691,7 +691,7 @@
       "icon": "/media/images/sidebar/flag-germany.png",
       "category": "",
       "order": 6,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 51,
@@ -703,7 +703,7 @@
       "icon": "/media/images/sidebar/flag-france.png",
       "category": "",
       "order": 7,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 52,
@@ -715,7 +715,7 @@
       "icon": "/media/images/sidebar/champions-league.png",
       "category": "",
       "order": 8,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 53,
@@ -739,7 +739,7 @@
       "icon": "/media/images/sidebar/predictions.svg",
       "category": "",
       "order": 10,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 55,
@@ -3224,6 +3224,248 @@
       "code": "win_too_high",
       "lang": "ru",
       "text": "Ставка может выиграть не больше {max} LC."
+    },
+    {
+      "id": 148,
+      "code": "prediction_locked",
+      "lang": "en",
+      "text": "Predictions for this match closed at kickoff."
+    },
+    {
+      "id": 149,
+      "code": "prediction_locked",
+      "lang": "am",
+      "text": "Այս հանդիպման կանխատեսումները փակվել են մեկնարկից։"
+    },
+    {
+      "id": 150,
+      "code": "prediction_locked",
+      "lang": "ru",
+      "text": "Прогнозы на этот матч закрыты с начала игры."
+    },
+    {
+      "id": 151,
+      "code": "prediction_invalid",
+      "lang": "en",
+      "text": "A prediction is two whole numbers from 0 to {max}."
+    },
+    {
+      "id": 152,
+      "code": "prediction_invalid",
+      "lang": "am",
+      "text": "Կանխատեսումը 0-ից {max} երկու ամբողջ թիվ է։"
+    },
+    {
+      "id": 153,
+      "code": "prediction_invalid",
+      "lang": "ru",
+      "text": "Прогноз — это два целых числа от 0 до {max}."
+    },
+    {
+      "id": 154,
+      "code": "match_not_found",
+      "lang": "en",
+      "text": "This match does not exist."
+    },
+    {
+      "id": 155,
+      "code": "match_not_found",
+      "lang": "am",
+      "text": "Այս հանդիպումը գոյություն չունի։"
+    },
+    {
+      "id": 156,
+      "code": "match_not_found",
+      "lang": "ru",
+      "text": "Такого матча нет."
+    }
+  ],
+  "prediction_labels": [
+    {
+      "id": 1,
+      "lang": "en",
+      "exact_score": "Exact score",
+      "right_result": "Right result",
+      "predicted_of": "{done} of {total} predicted",
+      "matchday": "Matchday {n}",
+      "previous": "Previous matchday",
+      "next": "Next matchday",
+      "saved": "Saved",
+      "not_saved": "Not saved",
+      "locked": "Locked",
+      "live_score": "live {score}",
+      "final_score": "FT {score}",
+      "exact_badge": "+3 exact",
+      "result_badge": "+1 result",
+      "wrong_badge": "0 pts",
+      "void_badge": "Void",
+      "unsaved_changes": "{count} unsaved · you can edit until kickoff",
+      "all_saved": "All saved · you can edit until kickoff",
+      "save_predictions": "Save predictions",
+      "saving": "Saving…",
+      "leaderboard": "Leaderboard",
+      "players": "{count} players",
+      "tab_matchday": "Matchday {n}",
+      "tab_season": "Season",
+      "exact_short": "{count} exact",
+      "pts": "{points} pts",
+      "you": "you",
+      "your_season": "Your season",
+      "points": "points",
+      "rank": "rank",
+      "exact_scores": "exact scores",
+      "right_results": "right results",
+      "empty_board": "No scored predictions yet.",
+      "no_matches": "No matches in this matchday.",
+      "predict_title": "Predict the score",
+      "predict_hint": "Free · exact score +3, right result +1",
+      "predict_save": "Save prediction",
+      "make_predictions": "Make predictions",
+      "open_left": "{count} matches still open",
+      "tab_matches": "Matches",
+      "tab_table": "Table",
+      "tab_results": "Results",
+      "season_after": "Season {season} · after matchday {matchday}",
+      "next_matchday": "Matchday {n}",
+      "col_club": "Club",
+      "col_played": "P",
+      "col_won": "W",
+      "col_draw": "D",
+      "col_lost": "L",
+      "col_goals": "Goals",
+      "col_diff": "GD",
+      "col_points": "Pts",
+      "col_form": "Form",
+      "zone_champions_league": "Champions League",
+      "zone_europa_league": "Europa League",
+      "zone_conference_league": "Conference League",
+      "zone_playoff": "Playoff",
+      "zone_relegation": "Relegation",
+      "no_results": "No results yet."
+    },
+    {
+      "id": 2,
+      "lang": "am",
+      "exact_score": "Ճշգրիտ հաշիվ",
+      "right_result": "Ճիշտ արդյունք",
+      "predicted_of": "{done} / {total} կանխատեսված",
+      "matchday": "{n}-րդ տուր",
+      "previous": "Նախորդ տուր",
+      "next": "Հաջորդ տուր",
+      "saved": "Պահպանված",
+      "not_saved": "Չպահպանված",
+      "locked": "Փակ է",
+      "live_score": "ուղիղ {score}",
+      "final_score": "Ավարտ {score}",
+      "exact_badge": "+3 ճշգրիտ",
+      "result_badge": "+1 արդյունք",
+      "wrong_badge": "0 միավոր",
+      "void_badge": "Չեղյալ",
+      "unsaved_changes": "{count} չպահպանված · կարող եք փոխել մինչև մեկնարկը",
+      "all_saved": "Ամեն ինչ պահպանված է · կարող եք փոխել մինչև մեկնարկը",
+      "save_predictions": "Պահպանել կանխատեսումները",
+      "saving": "Պահպանվում է…",
+      "leaderboard": "Աղյուսակ",
+      "players": "{count} խաղացող",
+      "tab_matchday": "{n}-րդ տուր",
+      "tab_season": "Սեզոն",
+      "exact_short": "{count} ճշգրիտ",
+      "pts": "{points} մ.",
+      "you": "դուք",
+      "your_season": "Ձեր սեզոնը",
+      "points": "միավոր",
+      "rank": "տեղ",
+      "exact_scores": "ճշգրիտ հաշիվ",
+      "right_results": "ճիշտ արդյունք",
+      "empty_board": "Դեռ գնահատված կանխատեսումներ չկան։",
+      "no_matches": "Այս տուրում հանդիպումներ չկան։",
+      "predict_title": "Կանխատեսեք հաշիվը",
+      "predict_hint": "Անվճար · ճշգրիտ հաշիվ +3, ճիշտ արդյունք +1",
+      "predict_save": "Պահպանել կանխատեսումը",
+      "make_predictions": "Կանխատեսել",
+      "open_left": "Բաց է {count} հանդիպում",
+      "tab_matches": "Հանդիպումներ",
+      "tab_table": "Աղյուսակ",
+      "tab_results": "Արդյունքներ",
+      "season_after": "Սեզոն {season} · {matchday}-րդ տուրից հետո",
+      "next_matchday": "{n}-րդ տուր",
+      "col_club": "Ակումբ",
+      "col_played": "Խ",
+      "col_won": "Հ",
+      "col_draw": "ՆՆ",
+      "col_lost": "Պ",
+      "col_goals": "Գնդակներ",
+      "col_diff": "Տարբ.",
+      "col_points": "Մ",
+      "col_form": "Ձև",
+      "zone_champions_league": "Չեմպիոնների լիգա",
+      "zone_europa_league": "Եվրոպա լիգա",
+      "zone_conference_league": "Կոնֆերանս լիգա",
+      "zone_playoff": "Փլեյ-օֆֆ",
+      "zone_relegation": "Դուրս մնացող",
+      "no_results": "Արդյունքներ դեռ չկան։"
+    },
+    {
+      "id": 3,
+      "lang": "ru",
+      "exact_score": "Точный счёт",
+      "right_result": "Верный исход",
+      "predicted_of": "{done} из {total} спрогнозировано",
+      "matchday": "Тур {n}",
+      "previous": "Предыдущий тур",
+      "next": "Следующий тур",
+      "saved": "Сохранено",
+      "not_saved": "Не сохранено",
+      "locked": "Закрыто",
+      "live_score": "сейчас {score}",
+      "final_score": "Итог {score}",
+      "exact_badge": "+3 точный",
+      "result_badge": "+1 исход",
+      "wrong_badge": "0 очков",
+      "void_badge": "Отмена",
+      "unsaved_changes": "Не сохранено: {count} · можно менять до начала матча",
+      "all_saved": "Всё сохранено · можно менять до начала матча",
+      "save_predictions": "Сохранить прогнозы",
+      "saving": "Сохраняем…",
+      "leaderboard": "Таблица лидеров",
+      "players": "Игроков: {count}",
+      "tab_matchday": "Тур {n}",
+      "tab_season": "Сезон",
+      "exact_short": "{count} точных",
+      "pts": "{points} оч.",
+      "you": "вы",
+      "your_season": "Ваш сезон",
+      "points": "очки",
+      "rank": "место",
+      "exact_scores": "точных счетов",
+      "right_results": "верных исходов",
+      "empty_board": "Оценённых прогнозов пока нет.",
+      "no_matches": "В этом туре нет матчей.",
+      "predict_title": "Спрогнозируйте счёт",
+      "predict_hint": "Бесплатно · точный счёт +3, верный исход +1",
+      "predict_save": "Сохранить прогноз",
+      "make_predictions": "Сделать прогнозы",
+      "open_left": "Открыто матчей: {count}",
+      "tab_matches": "Матчи",
+      "tab_table": "Таблица",
+      "tab_results": "Результаты",
+      "season_after": "Сезон {season} · после {matchday}-го тура",
+      "next_matchday": "Тур {n}",
+      "col_club": "Клуб",
+      "col_played": "И",
+      "col_won": "В",
+      "col_draw": "Н",
+      "col_lost": "П",
+      "col_goals": "Мячи",
+      "col_diff": "Р/М",
+      "col_points": "О",
+      "col_form": "Форма",
+      "zone_champions_league": "Лига чемпионов",
+      "zone_europa_league": "Лига Европы",
+      "zone_conference_league": "Лига конференций",
+      "zone_playoff": "Стыковые матчи",
+      "zone_relegation": "Вылет",
+      "no_results": "Результатов пока нет."
     }
   ]
 }

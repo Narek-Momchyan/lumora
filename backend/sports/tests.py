@@ -10,7 +10,7 @@ from unittest import mock
 import httpx
 from defusedxml import ElementTree as SafeET
 from django.contrib.auth import get_user_model
-from django.db import connection
+from django.db import IntegrityError, connection, transaction
 from django.db.models import Sum
 from django.utils import timezone
 from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings, tag
@@ -18,12 +18,26 @@ from rest_framework.test import APIClient
 
 from base.sample import load_sample, read_sample
 from base.svg import UnsafeSvg, is_safe_svg, sanitize_svg
+from errors.exceptions import CodedError
 from fairness.rng import float_stream
 from leaderboard.services import GAME_KINDS
 from wallet.models import Transaction, Wallet
 from wallet.services import InsufficientFunds, open_wallet
-from . import betting, engine
-from .models import Bet, Competition, Market, Match, Season, Selection, Standing, SyncRun, Team, TeamName
+from . import betting, engine, predictions
+from .models import (
+    Bet,
+    Competition,
+    Market,
+    Match,
+    Prediction,
+    Season,
+    Selection,
+    Standing,
+    StandingZone,
+    SyncRun,
+    Team,
+    TeamName,
+)
 from .odds import close_started_markets, price_match, refresh_odds
 from .providers import football_data
 from .providers.crests import badge_colours, crest_file
@@ -1077,3 +1091,371 @@ class FootballPageApiTests(BettingTestCase):
         bet.refresh_from_db()
         self.assertEqual(days[-1]["profit"], str(bet.payout - bet.stake))
         self.assertTrue(all(day["profit"] == "0.00" for day in days[:-1]))
+
+
+class ScoreTests(SimpleTestCase):
+    def test_points_table(self):
+        outcomes = {
+            ((2, 1), (2, 1)): (3, "exact"),
+            ((0, 0), (0, 0)): (3, "exact"),
+            ((2, 1), (3, 0)): (1, "result"),  # right winner, other score
+            ((1, 1), (2, 2)): (1, "result"),  # a draw is a result too
+            ((0, 2), (1, 3)): (1, "result"),
+            ((2, 1), (1, 2)): (0, "wrong"),
+            ((1, 0), (1, 1)): (0, "wrong"),
+            ((0, 0), (0, 1)): (0, "wrong"),
+        }
+        for (guess, real), expected in outcomes.items():
+            with self.subTest(guess=guess, real=real):
+                self.assertEqual(predictions.score(*guess, *real), expected)
+
+
+class PredictionTestCase(BettingTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        load_sample(read_sample())
+
+    def setUp(self):
+        super().setUp()
+        self.api = APIClient()
+        self.api.force_authenticate(self.user)
+        for match in self.matches:
+            match.matchday = 11
+            match.save()
+        self.season.current_matchday = 11
+        self.season.save()
+
+    def player(self, name):
+        return User.objects.create_user(username=f"{name}@lumora.dev", email=f"{name}@lumora.dev", display_name=name)
+
+    def predict(self, user, match, home, away):
+        return predictions.save_predictions(user, [(match.id, home, away)], now=self.now)[0][0]
+
+
+class SavePredictionTests(PredictionTestCase):
+    def test_a_prediction_is_saved_and_changed_until_kickoff(self):
+        first = self.predict(self.user, self.matches[0], 2, 1)
+        again = self.predict(self.user, self.matches[0], 0, 0)
+        self.assertEqual(first.id, again.id)
+        self.assertEqual(Prediction.objects.filter(user=self.user).count(), 1)
+        again.refresh_from_db()
+        self.assertEqual((again.home_goals, again.away_goals), (0, 0))
+        self.assertEqual(again.created_at, first.created_at)
+
+    def test_it_is_locked_from_kickoff_by_the_server_clock(self):
+        match = self.matches[0]
+        before = match.kickoff - timedelta(seconds=1)
+        predictions.save_predictions(self.user, [(match.id, 1, 0)], now=before)
+        for moment in (match.kickoff, match.kickoff + timedelta(minutes=5)):
+            with self.subTest(moment=moment), self.assertRaises(CodedError) as caught:
+                predictions.save_predictions(self.user, [(match.id, 3, 3)], now=moment)
+            self.assertEqual(caught.exception.detail.code, "prediction_locked")
+        self.assertEqual(Prediction.objects.get(user=self.user).home_goals, 1)
+
+    def test_a_postponed_or_live_match_cannot_be_predicted(self):
+        for status in (Match.Status.POSTPONED, Match.Status.LIVE, Match.Status.FINISHED):
+            with self.subTest(status=status):
+                self.matches[1].status = status
+                self.matches[1].save()
+                with self.assertRaises(CodedError):
+                    predictions.save_predictions(self.user, [(self.matches[1].id, 1, 1)], now=self.now)
+
+    def test_a_bulk_save_is_all_or_nothing(self):
+        self.matches[1].kickoff = self.now - timedelta(hours=1)
+        self.matches[1].save()
+        items = [(self.matches[0].id, 1, 0), (self.matches[1].id, 2, 2)]
+        with self.assertRaises(CodedError):
+            predictions.save_predictions(self.user, items, now=self.now)
+        self.assertEqual(Prediction.objects.count(), 0)
+
+    def test_numbers_must_be_whole_and_in_range(self):
+        for home, away in ((-1, 0), (0, 21), (1.5, 0), ("1", 0), (True, 0)):
+            with self.subTest(home=home, away=away), self.assertRaises(CodedError) as caught:
+                predictions.save_predictions(self.user, [(self.matches[0].id, home, away)], now=self.now)
+            self.assertEqual(caught.exception.detail.code, "prediction_invalid")
+
+    def test_one_match_twice_in_a_request_is_refused(self):
+        with self.assertRaises(CodedError):
+            predictions.save_predictions(self.user, [(self.matches[0].id, 1, 0), (self.matches[0].id, 2, 0)])
+
+    def test_the_database_allows_one_prediction_per_player_and_match(self):
+        self.predict(self.user, self.matches[0], 1, 0)
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            Prediction.objects.create(user=self.user, match=self.matches[0], home_goals=2, away_goals=2)
+
+    def test_an_unknown_match_is_404(self):
+        with self.assertRaises(CodedError) as caught:
+            predictions.save_predictions(self.user, [(999999, 1, 0)], now=self.now)
+        self.assertEqual(caught.exception.status_code, 404)
+
+
+class ScorePredictionsTests(PredictionTestCase):
+    def test_exact_gives_3_right_result_1_wrong_0(self):
+        rows = [self.predict(self.user, self.matches[0], 2, 1), self.predict(self.user, self.matches[1], 1, 0),
+                self.predict(self.user, self.matches[2], 0, 3)]
+        self.finish(self.matches[0], 2, 1)
+        self.finish(self.matches[1], 3, 0)
+        self.finish(self.matches[2], 1, 0)
+        self.assertEqual(predictions.score_predictions(self.now), 3)
+        for row in rows:
+            row.refresh_from_db()
+        self.assertEqual([row.points for row in rows], [3, 1, 0])
+        self.assertEqual([row.outcome for row in rows], ["exact", "result", "wrong"])
+
+    def test_the_regular_time_score_counts_not_extra_time(self):
+        row = self.predict(self.user, self.matches[0], 1, 1)
+        self.finish(self.matches[0], 2, 1, home_regular=1, away_regular=1, duration="EXTRA_TIME")
+        predictions.score_predictions(self.now)
+        row.refresh_from_db()
+        self.assertEqual((row.points, row.outcome), (3, "exact"))
+
+    def test_scoring_twice_changes_nothing(self):
+        row = self.predict(self.user, self.matches[0], 2, 1)
+        self.finish(self.matches[0], 2, 1)
+        self.assertEqual(predictions.score_predictions(self.now), 1)
+        scored_at = Prediction.objects.get(pk=row.pk).scored_at
+        self.assertEqual(predictions.score_predictions(self.now + timedelta(days=1)), 0)
+        row.refresh_from_db()
+        self.assertEqual((row.points, row.scored_at), (3, scored_at))
+        self.assertEqual(predictions.my_stats(self.user, self.competition)["points"], 3)
+
+    def test_a_scored_prediction_cannot_be_changed(self):
+        self.predict(self.user, self.matches[0], 2, 1)
+        self.finish(self.matches[0], 2, 1)
+        predictions.score_predictions(self.now)
+        with self.assertRaises(CodedError):
+            predictions.save_predictions(self.user, [(self.matches[0].id, 0, 0)], now=self.now)
+
+    def test_an_unfinished_match_is_left_pending(self):
+        row = self.predict(self.user, self.matches[0], 2, 1)
+        self.assertEqual(predictions.score_predictions(self.now + timedelta(days=2)), 0)
+        row.refresh_from_db()
+        self.assertEqual(row.outcome, "pending")
+
+    def test_postponed_and_cancelled_are_void_and_not_counted(self):
+        rows = [self.predict(self.user, self.matches[0], 1, 0), self.predict(self.user, self.matches[1], 1, 0)]
+        for match, status in zip(self.matches, (Match.Status.POSTPONED, Match.Status.CANCELLED)):
+            match.status = status
+            match.save()
+        predictions.score_predictions(self.now)
+        for row in rows:
+            row.refresh_from_db()
+            self.assertEqual((row.outcome, row.points), ("void", 0))
+        self.assertEqual(predictions.my_stats(self.user, self.competition)["played"], 0)
+        self.assertEqual(predictions.board(self.competition), [])
+
+    def test_the_sync_scores_right_after_settling(self):
+        from .services import after_sync
+
+        row = self.predict(self.user, self.matches[0], 2, 1)
+        self.finish(self.matches[0], 2, 1)
+        after_sync(self.now)
+        row.refresh_from_db()
+        self.assertEqual(row.points, 3)
+
+
+class LeaderboardTests(PredictionTestCase):
+    def setUp(self):
+        super().setUp()
+        self.ann, self.bob, self.cid = self.player("ann"), self.player("bob"), self.player("cid")
+
+    def at(self, user, match, home, away, when):
+        row = predictions.save_predictions(user, [(match.id, home, away)], now=self.now)[0][0]
+        Prediction.objects.filter(pk=row.pk).update(created_at=when)
+
+    def settle_all(self, scores):
+        for match, (home, away) in zip(self.matches, scores):
+            self.finish(match, home, away)
+        predictions.score_predictions(self.now)
+
+    def test_most_points_first(self):
+        self.predict(self.ann, self.matches[0], 1, 0)  # result: 1
+        self.predict(self.bob, self.matches[0], 2, 0)  # exact: 3
+        self.predict(self.cid, self.matches[0], 0, 1)  # wrong: 0
+        self.settle_all([(2, 0), (0, 0), (0, 0)])
+        rows = predictions.board(self.competition)
+        self.assertEqual([(row["player"], row["points"]) for row in rows], [("bob", 3), ("ann", 1), ("cid", 0)])
+
+    def test_a_tie_goes_to_more_exact_scores(self):
+        # ann: 3 exact-less results = 3 points; bob: one exact = 3 points
+        for match in self.matches:
+            self.predict(self.ann, match, 1, 0)
+        self.predict(self.bob, self.matches[0], 3, 0)
+        self.settle_all([(3, 0), (2, 0), (1, 0)])
+        rows = predictions.board(self.competition)
+        self.assertEqual([row["points"] for row in rows[:2]], [5, 3])  # ann 1+1+3 = 5, bob 3
+        self.assertEqual(rows[0]["player"], "ann")
+
+        # now an exact tie-break: both 3 points, bob has the exact score
+        Prediction.objects.all().delete()
+        for match in self.matches:
+            Prediction.objects.create(user=self.ann, match=match, home_goals=9, away_goals=0)
+        Prediction.objects.create(user=self.bob, match=self.matches[0], home_goals=3, away_goals=0)
+        Prediction.objects.update(outcome="pending", points=0)
+        predictions.score_predictions(self.now)
+        rows = predictions.board(self.competition)
+        self.assertEqual([(row["player"], row["points"], row["exact"]) for row in rows], [("bob", 3, 1), ("ann", 3, 0)])
+
+    def test_then_the_earlier_prediction_wins(self):
+        self.at(self.ann, self.matches[0], 1, 0, self.now - timedelta(hours=1))
+        self.at(self.bob, self.matches[0], 1, 0, self.now - timedelta(hours=5))
+        self.at(self.cid, self.matches[0], 1, 0, self.now - timedelta(hours=3))
+        self.settle_all([(1, 0), (0, 0), (0, 0)])
+        self.assertEqual([row["player"] for row in predictions.board(self.competition)], ["bob", "cid", "ann"])
+
+    def test_editing_a_prediction_does_not_make_it_earlier_or_later(self):
+        self.at(self.ann, self.matches[0], 0, 0, self.now - timedelta(hours=9))
+        self.at(self.bob, self.matches[0], 1, 0, self.now - timedelta(hours=5))
+        self.predict(self.ann, self.matches[0], 1, 0)  # ann edits later
+        self.settle_all([(1, 0), (0, 0), (0, 0)])
+        self.assertEqual([row["player"] for row in predictions.board(self.competition)], ["ann", "bob"])
+
+    def test_the_matchday_board_counts_only_that_matchday(self):
+        self.matches[2].matchday = 12
+        self.matches[2].save()
+        self.predict(self.ann, self.matches[0], 1, 0)
+        self.predict(self.ann, self.matches[2], 1, 0)
+        self.predict(self.bob, self.matches[2], 1, 0)
+        self.settle_all([(1, 0), (0, 0), (1, 0)])
+        season = {row["player"]: row["points"] for row in predictions.board(self.competition)}
+        day = {row["player"]: row["points"] for row in predictions.board(self.competition, matchday=11)}
+        self.assertEqual(season, {"ann": 6, "bob": 3})
+        self.assertEqual(day, {"ann": 3})
+
+    def test_my_rank_is_shown_even_outside_the_top(self):
+        for index in range(8):
+            fan = self.player(f"fan{index}")
+            self.predict(fan, self.matches[0], 1, 0)
+        self.predict(self.user, self.matches[0], 0, 1)
+        self.settle_all([(1, 0), (0, 0), (0, 0)])
+        result = predictions.leaderboard(self.competition, user=self.user, limit=6)
+        self.assertEqual(len(result["rows"]), 6)
+        self.assertEqual(result["players"], 9)
+        self.assertEqual(result["me"]["rank"], 9)
+        self.assertEqual(result["me"]["points"], 0)
+
+    def test_my_stats(self):
+        self.predict(self.user, self.matches[0], 2, 1)
+        self.predict(self.user, self.matches[1], 1, 0)
+        self.predict(self.user, self.matches[2], 0, 1)
+        self.settle_all([(2, 1), (3, 0), (1, 0)])
+        stats = predictions.my_stats(self.user, self.competition)
+        self.assertEqual(stats, {"points": 4, "rank": 1, "exact": 1, "right_percent": 67, "played": 3, "players": 1})
+
+    def test_no_scored_predictions_means_zero_stats_and_no_rank(self):
+        self.predict(self.user, self.matches[0], 1, 0)
+        stats = predictions.my_stats(self.user, self.competition)
+        self.assertEqual((stats["points"], stats["rank"], stats["played"]), (0, None, 0))
+
+
+class PredictionApiTests(PredictionTestCase):
+    def post_now(self, path, body, method="post"):
+        with mock.patch("sports.predictions.timezone.now", return_value=self.now):
+            return getattr(self.api, method)(path, body, format="json")
+
+    def test_every_endpoint_needs_a_player_except_the_public_ones(self):
+        anonymous = APIClient()
+        for path in ("/api/predictions?competition=PL", "/api/prediction_stats?competition=PL"):
+            with self.subTest(path=path):
+                self.assertEqual(anonymous.get(path).status_code, 401)
+        self.assertEqual(anonymous.post("/api/predictions", {}, format="json").status_code, 401)
+        for path in ("/api/prediction_leaderboard?competition=PL", "/api/matchdays?competition=PL",
+                     "/api/standing_zones?competition=PL", "/api/prediction_labels?lang=en"):
+            with self.subTest(path=path):
+                self.assertEqual(anonymous.get(path).status_code, 200)
+
+    def test_post_creates_then_updates_and_put_changes(self):
+        body = {"match": self.matches[0].id, "home_goals": 2, "away_goals": 1}
+        self.assertEqual(self.post_now("/api/predictions", body).status_code, 201)
+        again = self.post_now("/api/predictions", {**body, "home_goals": 3})
+        self.assertEqual((again.status_code, again.json()["home_goals"]), (200, 3))
+        put = self.post_now(f"/api/predictions/{self.matches[0].id}", {"home_goals": 0, "away_goals": 0}, method="put")
+        self.assertEqual((put.status_code, put.json()["away_goals"]), (200, 0))
+        self.assertEqual(Prediction.objects.count(), 1)
+
+    def test_the_locked_error_has_a_code_and_a_text_in_every_language(self):
+        self.matches[0].kickoff = self.now - timedelta(minutes=1)
+        self.matches[0].save()
+        body = {"match": self.matches[0].id, "home_goals": 1, "away_goals": 0}
+        for lang in ("en", "am", "ru"):
+            with self.subTest(lang=lang):
+                self.api.cookies["lang"] = lang
+                response = self.post_now("/api/predictions", body)
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(response.json()["code"], "prediction_locked")
+                self.assertTrue(response.json()["detail"])
+        self.api.cookies["lang"] = "en"
+        self.assertEqual(self.post_now("/api/predictions", body).json()["detail"], "Predictions for this match closed at kickoff.")
+
+    def test_bad_numbers_are_a_coded_error(self):
+        response = self.post_now("/api/predictions", {"match": self.matches[0].id, "home_goals": 99, "away_goals": 0})
+        self.assertEqual((response.status_code, response.json()["code"]), (400, "prediction_invalid"))
+
+    def test_bulk_saves_several_or_none(self):
+        rows = [{"match": match.id, "home_goals": 1, "away_goals": 0} for match in self.matches]
+        self.assertEqual(len(self.post_now("/api/predictions/bulk", {"predictions": rows}).json()), 3)
+        rows[1]["match"] = 999999
+        self.assertEqual(self.post_now("/api/predictions/bulk", {"predictions": rows}).status_code, 404)
+        self.assertEqual(self.post_now("/api/predictions/bulk", {"predictions": []}).status_code, 400)
+
+    def test_the_list_has_each_match_with_my_prediction_and_state(self):
+        self.predict(self.user, self.matches[0], 2, 1)
+        self.matches[1].kickoff = self.now - timedelta(hours=1)
+        self.matches[1].status = Match.Status.LIVE
+        self.matches[1].save()
+        self.finish(self.matches[2], 0, 0)
+        self.predict_scored = Prediction.objects.create(
+            user=self.user, match=self.matches[2], home_goals=0, away_goals=0
+        )
+        predictions.score_predictions(self.now)
+        with mock.patch("sports.views.timezone.now", return_value=self.now):
+            rows = self.api.get("/api/predictions?competition=PL&matchday=11").json()
+        self.assertEqual([row["state"] for row in rows], ["locked", "open", "scored"])  # ordered by kickoff
+        self.assertEqual(rows[1]["prediction"]["home_goals"], 2)
+        self.assertIsNone(rows[0]["prediction"])
+        self.assertEqual(rows[2]["prediction"]["points"], 3)
+
+    def test_the_list_defaults_to_the_current_matchday_and_unknown_filters_give_empty(self):
+        self.assertEqual(len(self.api.get("/api/predictions?competition=PL").json()), 3)
+        for query in ("competition=XX", "competition=PL&matchday=99", "competition=PL&matchday=x", ""):
+            with self.subTest(query=query):
+                self.assertEqual(self.api.get(f"/api/predictions?{query}").json(), [])
+
+    def test_other_players_predictions_are_not_listed(self):
+        other = self.player("other")
+        self.predict(other, self.matches[0], 1, 1)
+        rows = self.api.get("/api/predictions?competition=PL").json()
+        self.assertTrue(all(row["prediction"] is None for row in rows))
+
+    def test_leaderboard_stats_and_matchdays(self):
+        self.predict(self.user, self.matches[0], 2, 1)
+        self.finish(self.matches[0], 2, 1)
+        predictions.score_predictions(self.now)
+        board = self.api.get("/api/prediction_leaderboard?competition=PL").json()
+        self.assertEqual((board["players"], board["rows"][0]["points"], board["me"]["rank"]), (1, 3, 1))
+        day = self.api.get("/api/prediction_leaderboard?competition=PL&matchday=11").json()
+        self.assertEqual(day["rows"][0]["player"], "fan")
+        self.assertEqual(self.client.get("/api/prediction_leaderboard?competition=PL").json()["me"], None)
+        self.assertEqual(self.api.get("/api/prediction_leaderboard?competition=PL&matchday=x").json()["rows"], [])
+        stats = self.api.get("/api/prediction_stats?competition=PL").json()
+        self.assertEqual((stats["points"], stats["exact"], stats["right_percent"]), (3, 1, 100))
+        days = self.client.get("/api/matchdays?competition=PL").json()
+        self.assertEqual(days, [{"matchday": 11, "matches": 3, "open": 2, "finished": 1, "current": True}])
+        self.assertEqual(self.client.get("/api/matchdays?competition=XX").json(), [])
+
+    def test_zones_come_from_the_database(self):
+        zones = self.client.get("/api/standing_zones?competition=PL").json()
+        self.assertEqual([(z["kind"], z["from_position"], z["to_position"]) for z in zones][0], ("champions_league", 1, 4))
+        StandingZone.objects.filter(competition=self.competition, kind="champions_league").update(to_position=5)
+        self.assertEqual(self.client.get("/api/standing_zones?competition=PL").json()[0]["to_position"], 5)
+        self.assertEqual(self.client.get("/api/standing_zones?competition=XX").json(), [])
+
+    def test_labels_exist_in_every_language_with_the_same_fields(self):
+        keys = []
+        for lang in ("en", "am", "ru"):
+            rows = self.client.get(f"/api/prediction_labels?lang={lang}").json()
+            self.assertEqual(len(rows), 1)
+            keys.append(set(rows[0]))
+            self.assertTrue(all(value not in ("", None) for value in rows[0].values()))
+        self.assertEqual(keys[0], keys[1])
+        self.assertEqual(keys[0], keys[2])

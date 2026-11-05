@@ -11,11 +11,14 @@ from .models import (
     Market,
     Match,
     ModelRun,
+    Prediction,
+    PredictionLabel,
     Season,
     Selection,
     SportsPageLabel,
     SportsUiLabel,
     Standing,
+    StandingZone,
     SyncRun,
     Team,
     TeamAlias,
@@ -163,4 +166,25 @@ class BetAdmin(ReadOnlyAdmin):
 @admin.register(SportsUiLabel)
 class SportsUiLabelAdmin(admin.ModelAdmin):
     list_display = ["lang", "slip_title", "place_bet", "lumora_model"]
+    list_filter = ["lang"]
+
+
+@admin.register(Prediction)
+class PredictionAdmin(ReadOnlyAdmin):
+    """Predictions and their points are history: never edited by hand (Rule 9)."""
+
+    list_display = ["created_at", "user", "match", "home_goals", "away_goals", "outcome", "points"]
+    list_filter = ["outcome", "match__competition"]
+    search_fields = ["user__email", "match__home__name", "match__away__name"]
+
+
+@admin.register(StandingZone)
+class StandingZoneAdmin(admin.ModelAdmin):
+    list_display = ["competition", "kind", "from_position", "to_position"]
+    list_filter = ["competition", "kind"]
+
+
+@admin.register(PredictionLabel)
+class PredictionLabelAdmin(admin.ModelAdmin):
+    list_display = ["lang", "save_predictions", "leaderboard", "tab_table"]
     list_filter = ["lang"]

@@ -10,10 +10,13 @@ from .models import (
     Competition,
     Market,
     Match,
+    Prediction,
+    PredictionLabel,
     Selection,
     SportsPageLabel,
     SportsUiLabel,
     Standing,
+    StandingZone,
     Team,
 )
 
@@ -249,3 +252,33 @@ class PopularPickSerializer(ModelSerializer):
     class Meta:
         model = Selection
         fields = ["id", "market", "line", "code", "odds", "previous_odds", "match", "picks"]
+
+
+class PredictionLabelSerializer(ModelSerializer):
+    class Meta:
+        model = PredictionLabel
+        fields = "__all__"
+
+
+class StandingZoneSerializer(ModelSerializer):
+    class Meta:
+        model = StandingZone
+        fields = ["id", "kind", "from_position", "to_position"]
+
+
+class PredictionSerializer(ModelSerializer):
+    class Meta:
+        model = Prediction
+        fields = ["id", "match", "home_goals", "away_goals", "outcome", "points", "updated_at"]
+
+
+class PredictionRequestSerializer(serializers.Serializer):
+    """Whole numbers only; the 0-20 range and the kickoff lock are checked by sports.predictions."""
+
+    match = serializers.IntegerField()
+    home_goals = serializers.IntegerField()
+    away_goals = serializers.IntegerField()
+
+
+class BulkPredictionRequestSerializer(serializers.Serializer):
+    predictions = PredictionRequestSerializer(many=True, allow_empty=False, max_length=50)

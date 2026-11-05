@@ -5,7 +5,8 @@ from django.db.models import Count, Prefetch
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework import viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from base.language import get_lang
@@ -13,28 +14,36 @@ from base.views import FilteredReadOnlyViewSet, LangFilteredViewSet
 from errors.exceptions import CodedError
 from wallet.models import Wallet
 from wallet.services import InsufficientFunds
-from . import betting
+from . import betting, predictions
 from .models import (
     Bet,
     BetLabel,
     Competition,
     Market,
     Match,
+    Prediction,
+    PredictionLabel,
     Season,
     Selection,
     SportsPageLabel,
     SportsUiLabel,
     Standing,
+    StandingZone,
     Team,
 )
 from .serializers import (
     BetLabelSerializer,
     BetRequestSerializer,
     BetSerializer,
+    BulkPredictionRequestSerializer,
     CompetitionSerializer,
     MarketSerializer,
     MatchDetailSerializer,
     PopularPickSerializer,
+    PredictionLabelSerializer,
+    PredictionRequestSerializer,
+    PredictionSerializer,
+    StandingZoneSerializer,
     SportsUiLabelSerializer,
     MatchSerializer,
     SportsPageLabelSerializer,
@@ -256,3 +265,157 @@ class PopularPickViewSet(FootballViewSet):
             .annotate(bet_count=Count("picks"))
             .order_by("-bet_count", "id")
         )
+
+
+# ---------------------------------------------------------------- predictions (free, no LC)
+
+
+def competition_of(request):
+    """The active league of ?competition=PL, or None (an unknown value gives an empty answer)."""
+    return Competition.objects.filter(is_active=True, code=request.query_params.get("competition")).first()
+
+
+def matchday_of(request, competition):
+    """?matchday=11, else the league's current matchday (None when there is none)."""
+    value = request.query_params.get("matchday")
+    if value is None:
+        season = Season.objects.filter(competition=competition, is_current=True).first()
+        return season.current_matchday if season else None
+    return int(value) if value.isdigit() else None
+
+
+def prediction_state(match, prediction, now):
+    if predictions.is_open(match, now):
+        return "open"
+    if prediction is not None and prediction.outcome != Prediction.Outcome.PENDING:
+        return "scored"
+    return "locked"
+
+
+def save_one(user, match, home, away):
+    (prediction, created), = predictions.save_predictions(user, [(match, home, away)])
+    return prediction, created
+
+
+class PredictionViewSet(viewsets.ViewSet):
+    """GET ?competition=PL&matchday=11: that matchday's matches with my prediction on each.
+    POST {match, home_goals, away_goals} and PUT /<match> save one; POST /bulk {predictions: [...]} saves
+    several at once (all or nothing). Until kickoff only."""
+
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        competition = competition_of(request)
+        matchday = matchday_of(request, competition) if competition else None
+        if competition is None or matchday is None:
+            return Response([])
+        matches = BET_MATCHES.filter(competition=competition, season__is_current=True, matchday=matchday).order_by(
+            "kickoff", "id"
+        )
+        mine = {row.match_id: row for row in Prediction.objects.filter(user=request.user, match__in=matches)}
+        now = timezone.now()
+        context = {"lang": get_lang(request), "request": request}
+        return Response(
+            [
+                {
+                    "match": MatchSerializer(match, context=context).data,
+                    "prediction": PredictionSerializer(mine[match.id]).data if match.id in mine else None,
+                    "state": prediction_state(match, mine.get(match.id), now),
+                }
+                for match in matches
+            ]
+        )
+
+    def create(self, request):
+        serializer = PredictionRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        prediction, created = save_one(request.user, data["match"], data["home_goals"], data["away_goals"])
+        return Response(
+            PredictionSerializer(prediction).data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        )
+
+    def update(self, request, pk=None):
+        serializer = PredictionRequestSerializer(data={**request.data, "match": pk})
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        prediction, _ = save_one(request.user, data["match"], data["home_goals"], data["away_goals"])
+        return Response(PredictionSerializer(prediction).data)
+
+    @action(detail=False, methods=["post"])
+    def bulk(self, request):
+        serializer = BulkPredictionRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        rows = serializer.validated_data["predictions"]
+        saved = predictions.save_predictions(
+            request.user, [(row["match"], row["home_goals"], row["away_goals"]) for row in rows]
+        )
+        return Response([PredictionSerializer(prediction).data for prediction, _ in saved])
+
+
+class PredictionLeaderboardViewSet(viewsets.ViewSet):
+    """?competition=PL, optional ?matchday=11 (without it: the season). The top 6, my row and my rank."""
+
+    permission_classes = [AllowAny]
+
+    def list(self, request):
+        empty = {"players": 0, "rows": [], "me": None}
+        competition = competition_of(request)
+        if competition is None:
+            return Response(empty)
+        matchday = None
+        if "matchday" in request.query_params:
+            matchday = matchday_of(request, competition)
+            if matchday is None:
+                return Response(empty)
+        user = request.user if request.user.is_authenticated else None
+        return Response(predictions.leaderboard(competition, matchday, user))
+
+
+class PredictionStatsViewSet(viewsets.ViewSet):
+    """?competition=PL: my points, rank, exact scores and right-result share this season."""
+
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        competition = competition_of(request)
+        if competition is None:
+            return Response({"points": 0, "rank": None, "exact": 0, "right_percent": 0, "played": 0, "players": 0})
+        return Response(predictions.my_stats(request.user, competition))
+
+
+class MatchdayViewSet(viewsets.ViewSet):
+    """?competition=PL: the current season's matchdays with how many matches are open and finished."""
+
+    permission_classes = [AllowAny]
+
+    def list(self, request):
+        competition = competition_of(request)
+        season = Season.objects.filter(competition=competition, is_current=True).first() if competition else None
+        if season is None:
+            return Response([])
+        now = timezone.now()
+        rows = {}
+        for match in Match.objects.filter(season=season, matchday__isnull=False):
+            row = rows.setdefault(match.matchday, {"matchday": match.matchday, "matches": 0, "open": 0, "finished": 0})
+            row["matches"] += 1
+            row["open"] += predictions.is_open(match, now)
+            row["finished"] += match.status == Match.Status.FINISHED
+        return Response([{**rows[day], "current": day == season.current_matchday} for day in sorted(rows)])
+
+
+class StandingZoneViewSet(FootballViewSet):
+    """?competition=PL: the coloured bands of the table (set per league in the admin)."""
+
+    queryset = StandingZone.objects.filter(competition__is_active=True)
+    serializer_class = StandingZoneSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        code = self.request.query_params.get("competition")
+        return qs.filter(competition__code=code) if code else qs
+
+
+class PredictionLabelViewSet(LangFilteredViewSet):
+    queryset = PredictionLabel.objects.all()
+    serializer_class = PredictionLabelSerializer

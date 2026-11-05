@@ -5,11 +5,17 @@ from .views import (
     CompetitionViewSet,
     MarketViewSet,
     MatchViewSet,
+    MatchdayViewSet,
     PopularPickViewSet,
+    PredictionLabelViewSet,
+    PredictionLeaderboardViewSet,
+    PredictionStatsViewSet,
+    PredictionViewSet,
     SportBetViewSet,
     SportsPageLabelViewSet,
     SportsUiLabelViewSet,
     StandingViewSet,
+    StandingZoneViewSet,
     TeamViewSet,
 )
 
@@ -24,3 +30,9 @@ sports_router.register("sport_bets", SportBetViewSet, basename="sport_bets")
 sports_router.register("bet_labels", BetLabelViewSet, basename="bet_labels")
 sports_router.register("sports_ui_labels", SportsUiLabelViewSet, basename="sports_ui_labels")
 sports_router.register("popular_picks", PopularPickViewSet, basename="popular_picks")
+sports_router.register("predictions", PredictionViewSet, basename="predictions")
+sports_router.register("prediction_leaderboard", PredictionLeaderboardViewSet, basename="prediction_leaderboard")
+sports_router.register("prediction_stats", PredictionStatsViewSet, basename="prediction_stats")
+sports_router.register("prediction_labels", PredictionLabelViewSet, basename="prediction_labels")
+sports_router.register("matchdays", MatchdayViewSet, basename="matchdays")
+sports_router.register("standing_zones", StandingZoneViewSet, basename="standing_zones")
