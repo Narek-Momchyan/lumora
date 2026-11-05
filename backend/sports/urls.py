@@ -5,8 +5,10 @@ from .views import (
     CompetitionViewSet,
     MarketViewSet,
     MatchViewSet,
+    PopularPickViewSet,
     SportBetViewSet,
     SportsPageLabelViewSet,
+    SportsUiLabelViewSet,
     StandingViewSet,
     TeamViewSet,
 )
@@ -20,3 +22,5 @@ sports_router.register("standings", StandingViewSet, basename="standings")
 sports_router.register("markets", MarketViewSet, basename="markets")
 sports_router.register("sport_bets", SportBetViewSet, basename="sport_bets")
 sports_router.register("bet_labels", BetLabelViewSet, basename="bet_labels")
+sports_router.register("sports_ui_labels", SportsUiLabelViewSet, basename="sports_ui_labels")
+sports_router.register("popular_picks", PopularPickViewSet, basename="popular_picks")

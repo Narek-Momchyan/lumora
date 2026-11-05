@@ -177,11 +177,11 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
   Next `/media` rewrite.
 - Every endpoint needs a login except `register`, `token`, `token/refresh`,
   `logout`, `games`, `leaderboard`, `error_messages` and the site content: `logos`,
-  `languages`, `sidebar_items`, `header_labels`, `sports_page_labels`, `bet_labels`, `login_page_labels`,
+  `languages`, `sidebar_items`, `header_labels`, `sports_page_labels`, `sports_ui_labels`, `bet_labels`, `login_page_labels`,
   `lobby_page_labels`, `game_categories`, `slot_symbols`, `slot_symbol_names`,
   `slot_sounds`, `jackpot_pools`, `zeus_page_labels`, `crash_rounds`,
   `crash_page_labels`, `roulette_rounds` and `roulette_page_labels`, and the football
-  data: `competitions`, `teams`, `matches`, `standings` and `markets`.
+  data: `competitions`, `teams`, `matches`, `standings`, `markets` and `popular_picks`.
 - The JWTs live only in httpOnly cookies, never in a response body and never in an
   `Authorization` header. `register` and `token` set `lumora_access` (30 minutes)
   and `lumora_refresh` (7 days), both `SameSite=Lax`, and `Secure` when
@@ -233,13 +233,15 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
 | GET | `/api/sports_page_labels` | – | every text of the football home page; `?lang=` |
 | GET | `/api/competitions` | – | our active leagues with the flag and the current season (`current_matchday`); names in `?lang=` |
 | GET | `/api/teams` | – | clubs with `tla`, badge colours and crest; `?competition=PL`; names in `?lang=` (English fallback) |
-| GET | `/api/matches` | – | matches with both teams, status and every score (full, half, regular time, extra time, penalties); `?competition=`, `?date=YYYY-MM-DD` (UTC day), `?status=`, `?team=<id>`; at most 300 |
+| GET | `/api/matches` | – | matches with both teams, status, every score (full, half, regular time, extra time, penalties) and `market_count`; `?competition=`, `?date=YYYY-MM-DD` (UTC day), `?status=`, `?team=<id>`; at most 300. `/api/matches/<id>` adds `home_form` / `away_form` (W D L of the last 5, newest first) and `home_table` / `away_table` (`position`, `points`) |
 | GET | `/api/standings` | – | the current season's tables; `?competition=` |
-| GET | `/api/markets` | – | `?match=<id>`: the match's markets (`1x2`, `double_chance`, `total` with `line`, `btts`, `correct_score`) with every selection's `odds`, `previous_odds` (for ▲ / ▼) and the model's fair `probability`; without `?match=` every open market |
+| GET | `/api/markets` | – | markets (`1x2`, `double_chance`, `total` with `line`, `btts`, `correct_score`) with every selection's `odds`, `previous_odds` (for ▲ / ▼) and the model's fair `probability`; `?match=1,2` (several ids), `?date=YYYY-MM-DD` (a UTC day), `?kind=1x2`; with none of `match` and `date`, every open market |
+| GET | `/api/popular_picks` | – | the 3 open picks the most bets of the last 7 days contain, with their match; empty until players have bet |
+| GET | `/api/sports_ui_labels` | – | every text of the football home, match page, bet slip and My bets; `?lang=` |
 | GET | `/api/bet_labels` | – | names of the markets, picks and bet statuses; `?lang=` |
 | GET | `/api/sport_bets` | cookie | my football bets, newest first, with their picks and matches; `?status=open\|won\|lost\|void\|settled`; at most 100 |
 | POST | `/api/sport_bets` | cookie | `{key, stake, selections: [{selection, odds}]}`: one pick is a single, 2–10 from different matches an express; `201` with the bet and `balance` (`200` for a repeated `key`); `409` `odds_changed` with `selections: [{selection, odds}]` when the odds moved; `market_closed` after kickoff; `same_match_twice`, `too_many_selections`, `stake_too_low`, `stake_too_high` (1–5,000 LC), `odds_too_high` (1,000), `win_too_high` (100,000 LC), `not_enough_lc` |
-| GET | `/api/sport_bets/summary` | cookie | the last 7 days: `staked`, `returned`, `profit` (of settled bets), `won`, `open`, `bets` |
+| GET | `/api/sport_bets/summary` | cookie | the last 7 days: `staked`, `returned`, `profit` (of settled bets), `won`, `open`, `bets`, and `by_day`: the 7 days (UTC, oldest first) as `{date, profit}` |
 | GET | `/api/login_page_labels` | – | every text of the login page; `?lang=` |
 | GET | `/api/lobby_page_labels` | – | every text of the lobby page; `?lang=` |
 | GET | `/api/game_categories` | – | category names: the filtered lobby's title and game cards; `?lang=` |

@@ -12,7 +12,7 @@ from games.models import GameCategory, LobbyPageLabel
 from header.models import HeaderLabel, Language, Logo, SidebarItem
 from roulette.models import RoulettePageLabel
 from slots.models import SlotSymbol, SlotSymbolName, ZeusPageLabel
-from sports.models import BetLabel, SportsPageLabel
+from sports.models import BetLabel, SportsPageLabel, SportsUiLabel
 from .language import LANG_CODES
 
 SAMPLE_DB = Path(settings.BASE_DIR) / "base" / "sample_db.json"
@@ -33,6 +33,7 @@ COLLECTIONS = {
     "roulette_page_labels": RoulettePageLabel,
     "sports_page_labels": SportsPageLabel,
     "bet_labels": BetLabel,
+    "sports_ui_labels": SportsUiLabel,
     "error_messages": ErrorMessage,
 }
 
@@ -54,6 +55,7 @@ NATURAL_KEYS = {
     "roulette_page_labels": ["lang"],
     "sports_page_labels": ["lang"],
     "bet_labels": ["lang"],
+    "sports_ui_labels": ["lang"],
     "error_messages": ["lang", "code"],
 }
 

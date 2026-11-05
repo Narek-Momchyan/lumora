@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import serializers
 
 from base.serializers import ModelSerializer
@@ -11,6 +12,7 @@ from .models import (
     Match,
     Selection,
     SportsPageLabel,
+    SportsUiLabel,
     Standing,
     Team,
 )
@@ -71,6 +73,7 @@ class MatchSerializer(ModelSerializer):
     competition = serializers.CharField(source="competition.code")
     home = TeamSerializer()
     away = TeamSerializer()
+    market_count = serializers.IntegerField(read_only=True, default=0)  # "+N markets"; 0 where not annotated
 
     class Meta:
         model = Match
@@ -95,6 +98,7 @@ class MatchSerializer(ModelSerializer):
             "away_extra",
             "home_penalties",
             "away_penalties",
+            "market_count",
         ]
 
 
@@ -181,3 +185,67 @@ class BetRequestSerializer(serializers.Serializer):
     key = serializers.CharField(max_length=40)
     stake = serializers.DecimalField(max_digits=12, decimal_places=2)
     selections = PickRequestSerializer(many=True, allow_empty=False, max_length=MAX_PICKS)
+
+
+class SportsUiLabelSerializer(ModelSerializer):
+    class Meta:
+        model = SportsUiLabel
+        fields = "__all__"
+
+
+def form_of(team_id, before, limit=5):
+    """W / D / L of the team's last matches before `before`, newest first (regular-time score)."""
+    rows = (
+        Match.objects.filter(status=Match.Status.FINISHED, kickoff__lt=before)
+        .filter(Q(home_id=team_id) | Q(away_id=team_id))
+        .order_by("-kickoff")[:limit]
+    )
+    form = []
+    for match in rows:
+        home = match.home_regular if match.home_regular is not None else match.home_score
+        away = match.away_regular if match.away_regular is not None else match.away_score
+        if home is None or away is None:
+            continue
+        goals, against = (home, away) if match.home_id == team_id else (away, home)
+        form.append("W" if goals > against else "L" if goals < against else "D")
+    return form
+
+
+def table_row(team_id, season_id):
+    row = Standing.objects.filter(season_id=season_id, team_id=team_id, type="TOTAL").order_by("stage", "group").first()
+    return {"position": row.position, "points": row.points} if row else None
+
+
+class MatchDetailSerializer(MatchSerializer):
+    """One match page: the match, both teams' recent form and their place in the table."""
+
+    home_form = serializers.SerializerMethodField()
+    away_form = serializers.SerializerMethodField()
+    home_table = serializers.SerializerMethodField()
+    away_table = serializers.SerializerMethodField()
+
+    class Meta(MatchSerializer.Meta):
+        fields = [*MatchSerializer.Meta.fields, "home_form", "away_form", "home_table", "away_table"]
+
+    def get_home_form(self, obj):
+        return form_of(obj.home_id, obj.kickoff)
+
+    def get_away_form(self, obj):
+        return form_of(obj.away_id, obj.kickoff)
+
+    def get_home_table(self, obj):
+        return table_row(obj.home_id, obj.season_id)
+
+    def get_away_table(self, obj):
+        return table_row(obj.away_id, obj.season_id)
+
+
+class PopularPickSerializer(ModelSerializer):
+    market = serializers.CharField(source="market.kind")
+    line = serializers.DecimalField(source="market.line", max_digits=4, decimal_places=1, allow_null=True)
+    match = MatchSerializer(source="market.match")
+    picks = serializers.IntegerField(source="bet_count")
+
+    class Meta:
+        model = Selection
+        fields = ["id", "market", "line", "code", "odds", "previous_odds", "match", "picks"]

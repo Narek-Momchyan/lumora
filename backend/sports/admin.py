@@ -14,6 +14,7 @@ from .models import (
     Season,
     Selection,
     SportsPageLabel,
+    SportsUiLabel,
     Standing,
     SyncRun,
     Team,
@@ -157,3 +158,9 @@ class BetAdmin(ReadOnlyAdmin):
     list_filter = ["kind", "status"]
     search_fields = ["user__email", "key"]
     inlines = [BetSelectionInline]
+
+
+@admin.register(SportsUiLabel)
+class SportsUiLabelAdmin(admin.ModelAdmin):
+    list_display = ["lang", "slip_title", "place_bet", "lumora_model"]
+    list_filter = ["lang"]

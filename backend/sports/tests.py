@@ -12,6 +12,7 @@ from defusedxml import ElementTree as SafeET
 from django.contrib.auth import get_user_model
 from django.db import connection
 from django.db.models import Sum
+from django.utils import timezone
 from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings, tag
 from rest_framework.test import APIClient
 
@@ -885,6 +886,17 @@ class SportBetApiTests(BettingTestCase):
         with mock.patch("sports.betting.timezone.now", return_value=self.now):
             return self.api.post("/api/sport_bets", body, format="json")
 
+    def test_markets_can_be_asked_by_matches_day_and_kind(self):
+        day = self.matches[0].kickoff.date().isoformat()
+        both = f"{self.matches[0].id},{self.matches[1].id}"
+        self.assertEqual({row["match"] for row in self.client.get(f"/api/markets?match={both}").json()}, {self.matches[0].id, self.matches[1].id})
+        rows = self.client.get(f"/api/markets?date={day}&kind=1x2").json()
+        self.assertEqual({row["kind"] for row in rows}, {"1x2"})
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(self.client.get("/api/markets?date=nope").json(), [])
+        self.assertEqual(self.client.get("/api/markets?match=1,x").json(), [])
+        self.assertEqual(self.client.get(f"/api/matches/{self.matches[0].id}").json()["market_count"], 9)
+
     def test_markets_of_a_match(self):
         rows = self.client.get(f"/api/markets?match={self.matches[0].id}").json()
         kinds = {row["kind"] for row in rows}
@@ -1000,3 +1012,68 @@ class ParallelBetTests(TransactionTestCase):
         later = self.now + timedelta(days=2)
         self.run_parallel([lambda: betting.settle(later), lambda: betting.settle(later)])
         self.assertEqual(Transaction.objects.filter(wallet=self.wallet, kind="win").count(), 1)
+
+
+class FootballPageApiTests(BettingTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        load_sample(read_sample())
+
+    def setUp(self):
+        super().setUp()
+        self.api = APIClient()
+        self.api.force_authenticate(self.user)
+
+    def test_ui_labels_in_every_language(self):
+        for lang in ["en", "am", "ru"]:
+            with self.subTest(lang=lang):
+                rows = self.client.get(f"/api/sports_ui_labels?lang={lang}").json()
+                self.assertEqual([row["lang"] for row in rows], [lang])
+                self.assertTrue(rows[0]["slip_title"])
+
+    def test_the_match_page_has_form_and_table_places(self):
+        a, b = self.teams[0], self.teams[1]
+        for index, (home, away) in enumerate([(2, 0), (1, 1), (0, 3)]):  # a is at home: W, D, L
+            past = self.match(100 + index, a, b, hours=-24 * (index + 1))
+            past.status = Match.Status.FINISHED
+            past.home_regular, past.away_regular = home, away
+            past.save()
+        Standing.objects.create(season=self.season, team=a, position=3, points=21)
+
+        body = self.client.get(f"/api/matches/{self.matches[0].id}").json()
+
+        self.assertEqual(body["home_form"], ["W", "D", "L"])  # newest first
+        self.assertEqual(body["away_form"], ["L", "D", "W"])
+        self.assertEqual(body["home_table"], {"position": 3, "points": 21})
+        self.assertIsNone(body["away_table"])
+        self.assertEqual(self.client.get("/api/matches/999999").status_code, 404)
+
+    def test_popular_picks_are_the_most_bet_open_picks(self):
+        self.assertEqual(self.client.get("/api/popular_picks").json(), [])
+        popular = self.pick(self.matches[0])
+        other = self.pick(self.matches[1])
+        betting.place_bet(self.user, "one", Decimal("5"), [popular], now=self.now)
+        second = User.objects.create_user(username="two@lumora.dev", email="two@lumora.dev")
+        open_wallet(second)
+        betting.place_bet(second, "two", Decimal("5"), [popular], now=self.now)
+        betting.place_bet(self.user, "three", Decimal("5"), [other], now=self.now)
+
+        with mock.patch("sports.views.timezone.now", return_value=self.now):
+            rows = self.client.get("/api/popular_picks").json()
+
+        self.assertEqual([(row["id"], row["picks"]) for row in rows], [(popular.selection, 2), (other.selection, 1)])
+        self.assertEqual(rows[0]["match"]["home"]["tla"], "T1")
+
+    def test_the_summary_has_the_profit_of_each_of_the_last_7_days(self):
+        bet, _ = self.place([self.pick(self.matches[0])])
+        self.finish(self.matches[0], 1, 0)
+        settle_time = timezone.now()
+        betting.settle(settle_time)
+
+        days = self.api.get("/api/sport_bets/summary").json()["by_day"]
+
+        self.assertEqual(len(days), 7)
+        self.assertEqual(days[-1]["date"], settle_time.date().isoformat())
+        bet.refresh_from_db()
+        self.assertEqual(days[-1]["profit"], str(bet.payout - bet.stake))
+        self.assertTrue(all(day["profit"] == "0.00" for day in days[:-1]))

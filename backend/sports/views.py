@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from decimal import Decimal
 
-from django.db.models import Prefetch
+from django.db.models import Count, Prefetch
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
@@ -23,6 +23,7 @@ from .models import (
     Season,
     Selection,
     SportsPageLabel,
+    SportsUiLabel,
     Standing,
     Team,
 )
@@ -32,6 +33,9 @@ from .serializers import (
     BetSerializer,
     CompetitionSerializer,
     MarketSerializer,
+    MatchDetailSerializer,
+    PopularPickSerializer,
+    SportsUiLabelSerializer,
     MatchSerializer,
     SportsPageLabelSerializer,
     StandingSerializer,
@@ -77,12 +81,18 @@ class TeamViewSet(FootballViewSet):
 class MatchViewSet(FootballViewSet):
     """?competition=PL, ?date=2026-11-08 (a UTC day), ?status=finished, ?team=<id>."""
 
-    queryset = Match.objects.filter(competition__is_active=True).select_related("competition").prefetch_related(
-        Prefetch("home", queryset=TEAMS), Prefetch("away", queryset=TEAMS)
+    queryset = (
+        Match.objects.filter(competition__is_active=True)
+        .annotate(market_count=Count("markets"))
+        .select_related("competition")
+        .prefetch_related(Prefetch("home", queryset=TEAMS), Prefetch("away", queryset=TEAMS))
     )
     serializer_class = MatchSerializer
     filter_fields = ("status",)
     list_limit = 300
+
+    def get_serializer_class(self):
+        return MatchDetailSerializer if self.action == "retrieve" else MatchSerializer
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -123,22 +133,45 @@ class BetLabelViewSet(LangFilteredViewSet):
 
 
 class MarketViewSet(FootballViewSet):
-    """?match=<id>: the match's markets with their odds, the previous odds and the model's probability."""
+    """?match=1,2: those matches' markets; ?date=2026-11-08 (a UTC day); ?kind=1x2. With none of the
+    first two, every open market. Each selection has its odds, previous odds and the model's probability."""
 
     queryset = Market.objects.prefetch_related(Prefetch("selections", queryset=Selection.objects.order_by("id")))
     serializer_class = MarketSerializer
 
     def get_queryset(self):
         qs = super().get_queryset()
-        match = self.request.query_params.get("match")
-        if match is None:
-            return qs.filter(status=Market.Status.OPEN)
-        return qs.filter(match_id=match) if match.isdigit() else qs.none()
+        params = self.request.query_params
+        if "kind" in params:
+            qs = qs.filter(kind=params["kind"])
+        if "date" in params:
+            try:
+                return qs.filter(match__kickoff__date=date.fromisoformat(params["date"]))
+            except ValueError:
+                return qs.none()
+        if "match" in params:
+            ids = params["match"].split(",")
+            if not all(part.isdigit() for part in ids):
+                return qs.none()
+            return qs.filter(match_id__in=ids)
+        return qs.filter(status=Market.Status.OPEN)
 
 
 BET_MATCHES = Match.objects.select_related("competition").prefetch_related(
     Prefetch("home", queryset=TEAMS), Prefetch("away", queryset=TEAMS)
 )
+
+
+def profit_by_day(user, days=7):
+    """The last 7 days (UTC, oldest first): what the bets settled that day returned minus their stakes."""
+    today = timezone.now().date()
+    totals = {today - timedelta(days=offset): Decimal("0.00") for offset in range(days)}
+    settled = Bet.objects.filter(user=user, settled_at__date__gte=min(totals)).exclude(status=Bet.Status.OPEN)
+    for bet in settled:
+        day = bet.settled_at.date()
+        if day in totals:
+            totals[day] += bet.payout - bet.stake
+    return [{"date": day.isoformat(), "profit": str(totals[day])} for day in sorted(totals)]
 
 
 class SportBetViewSet(FilteredReadOnlyViewSet):
@@ -194,5 +227,32 @@ class SportBetViewSet(FilteredReadOnlyViewSet):
                 "won": sum(1 for bet in bets if bet.status == Bet.Status.WON),
                 "open": len(bets) - len(settled),
                 "bets": len(bets),
+                "by_day": profit_by_day(request.user),
             }
+        )
+
+
+class SportsUiLabelViewSet(LangFilteredViewSet):
+    queryset = SportsUiLabel.objects.all()
+    serializer_class = SportsUiLabelSerializer
+
+
+class PopularPickViewSet(FootballViewSet):
+    """The three open picks most bets of the last 7 days contain. Empty until players have bet."""
+
+    serializer_class = PopularPickSerializer
+    list_limit = 3
+
+    def get_queryset(self):
+        now = timezone.now()
+        return (
+            Selection.objects.filter(
+                market__status=Market.Status.OPEN,
+                market__match__kickoff__gt=now,
+                picks__bet__created_at__gte=now - timedelta(days=7),
+            )
+            .select_related("market__match__competition")
+            .prefetch_related(Prefetch("market__match__home", queryset=TEAMS), Prefetch("market__match__away", queryset=TEAMS))
+            .annotate(bet_count=Count("picks"))
+            .order_by("-bet_count", "id")
         )

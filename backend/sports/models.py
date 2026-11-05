@@ -408,3 +408,78 @@ class BetLabel(models.Model):
 
     def __str__(self):
         return f"Bet labels ({self.lang})"
+
+
+class SportsUiLabel(models.Model):
+    """The texts of the football pages (home, match, bet slip, My bets) in one language."""
+
+    lang = models.CharField(max_length=10, choices=LANG_CHOICES, db_index=True)
+    matchday_label = models.CharField(max_length=120, help_text="{n} are replaced")
+    starts_in = models.CharField(max_length=120)
+    today = models.CharField(max_length=120)
+    tomorrow = models.CharField(max_length=120)
+    live_now = models.CharField(max_length=120)
+    matches_count = models.CharField(max_length=120, help_text="{count} are replaced")
+    bets_close_at_kickoff = models.CharField(max_length=120)
+    markets_more = models.CharField(max_length=120, help_text="{count} are replaced")
+    lumora_model = models.CharField(max_length=120)
+    win_chance = models.CharField(max_length=120)
+    odds_note = models.CharField(max_length=400)
+    no_matches = models.CharField(max_length=120)
+    no_odds_yet = models.CharField(max_length=120)
+    slip_title = models.CharField(max_length=120)
+    slip_empty_title = models.CharField(max_length=120)
+    slip_empty_text = models.CharField(max_length=120)
+    clear_all = models.CharField(max_length=120)
+    total_odds = models.CharField(max_length=120)
+    stake_label = models.CharField(max_length=120)
+    potential_win = models.CharField(max_length=120)
+    place_bet = models.CharField(max_length=120)
+    accept_odds = models.CharField(max_length=120)
+    bet_placed = models.CharField(max_length=120)
+    closed_badge = models.CharField(max_length=120)
+    odds_changed_note = models.CharField(max_length=120)
+    max_button = models.CharField(max_length=120)
+    min_picks = models.CharField(max_length=120)
+    popular_title = models.CharField(max_length=120)
+    model_card_title = models.CharField(max_length=120)
+    model_card_text = models.CharField(max_length=400)
+    all_markets = models.CharField(max_length=120)
+    main_markets = models.CharField(max_length=120)
+    goals_markets = models.CharField(max_length=120)
+    score_markets = models.CharField(max_length=120)
+    markets_total = models.CharField(max_length=120, help_text="{count} are replaced")
+    over_short = models.CharField(max_length=120)
+    under_short = models.CharField(max_length=120)
+    pays_up_to = models.CharField(max_length=120, help_text="{odds} are replaced")
+    tab_all = models.CharField(max_length=120)
+    tab_open = models.CharField(max_length=120)
+    tab_settled = models.CharField(max_length=120)
+    this_week = models.CharField(max_length=120)
+    staked = models.CharField(max_length=120)
+    returned = models.CharField(max_length=120)
+    profit = models.CharField(max_length=120)
+    won_bets = models.CharField(max_length=120)
+    won_of = models.CharField(max_length=120, help_text="{total}, {won} are replaced")
+    odds_label = models.CharField(max_length=120)
+    stake_short = models.CharField(max_length=120)
+    empty_my_bets = models.CharField(max_length=120)
+    profit_by_day = models.CharField(max_length=120)
+    profit_by_day_note = models.CharField(max_length=120)
+    weekdays_short = models.CharField(max_length=120)
+    form_win = models.CharField(max_length=120)
+    form_draw = models.CharField(max_length=120)
+    form_loss = models.CharField(max_length=120)
+    ticket_id = models.CharField(max_length=120, help_text="{id} are replaced")
+    full_time_short = models.CharField(max_length=120)
+    standing_line = models.CharField(max_length=120, help_text="{points}, {position} are replaced")
+    popular_odds_hint = models.CharField(max_length=120)
+    server_unreachable = models.CharField(max_length=120)
+
+    class Meta:
+        verbose_name_plural = "Sports UI labels"
+        ordering = ["id"]
+        constraints = [models.UniqueConstraint(fields=["lang"], name="unique_sports_ui_label_lang")]
+
+    def __str__(self):
+        return f"Sports UI labels ({self.lang})"
