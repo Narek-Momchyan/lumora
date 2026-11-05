@@ -41,7 +41,7 @@ python manage.py runserver
 
 - API: http://127.0.0.1:8000/api/
 - Admin: http://127.0.0.1:8000/admin/
-- Live feeds: ws://127.0.0.1:8000/ws/crash and ws://127.0.0.1:8000/ws/roulette
+- Live feeds: ws://127.0.0.1:8000/ws/crash, ws://127.0.0.1:8000/ws/roulette and ws://127.0.0.1:8000/ws/sports
 
 ## Running Neon Crash
 
@@ -85,9 +85,24 @@ python manage.py sync_football                         # yesterday to tomorrow, 
 python manage.py sync_football --competition PL --full
 python manage.py run_sports                            # one full sync a day after 03:00 UTC,
                                                        # today's matches every SPORTS_SYNC_INTERVAL_MINUTES on match days
+python manage.py run_live                              # live scores: one API-Football request every LIVE_POLL_SECONDS
+                                                       # while a match is in its 130-minute window (see below)
 ```
 
 - The browser never calls a provider: everything goes through our tables and API.
+- **Live scores (display only).** `run_live` (one runner at a time, a PostgreSQL advisory lock; `runserver`
+  does not start it because every poll spends quota) asks API-Football's free plan for `fixtures?live=all`
+  (the free plan blocks the fixture lists of the current season, but answers this one with current data)
+  every `LIVE_POLL_SECONDS` (300), only while one of our matches is between its kickoff and
+  `LIVE_WINDOW_MINUTES` (130) after it, and never more than `LIVE_DAILY_LIMIT` (90) times per UTC day; the
+  counter is `ApiUsage`, so it survives restarts. A fixture is matched to a `Match` by league id
+  (`Competition.api_football_id`), a kickoff within 3 hours and both club names (normalised; `TeamAlias`
+  with provider `api_football` for clubs the two providers spell differently). A fixture that matches
+  nothing is logged as `unmatched_live_fixture` and skipped, never guessed. The result goes into
+  `LiveScore` (minute, score, status, source). When the API is off (`API_FOOTBALL_ENABLED=false`), has no
+  key or is at its limit, the live page shows football-data.org's delayed score (`source` =
+  `football_data`, `delayed` = true). **A live score never settles a bet or a prediction and never changes
+  odds**: settlement uses only football-data's FINISHED regular-time score.
 - `sports/providers/football_data.py` is the adapter: it waits in a 10-a-minute rate
   limiter, and on `429` it waits `X-RequestCounter-Reset` seconds and retries. Statuses
   map to ours in `STATUSES`. Bets will be settled on the regular-time score
@@ -265,6 +280,9 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
 | GET | `/api/error_messages` | – | error texts; `?lang=`, `?code=` |
 | WS | `/ws/crash` | – | the live round, read-only, see [Neon Crash](#neon-crash) |
 | WS | `/ws/roulette` | – | the live table, read-only, see [Lumora Roulette](#lumora-roulette) |
+| WS | `/ws/sports` | – | the matches in play, read-only, public, see [Live scores](#live-scores) |
+| GET | `/api/live_matches` | – | the matches in play now: the match (`?lang=` names), `status` (`live`, `half_time`, `ended`), `minute`, `home_score`, `away_score`, `source`, `delayed`, `goal_at` |
+| GET | `/api/live_labels` | – | every text of the live page; `?lang=` |
 
 `bonus_available_at` is `null` before the first bonus; a time in the past means
 the bonus can be claimed now.
@@ -592,7 +610,7 @@ doesn't touch them. The codes are:
 | `roulette` | Live Lumora Roulette: `engine.py` (pure maths), `services.py` (bets, round changes), `runner.py` and `run_roulette` (the loop), `bots.py`, `feed.py` and `consumers.py` (WebSocket), `RouletteChain`, `RouletteRound`, `RouletteSlip`, `RouletteLine`, `RouletteBotBet`, `RouletteBotSettings`, `RoulettePageLabel` |
 | `slots` | Zeus Legacy: `engine.py` (pure maths), `services.py` (plays a round), `simulation.py`, `SlotSpin`, `SlotSymbol`, `SlotSymbolName`, `SlotSound`, `ZeusPageLabel` |
 | `leaderboard` | weekly leaderboard from the ledger |
-| `sports` | Football: `Competition`, `Season`, `Team` (+ `TeamName`, `TeamAlias`), `Match`, `Standing`, `SyncRun`; `providers/` (football-data.org adapter, rate limiter, crests), `services.py` (the sync), `runner.py`, `sync_football` and `run_sports`; `engine.py` (the odds model), `odds.py` (pricing), `betting.py` (bets and settlement), `ModelRun`, `Market`, `Selection`, `Bet`, `BetSelection`, `price_football`, `backtest_football`; `SportsPageLabel`, `BetLabel` |
+| `sports` | Football: `Competition`, `Season`, `Team` (+ `TeamName`, `TeamAlias`), `Match`, `Standing`, `SyncRun`; `providers/` (football-data.org adapter, rate limiter, crests), `services.py` (the sync), `runner.py`, `sync_football` and `run_sports`; `engine.py` (the odds model), `odds.py` (pricing), `betting.py` (bets and settlement), `ModelRun`, `Market`, `Selection`, `Bet`, `BetSelection`, `price_football`, `backtest_football`; `SportsPageLabel`, `BetLabel`; live scores: `providers/api_football.py`, `live_matching.py`, `live_runner.py` and `run_live`, `feed.py` and `consumers.py` (WebSocket), `LiveScore`, `ApiUsage`, `LiveLabel` |
 
 `base/` holds the settings, the URLs (`OptionalSlashRouter`),
 `FilteredReadOnlyViewSet`, `LangFilteredViewSet`, `SingleObjectViewSet`, what the live
@@ -637,3 +655,18 @@ because WSGI has no WebSocket, and keep one `run_crash`, one `run_roulette` and 
 With `DEBUG=False` the browsable API is turned off and HTTPS, secure cookies
 and HSTS are enabled. Run `python manage.py check --deploy` and
 `python manage.py collectstatic` before deploying.
+
+## Live scores
+
+`/ws/sports` works like `/ws/crash`: no login, read-only, the `Origin` must be one of ours, and
+whatever a client sends is ignored. On connect the client gets
+`{"type": "snapshot", "matches": [...], "server_time": ...}`; every entry is a whole match in play:
+`match` (id), `competition`, `kickoff`, `home` / `away` (`id`, `name`, `short_name`, `tla`, `color`,
+`text_color`, `crest`), `status`, `minute`, `home_score`, `away_score`, `source`, `delayed`, `goal_at`.
+After that, one event per change, each with the same fields plus `goal`: `score` (`goal` is true when the
+total went up), `minute`, `status` (also announces a new match), and `remove` (`{"match": id}`, the match
+left the page). A client that reconnects gets a new snapshot. Names are the provider's English ones; the
+page's translated names come from `/api/live_matches`.
+
+Settings (`backend/.env`, all in `.env.example`): `API_FOOTBALL_KEY`, `API_FOOTBALL_ENABLED`,
+`LIVE_POLL_SECONDS`, `LIVE_WINDOW_MINUTES`, `LIVE_DAILY_LIMIT`.

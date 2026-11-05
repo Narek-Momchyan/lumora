@@ -3,6 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     BetLabelViewSet,
     CompetitionViewSet,
+    LiveLabelViewSet,
+    LiveMatchViewSet,
     MarketViewSet,
     MatchViewSet,
     MatchdayViewSet,
@@ -36,3 +38,5 @@ sports_router.register("prediction_stats", PredictionStatsViewSet, basename="pre
 sports_router.register("prediction_labels", PredictionLabelViewSet, basename="prediction_labels")
 sports_router.register("matchdays", MatchdayViewSet, basename="matchdays")
 sports_router.register("standing_zones", StandingZoneViewSet, basename="standing_zones")
+sports_router.register("live_matches", LiveMatchViewSet, basename="live_matches")
+sports_router.register("live_labels", LiveLabelViewSet, basename="live_labels")

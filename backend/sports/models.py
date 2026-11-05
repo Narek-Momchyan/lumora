@@ -34,6 +34,9 @@ class Competition(models.Model):
 
     code = models.CharField(max_length=10, help_text="football-data.org code: PL, PD, SA, BL1, FL1, CL")
     provider_id = models.PositiveIntegerField(null=True, blank=True, editable=False)
+    api_football_id = models.PositiveIntegerField(
+        null=True, blank=True, help_text="API-Football's league id (live scores): PL 39, PD 140, SA 135, BL1 78, FL1 61, CL 2"
+    )
     name = models.CharField(max_length=100, help_text="English name from the provider")
     flag = models.FileField(
         upload_to="images/sports/flags/", max_length=255, blank=True, validators=IMAGE_OR_SVG_VALIDATORS
@@ -613,3 +616,73 @@ class PredictionLabel(models.Model):
 
     def __str__(self):
         return f"Prediction labels ({self.lang})"
+
+
+class LiveScore(models.Model):
+    """What the live page shows for a match in play. Display only: it never settles a bet or a
+    prediction and never changes odds, and live code never writes the Match's own score fields."""
+
+    class Status(models.TextChoices):
+        LIVE = "live", "Live"
+        HALF_TIME = "half_time", "Half time"
+        ENDED = "ended", "Ended (waiting for the final score)"
+
+    class Source(models.TextChoices):
+        API_FOOTBALL = "api_football", "API-Football"
+        FOOTBALL_DATA = "football_data", "football-data.org (delayed)"
+
+    match = models.OneToOneField(Match, related_name="live", on_delete=models.CASCADE)
+    status = models.CharField(max_length=12, choices=Status.choices)
+    minute = models.PositiveSmallIntegerField(null=True, blank=True)
+    home_score = models.PositiveSmallIntegerField(default=0)
+    away_score = models.PositiveSmallIntegerField(default=0)
+    source = models.CharField(max_length=14, choices=Source.choices)
+    goal_at = models.DateTimeField(null=True, blank=True, help_text="When the score last went up")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Live scores"
+        ordering = ["match__kickoff", "match_id"]
+
+    def __str__(self):
+        return f"{self.match} {self.home_score}-{self.away_score} ({self.status})"
+
+
+class ApiUsage(models.Model):
+    """Requests spent on API-Football per UTC day. The free plan allows 100; the poller stops at 90."""
+
+    day = models.DateField()
+    requests = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name_plural = "API usage"
+        ordering = ["-day"]
+        constraints = [models.UniqueConstraint(fields=["day"], name="unique_api_usage_day")]
+
+    def __str__(self):
+        return f"{self.day}: {self.requests}"
+
+
+class LiveLabel(models.Model):
+    """The texts of the live page in one language."""
+
+    lang = models.CharField(max_length=10, choices=LANG_CHOICES, db_index=True)
+    page_text = models.CharField(max_length=255)
+    live = models.CharField(max_length=60)
+    half_time = models.CharField(max_length=60)
+    full_time = models.CharField(max_length=60)
+    minute = models.CharField(max_length=60, help_text="{minute} is replaced: 67'")
+    goal = models.CharField(max_length=60)
+    delayed = models.CharField(max_length=120, help_text="Shown when the score comes from football-data.org")
+    delayed_note = models.CharField(max_length=255)
+    no_live = models.CharField(max_length=160)
+    live_count = models.CharField(max_length=120, help_text="{count} is replaced")
+    reconnecting = models.CharField(max_length=120)
+
+    class Meta:
+        verbose_name_plural = "Live labels"
+        ordering = ["id"]
+        constraints = [models.UniqueConstraint(fields=["lang"], name="unique_live_label_lang")]
+
+    def __str__(self):
+        return f"Live labels ({self.lang})"

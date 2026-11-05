@@ -65,6 +65,8 @@ python manage.py migrate
 python manage.py runserver                 # HTTP, the WebSocket and the rounds of both live games, needs Memurai
 python manage.py run_crash                 # production only: Neon Crash's rounds as their own process
 python manage.py run_roulette              # production only: Lumora Roulette's rounds as their own process
+python manage.py run_sports                # football data sync (own process, spends football-data's quota)
+python manage.py run_live                  # live scores from API-Football (own process, max 90 requests a day)
 python manage.py test                      # all fast tests, ~2 min, needs PostgreSQL
 python manage.py test --tag slow           # Zeus Legacy's 1,000,000-round RTP test, ~3 min
 python manage.py makemigrations
@@ -277,4 +279,5 @@ Each phase ends with something that works and can be shown.
       animations 1–4
 - [x] S4 Predictions and leaderboards (design 09), league pages (design 10)
 - [ ] S5 Live scores (API-Football, budget guard) over `/ws/sports`, live page
+      (backend done: `run_live`, `LiveScore`, `/ws/sports`; live scores are display only, never settle anything)
 - [ ] S6 Club forums with moderation (designs 11–12)

@@ -8,14 +8,18 @@ from threading import Thread
 from unittest import mock
 
 import httpx
+from channels.db import database_sync_to_async
+from channels.testing import WebsocketCommunicator
 from defusedxml import ElementTree as SafeET
 from django.contrib.auth import get_user_model
+from django.core.management import CommandError, call_command
 from django.db import IntegrityError, connection, transaction
 from django.db.models import Sum
 from django.utils import timezone
 from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings, tag
 from rest_framework.test import APIClient
 
+from base.asgi import application
 from base.sample import load_sample, read_sample
 from base.svg import UnsafeSvg, is_safe_svg, sanitize_svg
 from errors.exceptions import CodedError
@@ -23,10 +27,12 @@ from fairness.rng import float_stream
 from leaderboard.services import GAME_KINDS
 from wallet.models import Transaction, Wallet
 from wallet.services import InsufficientFunds, open_wallet
-from . import betting, engine, predictions
+from . import betting, engine, feed, live_matching, live_runner, predictions
 from .models import (
+    ApiUsage,
     Bet,
     Competition,
+    LiveScore,
     Market,
     Match,
     Prediction,
@@ -36,10 +42,13 @@ from .models import (
     StandingZone,
     SyncRun,
     Team,
+    TeamAlias,
     TeamName,
 )
 from .odds import close_started_markets, price_match, refresh_odds
-from .providers import football_data
+from .providers import api_football, football_data
+from .providers.api_football import ApiFootballClient
+from .providers.base import LiveFixture
 from .providers.crests import badge_colours, crest_file
 from .providers.football_data import STATUSES, FootballDataClient, ProviderError, regular_time
 from .providers.rate_limit import RateLimiter
@@ -48,6 +57,7 @@ from .services import run_sync
 
 FIXTURES = Path(__file__).parent / "fixtures"
 User = get_user_model()
+ORIGIN = [(b"origin", b"http://localhost:3000")]
 PNG = b"\x89PNG\r\n\x1a\n" + b"\x00" * 32
 
 
@@ -1459,3 +1469,477 @@ class PredictionApiTests(PredictionTestCase):
             self.assertTrue(all(value not in ("", None) for value in rows[0].values()))
         self.assertEqual(keys[0], keys[1])
         self.assertEqual(keys[0], keys[2])
+
+
+# ------------------------------------------------------------------ live scores (S5)
+
+
+def live_fixture(home, away, league=39, kickoff=None, goals=(0, 0), minute=23, status="1H", provider_id=1):
+    return LiveFixture(
+        provider_id=provider_id, league_id=league, kickoff=kickoff or datetime(2026, 11, 7, 12, 0, tzinfo=UTC),
+        home=home, away=away, home_goals=goals[0], away_goals=goals[1], elapsed=minute, status=status,
+    )
+
+
+class FakeLiveClient:
+    """API-Football answered from memory: what live=all returns now, and how many times it was asked."""
+
+    def __init__(self, fixtures=()):
+        self.fixtures = list(fixtures)
+        self.requests = 0
+
+    def live(self):
+        self.requests += 1
+        return list(self.fixtures)
+
+
+class AdapterTests(SimpleTestCase):
+    def test_the_recorded_live_answer_is_parsed(self):
+        rows = api_football.fixtures(fixture("af_live.json"))
+        self.assertEqual(len(rows), 3)
+        first = rows[0]
+        self.assertEqual((first.provider_id, first.league_id, first.status, first.elapsed), (1606557, 306, "1H", 23))
+        self.assertEqual((first.home, first.away, first.home_goals, first.away_goals), ("Al-Markhiya", "Al Waab", 0, 0))
+        self.assertEqual(first.kickoff, datetime(2026, 11, 5, 14, 15, tzinfo=UTC))
+
+    def test_the_client_asks_live_all_with_the_key_and_reads_the_quota(self):
+        seen = []
+
+        def handler(request):
+            seen.append(request)
+            return httpx.Response(200, json=fixture("af_live.json"), headers={"x-ratelimit-requests-remaining": "97"})
+
+        client = ApiFootballClient("secret", transport=httpx.MockTransport(handler))
+        self.assertEqual(len(client.live()), 3)
+        self.assertEqual(seen[0].url.params["live"], "all")
+        self.assertEqual(seen[0].url.path, "/fixtures")
+        self.assertEqual(seen[0].headers["x-apisports-key"], "secret")
+        self.assertEqual((client.requests, client.remaining), (1, 97))
+
+    def test_an_error_body_or_status_is_a_provider_error(self):
+        blocked = {"errors": {"plan": "Free plans do not have access to this season."}, "response": []}
+        for response in (httpx.Response(200, json=blocked), httpx.Response(500), httpx.Response(429)):
+            with self.subTest(status=response.status_code):
+                client = ApiFootballClient("k", transport=httpx.MockTransport(lambda request, r=response: r))
+                with self.assertRaises(ProviderError):
+                    client.live()
+
+
+class NormaliseTests(SimpleTestCase):
+    def test_clubs_spelled_alike_are_equal(self):
+        pairs = [("Manchester United FC", "Manchester United"), ("Atlético Madrid", "Atletico Madrid"),
+                 ("AFC Bournemouth", "Bournemouth"), ("Paris Saint-Germain", "paris saint germain")]
+        for a, b in pairs:
+            with self.subTest(a=a):
+                self.assertEqual(live_matching.normalise(a), live_matching.normalise(b))
+
+    def test_different_clubs_stay_different(self):
+        self.assertNotEqual(live_matching.normalise("Manchester City"), live_matching.normalise("Manchester United"))
+
+
+class LiveTestCase(BettingTestCase):
+    def setUp(self):
+        super().setUp()
+        self.notes = []
+        patcher = mock.patch.object(feed, "publish", side_effect=lambda event, data: self.notes.append((event, data)))
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def runner(self, fixtures=(), now=None):
+        self.client_api = FakeLiveClient(fixtures)
+        self.at = now or self.now
+        return live_runner.Runner(self.client_api, clock=lambda: self.at, sleep=lambda seconds: None)
+
+    def start(self, hours_ago=0.5):
+        """Kick the first match off `hours_ago` hours before self.now."""
+        match = self.matches[0]
+        match.kickoff = self.now - timedelta(hours=hours_ago)
+        match.save()
+        return match
+
+
+class MatchingTests(LiveTestCase):
+    def test_a_fixture_with_our_clubs_and_kickoff_is_our_match(self):
+        match = self.start()
+        found = live_matching.find_match(
+            live_fixture("Team 1 FC", "team 2", kickoff=match.kickoff + timedelta(minutes=5)), live_matching.competition_ids()
+        )
+        self.assertEqual(found, match)
+
+    def test_an_alias_covers_a_club_the_two_providers_spell_differently(self):
+        match = self.start()
+        TeamAlias.objects.create(team=self.teams[0], provider="api_football", name="Firsts")
+        fixture_ = live_fixture("Firsts", "Team 2", kickoff=match.kickoff)
+        self.assertEqual(live_matching.find_match(fixture_, live_matching.competition_ids()), match)
+
+    def test_an_alias_of_another_provider_does_not_count(self):
+        match = self.start()
+        TeamAlias.objects.create(team=self.teams[0], provider="other", name="Firsts")
+        with self.assertLogs("sports.live_matching", "WARNING"):
+            self.assertIsNone(
+                live_matching.find_match(live_fixture("Firsts", "Team 2", kickoff=match.kickoff), live_matching.competition_ids())
+            )
+
+    def test_unknown_names_are_logged_and_never_guessed(self):
+        match = self.start()
+        with self.assertLogs("sports.live_matching", "WARNING") as logs:
+            found = live_matching.find_match(
+                live_fixture("Wolves", "Team 2", kickoff=match.kickoff, provider_id=77), live_matching.competition_ids()
+            )
+        self.assertIsNone(found)
+        self.assertIn("unmatched_live_fixture", logs.output[0])
+        self.assertIn("fixture 77", logs.output[0])
+
+    def test_a_far_away_kickoff_or_the_wrong_league_is_not_ours(self):
+        match = self.start()
+        competitions = live_matching.competition_ids()
+        late = live_fixture("Team 1", "Team 2", kickoff=match.kickoff + timedelta(hours=4))
+        with self.assertLogs("sports.live_matching", "WARNING"):
+            self.assertIsNone(live_matching.find_match(late, competitions))
+        self.assertIsNone(live_matching.find_match(live_fixture("Team 1", "Team 2", league=306, kickoff=match.kickoff), competitions))
+
+    def test_a_swapped_home_and_away_is_not_the_same_match(self):
+        match = self.start()
+        with self.assertLogs("sports.live_matching", "WARNING"):
+            self.assertIsNone(
+                live_matching.find_match(live_fixture("Team 2", "Team 1", kickoff=match.kickoff), live_matching.competition_ids())
+            )
+
+
+class PollWindowTests(LiveTestCase):
+    def requests_at(self, minutes_after_kickoff):
+        match = self.matches[0]
+        match.kickoff = self.now - timedelta(minutes=minutes_after_kickoff)
+        match.save()
+        runner = self.runner()
+        runner.step()
+        return self.client_api.requests
+
+    def test_nothing_is_asked_before_kickoff(self):
+        self.assertEqual(self.requests_at(-1), 0)
+
+    def test_it_asks_from_kickoff_to_130_minutes_after(self):
+        for minutes in (0, 1, 90, 130):
+            with self.subTest(minutes=minutes):
+                self.assertEqual(self.requests_at(minutes), 1)
+
+    def test_nothing_is_asked_after_130_minutes(self):
+        self.assertEqual(self.requests_at(131), 0)
+
+    def test_a_postponed_match_does_not_open_the_window(self):
+        self.matches[0].status = Match.Status.POSTPONED
+        self.matches[0].kickoff = self.now - timedelta(minutes=10)
+        self.matches[0].save()
+        self.runner().step()
+        self.assertEqual(self.client_api.requests, 0)
+
+    def test_one_request_serves_every_match_in_the_window(self):
+        for match in self.matches:
+            match.kickoff = self.now - timedelta(minutes=20)
+            match.save()
+        self.runner().step()
+        self.assertEqual(self.client_api.requests, 1)
+
+
+@override_settings(LIVE_DAILY_LIMIT=3)
+class BudgetTests(LiveTestCase):
+    def test_it_stops_at_the_daily_limit_and_counts_in_the_database(self):
+        self.start()
+        runner = self.runner()
+        for _ in range(5):
+            runner.step()
+        self.assertEqual(self.client_api.requests, 3)
+        self.assertEqual(ApiUsage.objects.get(day=self.now.date()).requests, 3)
+
+    def test_a_restart_keeps_the_count(self):
+        self.start()
+        self.runner().step()
+        self.runner().step()
+        again = self.runner()
+        again.step()
+        again.step()
+        self.assertEqual(ApiUsage.objects.get(day=self.now.date()).requests, 3)
+        self.assertEqual(self.client_api.requests, 1)  # the new runner only got the last allowed request
+
+    def test_the_next_day_starts_again(self):
+        match = self.start()
+        match.kickoff = self.now
+        match.save()
+        runner = self.runner()
+        for _ in range(4):
+            runner.step()
+        self.assertEqual(runner.client.requests, 3)
+        self.at = self.now + timedelta(days=1)
+        match.kickoff = self.at
+        match.save()
+        runner.step()
+        self.assertEqual(runner.client.requests, 4)
+        self.assertEqual(ApiUsage.objects.get(day=self.at.date()).requests, 1)
+
+    def test_at_the_limit_the_football_data_score_is_still_shown(self):
+        match = self.start()
+        match.status, match.home_score, match.away_score = Match.Status.LIVE, 1, 0
+        match.save()
+        ApiUsage.objects.create(day=self.now.date(), requests=3)
+        self.runner().step()
+        row = LiveScore.objects.get(match=match)
+        self.assertEqual((row.source, row.home_score, row.away_score), ("football_data", 1, 0))
+        self.assertEqual(self.client_api.requests, 0)
+
+
+class LiveStateTests(LiveTestCase):
+    def test_an_api_score_shows_with_the_minute_and_is_published(self):
+        match = self.start()
+        runner = self.runner([live_fixture("Team 1", "Team 2", kickoff=match.kickoff, goals=(1, 0), minute=34)])
+        runner.step()
+        row = LiveScore.objects.get(match=match)
+        self.assertEqual((row.source, row.status, row.minute, row.home_score, row.away_score), ("api_football", "live", 34, 1, 0))
+        events = [event for event, _ in self.notes]
+        self.assertIn("status", events)  # a new match announces itself
+        self.assertFalse(self.notes[0][1]["delayed"])
+
+    def test_a_new_goal_is_flagged_once(self):
+        match = self.start()
+        kickoff = match.kickoff
+        runner = self.runner([live_fixture("Team 1", "Team 2", kickoff=kickoff, goals=(0, 0), minute=10)])
+        runner.step()
+        self.notes.clear()
+        runner.client.fixtures = [live_fixture("Team 1", "Team 2", kickoff=kickoff, goals=(1, 0), minute=11)]
+        runner.step()
+        scores = [data for event, data in self.notes if event == "score"]
+        self.assertEqual(len(scores), 1)
+        self.assertTrue(scores[0]["goal"])
+        self.assertEqual((scores[0]["home_score"], scores[0]["away_score"]), (1, 0))
+        self.assertIsNotNone(LiveScore.objects.get(match=match).goal_at)
+        self.notes.clear()
+        runner.step()  # nothing changed
+        self.assertEqual(self.notes, [])
+
+    def test_a_minute_change_is_published_without_a_goal(self):
+        match = self.start()
+        runner = self.runner([live_fixture("Team 1", "Team 2", kickoff=match.kickoff, minute=10)])
+        runner.step()
+        self.notes.clear()
+        runner.client.fixtures = [live_fixture("Team 1", "Team 2", kickoff=match.kickoff, minute=15)]
+        runner.step()
+        self.assertEqual([event for event, _ in self.notes], ["minute"])
+        self.assertFalse(self.notes[0][1]["goal"])
+
+    def test_half_time(self):
+        match = self.start()
+        runner = self.runner([live_fixture("Team 1", "Team 2", kickoff=match.kickoff, minute=45, status="HT")])
+        runner.step()
+        self.assertEqual(LiveScore.objects.get(match=match).status, "half_time")
+
+    def test_a_match_the_api_no_longer_lists_waits_for_the_final_score(self):
+        match = self.start()
+        runner = self.runner([live_fixture("Team 1", "Team 2", kickoff=match.kickoff, goals=(2, 1), minute=90)])
+        runner.step()
+        runner.client.fixtures = []
+        runner.step()
+        row = LiveScore.objects.get(match=match)
+        self.assertEqual((row.status, row.home_score, row.away_score), ("ended", 2, 1))
+
+    def test_football_data_finishing_the_match_removes_it(self):
+        match = self.start()
+        runner = self.runner([live_fixture("Team 1", "Team 2", kickoff=match.kickoff, goals=(2, 1), minute=90)])
+        runner.step()
+        self.finish(match, 2, 1)
+        runner.client.fixtures = []
+        self.notes.clear()
+        runner.step()
+        self.assertFalse(LiveScore.objects.filter(match=match).exists())
+        self.assertEqual(self.notes, [("remove", {"match": match.id})])
+
+    def test_leaving_the_window_removes_it(self):
+        match = self.start()
+        runner = self.runner([live_fixture("Team 1", "Team 2", kickoff=match.kickoff)])
+        runner.step()
+        self.at = self.now + timedelta(hours=3)
+        runner.client.fixtures = []
+        runner.step()
+        self.assertFalse(LiveScore.objects.filter(match=match).exists())
+
+    def test_football_data_fills_in_when_the_api_is_off_and_is_marked_delayed(self):
+        match = self.start()
+        match.status, match.home_score, match.away_score = Match.Status.LIVE, 0, 2
+        match.save()
+        runner = live_runner.Runner(None, clock=lambda: self.now, sleep=lambda seconds: None)
+        runner.step()
+        row = LiveScore.objects.get(match=match)
+        self.assertEqual((row.source, row.minute, row.away_score), ("football_data", None, 2))
+        self.assertTrue(self.notes[0][1]["delayed"])
+
+    def test_a_match_that_is_not_live_anywhere_shows_nothing(self):
+        self.start()
+        self.runner().step()
+        self.assertEqual(LiveScore.objects.count(), 0)
+
+    def test_without_a_key_or_when_switched_off_there_is_no_client(self):
+        with override_settings(API_FOOTBALL_KEY="", API_FOOTBALL_ENABLED=True):
+            self.assertIsNone(live_runner.default_client())
+        with override_settings(API_FOOTBALL_KEY="k", API_FOOTBALL_ENABLED=False):
+            self.assertIsNone(live_runner.default_client())
+        with override_settings(API_FOOTBALL_KEY="k", API_FOOTBALL_ENABLED=True):
+            self.assertIsInstance(live_runner.default_client(), ApiFootballClient)
+
+    def test_a_failed_poll_changes_nothing(self):
+        match = self.start()
+        runner = self.runner([live_fixture("Team 1", "Team 2", kickoff=match.kickoff, goals=(1, 0))])
+        runner.step()
+
+        def broken():
+            raise ProviderError("down")
+
+        runner.client.live = broken
+        with self.assertLogs("sports.live_runner", "ERROR"):
+            runner.step()
+        self.assertEqual(LiveScore.objects.get(match=match).home_score, 1)
+
+
+class LiveNeverSettlesTests(LiveTestCase):
+    """Rules 14 and 15: a live score is shown, never used."""
+
+    def test_a_live_poll_leaves_the_match_and_the_odds_alone(self):
+        match = self.start()
+        before_match = Match.objects.filter(pk=match.pk).values().get()
+        before_odds = list(Selection.objects.order_by("id").values_list("id", "odds", "previous_odds"))
+        self.runner([live_fixture("Team 1", "Team 2", kickoff=match.kickoff, goals=(5, 0), minute=80)]).step()
+        self.assertEqual(Match.objects.filter(pk=match.pk).values().get(), before_match)
+        self.assertEqual(list(Selection.objects.order_by("id").values_list("id", "odds", "previous_odds")), before_odds)
+
+    def test_bets_and_predictions_follow_football_data_not_the_live_score(self):
+        match = self.start()
+        bet, _ = self.place([self.pick(self.matches[1], code="home")], key="other")  # not this match
+        home_pick = Selection.objects.get(market__match=match, market__kind="1x2", code="home")
+        mine, _ = betting.place_bet(self.user, "k-live", Decimal("10.00"), [betting.Pick(home_pick.id, home_pick.odds)], now=match.kickoff - timedelta(hours=1))
+        prediction = Prediction.objects.create(user=self.user, match=match, home_goals=3, away_goals=0)
+
+        # The live score says 3-0 to the home side ...
+        self.runner([live_fixture("Team 1", "Team 2", kickoff=match.kickoff, goals=(3, 0), minute=88)]).step()
+        betting.settle(self.now)
+        predictions.score_predictions(self.now)
+        mine.refresh_from_db()
+        prediction.refresh_from_db()
+        self.assertEqual((mine.status, prediction.outcome), ("open", "pending"))  # a live score settles nothing
+
+        # ... but football-data's final regular-time score is 0-1, and that is what pays.
+        self.finish(match, 0, 1)
+        betting.settle(self.now)
+        predictions.score_predictions(self.now)
+        mine.refresh_from_db()
+        prediction.refresh_from_db()
+        self.assertEqual(mine.status, "lost")
+        self.assertEqual((prediction.outcome, prediction.points), ("wrong", 0))
+        self.assertEqual(Match.objects.get(pk=match.pk).home_regular, 0)
+
+
+class LiveApiTests(LiveTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        load_sample(read_sample())
+
+    def test_live_matches_are_public_and_show_the_delayed_flag(self):
+        match = self.start()
+        LiveScore.objects.create(match=match, status="live", minute=12, home_score=1, away_score=0, source="api_football")
+        other = self.matches[1]
+        other.kickoff = self.now - timedelta(minutes=30)
+        other.save()
+        LiveScore.objects.create(match=other, status="live", home_score=0, away_score=0, source="football_data")
+        rows = self.client.get("/api/live_matches?lang=en").json()
+        self.assertEqual(len(rows), 2)
+        by_match = {row["match"]["id"]: row for row in rows}
+        self.assertFalse(by_match[match.id]["delayed"])
+        self.assertTrue(by_match[other.id]["delayed"])
+        self.assertEqual((by_match[match.id]["minute"], by_match[match.id]["home_score"]), (12, 1))
+        self.assertEqual(by_match[match.id]["match"]["home"]["tla"], "T1")
+
+    def test_live_labels_exist_in_every_language_with_the_same_fields(self):
+        keys = []
+        for lang in ("en", "am", "ru"):
+            rows = self.client.get(f"/api/live_labels?lang={lang}").json()
+            self.assertEqual(len(rows), 1)
+            self.assertTrue(all(value not in ("", None) for value in rows[0].values()))
+            keys.append(set(rows[0]))
+        self.assertEqual(keys[0], keys[1])
+        self.assertEqual(keys[0], keys[2])
+
+    def test_the_live_sidebar_item_is_no_longer_soon(self):
+        items = self.client.get("/api/sidebar_items?lang=en").json()
+        self.assertFalse([item for item in items if item["url"] == "/live" and item["is_soon"]])
+
+    def test_our_leagues_have_their_api_football_ids(self):
+        ids = dict(Competition.objects.values_list("code", "api_football_id"))
+        self.assertEqual(ids, {"PL": 39, "PD": 140, "SA": 135, "BL1": 78, "FL1": 61, "CL": 2})
+
+
+class LiveSocketTests(TransactionTestCase):
+    """The socket reads rows from another thread, so the data must really be committed."""
+
+    def setUp(self):
+        competition, _ = Competition.objects.get_or_create(code="PL", defaults={"name": "Premier League"})
+        season = Season.objects.create(
+            competition=competition, provider_id=1, start_date=date(2026, 8, 1), end_date=date(2027, 5, 30), is_current=True
+        )
+        home = Team.objects.create(provider_id=1, name="Team 1", tla="T1")
+        away = Team.objects.create(provider_id=2, name="Team 2", tla="T2")
+        self.match = Match.objects.create(
+            provider_id=1, competition=competition, season=season, home=home, away=away,
+            kickoff=timezone.now() - timedelta(minutes=30), status=Match.Status.LIVE, provider_status="IN_PLAY",
+        )
+
+    async def connect(self, headers=ORIGIN):
+        socket = WebsocketCommunicator(application, "/ws/sports", headers=headers)
+        connected, _ = await socket.connect()
+        self.assertTrue(connected)
+        return socket
+
+    async def test_a_new_client_gets_a_snapshot_of_the_matches_in_play(self):
+        await database_sync_to_async(LiveScore.objects.create)(
+            match=self.match, status="live", minute=30, home_score=2, away_score=1, source="api_football"
+        )
+        socket = await self.connect()
+        message = await socket.receive_json_from()
+        self.assertEqual(message["type"], "snapshot")
+        row = message["matches"][0]
+        self.assertEqual((row["match"], row["minute"], row["home_score"], row["away_score"]), (self.match.id, 30, 2, 1))
+        self.assertEqual((row["home"]["tla"], row["delayed"], row["competition"]), ("T1", False, "PL"))
+        self.assertIn("server_time", message)
+        await socket.disconnect()
+
+    async def test_the_snapshot_is_empty_when_nothing_is_on(self):
+        socket = await self.connect()
+        self.assertEqual((await socket.receive_json_from())["matches"], [])
+        await socket.disconnect()
+
+    async def test_an_event_reaches_a_connected_client(self):
+        socket = await self.connect()
+        await socket.receive_json_from()
+        await database_sync_to_async(feed.publish)("score", {"match": 5, "home_score": 1, "away_score": 0, "goal": True})
+        message = await socket.receive_json_from()
+        self.assertEqual(message, {"type": "score", "match": 5, "home_score": 1, "away_score": 0, "goal": True})
+        await socket.disconnect()
+
+    async def test_another_site_cannot_open_the_socket_and_a_cookie_changes_nothing(self):
+        for headers in [[(b"origin", b"https://evil.example")], []]:
+            socket = WebsocketCommunicator(application, "/ws/sports", headers=headers)
+            connected, _ = await socket.connect()
+            self.assertFalse(connected)
+            await socket.disconnect()
+        socket = await self.connect(ORIGIN + [(b"cookie", b"lumora_access=whatever")])
+        await socket.receive_json_from()
+        await socket.disconnect()
+
+    async def test_what_a_client_sends_does_nothing(self):
+        socket = await self.connect()
+        await socket.receive_json_from()
+        await socket.send_json_to({"type": "score", "home_score": 9})
+        self.assertTrue(await socket.receive_nothing())
+        await socket.disconnect()
+
+
+class RunLiveCommandTests(TestCase):
+    def test_a_second_runner_is_refused(self):
+        with mock.patch("sports.management.commands.run_live.acquire_lock", return_value=False):
+            with self.assertRaises(CommandError):
+                call_command("run_live")

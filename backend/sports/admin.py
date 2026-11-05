@@ -6,8 +6,11 @@ from .models import (
     Bet,
     BetLabel,
     BetSelection,
+    ApiUsage,
     Competition,
     CompetitionName,
+    LiveLabel,
+    LiveScore,
     Market,
     Match,
     ModelRun,
@@ -187,4 +190,23 @@ class StandingZoneAdmin(admin.ModelAdmin):
 @admin.register(PredictionLabel)
 class PredictionLabelAdmin(admin.ModelAdmin):
     list_display = ["lang", "save_predictions", "leaderboard", "tab_table"]
+    list_filter = ["lang"]
+
+
+@admin.register(LiveScore)
+class LiveScoreAdmin(ReadOnlyAdmin):
+    """What the live page shows right now. Display only; it settles nothing (Rule 9)."""
+
+    list_display = ["match", "status", "minute", "home_score", "away_score", "source", "updated_at"]
+    list_filter = ["status", "source"]
+
+
+@admin.register(ApiUsage)
+class ApiUsageAdmin(ReadOnlyAdmin):
+    list_display = ["day", "requests"]
+
+
+@admin.register(LiveLabel)
+class LiveLabelAdmin(admin.ModelAdmin):
+    list_display = ["lang", "live", "delayed", "goal"]
     list_filter = ["lang"]

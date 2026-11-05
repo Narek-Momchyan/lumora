@@ -8,6 +8,8 @@ from .models import (
     BetLabel,
     BetSelection,
     Competition,
+    LiveLabel,
+    LiveScore,
     Market,
     Match,
     Prediction,
@@ -282,3 +284,23 @@ class PredictionRequestSerializer(serializers.Serializer):
 
 class BulkPredictionRequestSerializer(serializers.Serializer):
     predictions = PredictionRequestSerializer(many=True, allow_empty=False, max_length=50)
+
+
+class LiveLabelSerializer(ModelSerializer):
+    class Meta:
+        model = LiveLabel
+        fields = "__all__"
+
+
+class LiveScoreSerializer(ModelSerializer):
+    """A match in play with its live row; `delayed` is true when the score is football-data's."""
+
+    match = MatchSerializer()
+    delayed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LiveScore
+        fields = ["id", "match", "status", "minute", "home_score", "away_score", "source", "delayed", "goal_at", "updated_at"]
+
+    def get_delayed(self, obj):
+        return obj.source == LiveScore.Source.FOOTBALL_DATA

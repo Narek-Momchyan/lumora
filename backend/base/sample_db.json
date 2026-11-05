@@ -187,7 +187,7 @@
       "icon": "/media/images/sidebar/live.svg",
       "category": "",
       "order": 2,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 9,
@@ -415,7 +415,7 @@
       "icon": "/media/images/sidebar/live.svg",
       "category": "",
       "order": 2,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 28,
@@ -643,7 +643,7 @@
       "icon": "/media/images/sidebar/live.svg",
       "category": "",
       "order": 2,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 47,
@@ -3466,6 +3466,53 @@
       "zone_playoff": "Стыковые матчи",
       "zone_relegation": "Вылет",
       "no_results": "Результатов пока нет."
+    }
+  ],
+  "live_labels": [
+    {
+      "id": 1,
+      "lang": "en",
+      "page_text": "Matches being played right now. Scores update as they happen.",
+      "live": "LIVE",
+      "half_time": "HT",
+      "full_time": "FT",
+      "minute": "{minute}'",
+      "goal": "GOAL",
+      "delayed": "updates with delay",
+      "delayed_note": "This score comes from football-data.org and can be a few minutes behind.",
+      "no_live": "No matches are being played right now.",
+      "live_count": "{count} live",
+      "reconnecting": "Reconnecting…"
+    },
+    {
+      "id": 2,
+      "lang": "am",
+      "page_text": "Հիմա խաղացվող հանդիպումները։ Հաշիվները թարմացվում են խաղի ընթացքում։",
+      "live": "ՈՒՂԻՂ",
+      "half_time": "Ընդմիջում",
+      "full_time": "Ավարտ",
+      "minute": "{minute}'",
+      "goal": "ԳՈԼ",
+      "delayed": "թարմացվում է ուշացումով",
+      "delayed_note": "Այս հաշիվը football-data.org-ից է և կարող է մի քանի րոպե ուշանալ։",
+      "no_live": "Հիմա խաղացվող հանդիպումներ չկան։",
+      "live_count": "{count} ուղիղ",
+      "reconnecting": "Կապը վերականգնվում է…"
+    },
+    {
+      "id": 3,
+      "lang": "ru",
+      "page_text": "Матчи, которые идут прямо сейчас. Счёт обновляется по ходу игры.",
+      "live": "LIVE",
+      "half_time": "Перерыв",
+      "full_time": "Конец",
+      "minute": "{minute}'",
+      "goal": "ГОЛ",
+      "delayed": "обновляется с задержкой",
+      "delayed_note": "Этот счёт приходит из football-data.org и может отставать на несколько минут.",
+      "no_live": "Сейчас матчей нет.",
+      "live_count": "Идёт: {count}",
+      "reconnecting": "Переподключаемся…"
     }
   ]
 }

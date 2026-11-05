@@ -77,6 +77,30 @@ class StandingData:
     form: str
 
 
+@dataclass(frozen=True)
+class LiveFixture:
+    """One match that is being played right now, from a live-score provider (display only)."""
+
+    provider_id: int
+    league_id: int  # the provider's own league id
+    kickoff: datetime
+    home: str  # team names as the provider spells them
+    away: str
+    home_goals: int | None
+    away_goals: int | None
+    elapsed: int | None  # the match minute
+    status: str  # the provider's short code: 1H, HT, 2H, ET, P, FT ...
+
+
+class LiveProvider(Protocol):
+    """What the live poller needs: one call with every match in play. A paid feed can replace
+    API-Football by returning the same dataclass."""
+
+    requests: int
+
+    def live(self) -> list[LiveFixture]: ...
+
+
 class FootballProvider(Protocol):
     requests: int  # how many HTTP requests it made, for SyncRun
 

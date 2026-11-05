@@ -224,6 +224,13 @@ FOOTBALL_DATA_TOKEN = config("FOOTBALL_DATA_TOKEN", default="")
 FOOTBALL_DATA_URL = config("FOOTBALL_DATA_URL", default="https://api.football-data.org/v4")
 SPORTS_SYNC_INTERVAL_MINUTES = config("SPORTS_SYNC_INTERVAL_MINUTES", cast=int, default=5)
 
+# Live scores (API-Football, free plan: 100 requests a day). Display only.
+API_FOOTBALL_KEY = config("API_FOOTBALL_KEY", default="")
+API_FOOTBALL_ENABLED = config("API_FOOTBALL_ENABLED", cast=bool, default=True)
+LIVE_POLL_SECONDS = config("LIVE_POLL_SECONDS", cast=int, default=300)
+LIVE_WINDOW_MINUTES = config("LIVE_WINDOW_MINUTES", cast=int, default=130)
+LIVE_DAILY_LIMIT = config("LIVE_DAILY_LIMIT", cast=int, default=90)
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=config("ACCESS_TOKEN_MINUTES", cast=int, default=30)),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=config("REFRESH_TOKEN_DAYS", cast=int, default=7)),

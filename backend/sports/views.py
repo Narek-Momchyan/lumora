@@ -19,6 +19,8 @@ from .models import (
     Bet,
     BetLabel,
     Competition,
+    LiveLabel,
+    LiveScore,
     Market,
     Match,
     Prediction,
@@ -36,6 +38,8 @@ from .serializers import (
     BetRequestSerializer,
     BetSerializer,
     BulkPredictionRequestSerializer,
+    LiveLabelSerializer,
+    LiveScoreSerializer,
     CompetitionSerializer,
     MarketSerializer,
     MatchDetailSerializer,
@@ -419,3 +423,20 @@ class StandingZoneViewSet(FootballViewSet):
 class PredictionLabelViewSet(LangFilteredViewSet):
     queryset = PredictionLabel.objects.all()
     serializer_class = PredictionLabelSerializer
+
+
+# ---------------------------------------------------------------- live scores (display only)
+
+
+class LiveMatchViewSet(FootballViewSet):
+    """The matches in play now with their live score. Display only: nothing here settles a bet."""
+
+    queryset = LiveScore.objects.select_related("match__competition").prefetch_related(
+        Prefetch("match__home", queryset=TEAMS), Prefetch("match__away", queryset=TEAMS)
+    )
+    serializer_class = LiveScoreSerializer
+
+
+class LiveLabelViewSet(LangFilteredViewSet):
+    queryset = LiveLabel.objects.all()
+    serializer_class = LiveLabelSerializer
