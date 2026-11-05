@@ -267,14 +267,14 @@ Each phase ends with something that works and can be shown.
 - [ ] Shared API client, Lobby, Neon Crash, Wallet
 
 ### Football (design/sports-spec.md, one session per phase)
-- [ ] S0 Theme tokens + Sports | Casino switch + both sidebars + shared UI kit
+- [x] S0 Theme tokens + Sports | Casino switch + both sidebars + shared UI kit
       (`components/ui/`) + casino pages consistent with designs 01–05
-- [ ] S1 `sports` backend data: competitions, teams (colours, aliases, crests), matches,
+- [x] S1 `sports` backend data: competitions, teams (colours, aliases, crests), matches,
       standings, football-data sync with rate limits, admin, tests on recorded JSON
-- [ ] S2 Odds engine, markets, bets (single/express), settlement, void rules, tests and
+- [x] S2 Odds engine, markets, bets (single/express), settlement, void rules, tests and
       the 200,000-match simulation
-- [ ] S3 Frontend: Football home, match page, bet slip, My bets (designs 06–08) +
+- [x] S3 Frontend: Football home, match page, bet slip, My bets (designs 06–08) +
       animations 1–4
-- [ ] S4 Predictions and leaderboards (design 09), league pages (design 10)
+- [x] S4 Predictions and leaderboards (design 09), league pages (design 10)
 - [ ] S5 Live scores (API-Football, budget guard) over `/ws/sports`, live page
 - [ ] S6 Club forums with moderation (designs 11–12)
