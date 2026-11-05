@@ -12,5 +12,7 @@ python-decouple = "*"
 psycopg = {extras = ["binary"], version = "*"}
 channels = {extras = ["daphne"], version = "*"}
 channels-redis = "*"
+httpx = "*"
+defusedxml = "*"
 
 [dev-packages]

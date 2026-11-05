@@ -1,0 +1,37 @@
+{
+  "count": 4,
+  "teams": [
+    {
+      "id": 57,
+      "name": "Arsenal FC",
+      "shortName": "Arsenal",
+      "tla": "ARS",
+      "crest": "https://crests.football-data.org/57.png",
+      "clubColors": "Red / White"
+    },
+    {
+      "id": 61,
+      "name": "Chelsea FC",
+      "shortName": "Chelsea",
+      "tla": "CHE",
+      "crest": "https://crests.football-data.org/61.svg",
+      "clubColors": "Royal Blue / White"
+    },
+    {
+      "id": 64,
+      "name": "Liverpool FC",
+      "shortName": "Liverpool",
+      "tla": "LIV",
+      "crest": "https://crests.football-data.org/64.png",
+      "clubColors": "Red / White"
+    },
+    {
+      "id": 65,
+      "name": "Manchester City FC",
+      "shortName": "Man City",
+      "tla": "MCI",
+      "crest": "https://crests.football-data.org/65.svg",
+      "clubColors": "Sky Blue / White"
+    }
+  ]
+}

@@ -70,6 +70,39 @@ Run `pipenv shell` in every new terminal (in Git Bash use `cp` instead of
 environment variable `PIPENV_VENV_IN_PROJECT=1`. `migrate` also adds the game
 catalogue (migration `games/0002_seed_games`).
 
+## Football data
+
+football-data.org's free plan (checked on its site, November 2026): our six
+competitions (PL, PD, SA, BL1, FL1, CL), **10 requests a minute**, scores and schedules
+**delayed** (no number given). Get a token at
+https://www.football-data.org/client/register and put it in `.env` as
+`FOOTBALL_DATA_TOKEN`; without it the rest of the site works and these commands refuse
+to start.
+
+```bash
+python manage.py sync_football --full                  # the whole season: teams, crests, matches, tables
+python manage.py sync_football                         # yesterday to tomorrow, and the tables
+python manage.py sync_football --competition PL --full
+python manage.py run_sports                            # keeps it fresh: one full sync a day after 03:00 UTC,
+                                                       # today's matches every SPORTS_SYNC_INTERVAL_MINUTES on match days
+```
+
+- The browser never calls a provider: everything goes through our tables and API.
+- `sports/providers/football_data.py` is the adapter: it waits in a 10-a-minute rate
+  limiter, and on `429` it waits `X-RequestCounter-Reset` seconds and retries. Statuses
+  map to ours in `STATUSES`. Bets will be settled on the regular-time score
+  (`home_regular`, `away_regular`): the full-time score for a `REGULAR` match, else
+  `regularTime`, else full time minus extra time.
+- Every row is found by the provider's id, so a sync can run any number of times. Each
+  competition's run is a `SyncRun` in the admin (requests, created, updated, errors).
+- Crests are downloaded once per URL. An SVG crest is cleaned first (`base/svg.py`:
+  only shapes, paints and gradients stay); a crest uploaded in the admin is never
+  replaced (`crest_locked`). Badge colours start from `clubColors` and can be changed.
+- Club and competition names come from the provider in English; `TeamName` and
+  `CompetitionName` in the admin give the am/ru names, English is the fallback.
+- `run_sports` is not started by `runserver` (unlike the live games), so a dev server
+  never spends the request budget. One runner at a time (PostgreSQL advisory lock).
+
 ## Packages
 
 - Add a package: `pipenv install <package>`, then update
@@ -115,7 +148,8 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
   `languages`, `sidebar_items`, `header_labels`, `sports_page_labels`, `login_page_labels`,
   `lobby_page_labels`, `game_categories`, `slot_symbols`, `slot_symbol_names`,
   `slot_sounds`, `jackpot_pools`, `zeus_page_labels`, `crash_rounds`,
-  `crash_page_labels`, `roulette_rounds` and `roulette_page_labels`.
+  `crash_page_labels`, `roulette_rounds` and `roulette_page_labels`, and the football
+  data: `competitions`, `teams`, `matches` and `standings`.
 - The JWTs live only in httpOnly cookies, never in a response body and never in an
   `Authorization` header. `register` and `token` set `lumora_access` (30 minutes)
   and `lumora_refresh` (7 days), both `SameSite=Lax`, and `Secure` when
@@ -165,6 +199,10 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
 | GET | `/api/sidebar_items` | – | the navigation of both sections: `mode` (`sports`/`casino`), `group` (`leagues`, `my` or none), `icon`, `order`, `is_soon` and `category` (a casino item with a category opens `/casino?category=<code>` and is active on that category's game pages); `?lang=` |
 | GET | `/api/header_labels` | – | every text of the sidebar (with the Sports / Casino switch and the group headings) and the header; `?lang=` |
 | GET | `/api/sports_page_labels` | – | every text of the football home page; `?lang=` |
+| GET | `/api/competitions` | – | our active leagues with the flag and the current season (`current_matchday`); names in `?lang=` |
+| GET | `/api/teams` | – | clubs with `tla`, badge colours and crest; `?competition=PL`; names in `?lang=` (English fallback) |
+| GET | `/api/matches` | – | matches with both teams, status and every score (full, half, regular time, extra time, penalties); `?competition=`, `?date=YYYY-MM-DD` (UTC day), `?status=`, `?team=<id>`; at most 300 |
+| GET | `/api/standings` | – | the current season's tables; `?competition=` |
 | GET | `/api/login_page_labels` | – | every text of the login page; `?lang=` |
 | GET | `/api/lobby_page_labels` | – | every text of the lobby page; `?lang=` |
 | GET | `/api/game_categories` | – | category names: the filtered lobby's title and game cards; `?lang=` |
@@ -191,18 +229,26 @@ collections extend `base.views.LangFilteredViewSet`. An unknown `?lang=` returns
 with 200, like any filter; an unknown `lang` cookie means English.
 
 ```bash
-python manage.py load_sample
+python manage.py load_sample            # adds only the missing rows
+python manage.py load_sample --reset    # replaces the content with the sample
 ```
 
 Fills every collection of `base.sample.COLLECTIONS` from `base/sample_db.json` in en,
-am and ru (`--path` loads another file). It **replaces** those tables, so edits made
-in the admin are lost; it never touches players, wallets, bets or games. To add a collection: add the model, its endpoint, a key in
-`sample_db.json` and a row in `base.sample.COLLECTIONS`.
+am and ru (`--path` loads another file). By default it **only adds the rows that are
+missing**, matched by each collection's natural key in `base.sample.NATURAL_KEYS`
+(`lang`, `lang + code`, `lang + mode + url` ...), so texts edited in the admin stay.
+`--reset` deletes those tables and loads the sample again, ids included; edits made in
+the admin are lost. It never touches players, wallets, bets or games. To add a
+collection: add the model, its endpoint, a key in `sample_db.json`, a row in
+`base.sample.COLLECTIONS` and its natural key in `base.sample.NATURAL_KEYS`.
 
 Images are plain `FileField`s with `base.fields.IMAGE_VALIDATORS`: JPG, PNG, WEBP or
-GIF, 5 MB at most, and the file's first bytes must match a real image. SVG is not
-allowed, because `/media/` is served from the site's own origin and an SVG can carry
-scripts. Files live in `media/`; `runserver` serves them only with `DEBUG=True`.
+GIF, 5 MB at most, and the file's first bytes must match a real image. SVG only where
+a field uses `IMAGE_OR_SVG_VALIDATORS` (sidebar icons, crests, flags), and only an SVG
+that `base/svg.py` finds already clean: `/media/` is served from the site's own origin
+and an SVG can carry scripts. Media is served with
+`Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; sandbox`
+(`base/media.py`); the web server must send the same header in production. Files live in `media/`; `runserver` serves them only with `DEBUG=True`.
 
 ## Errors
 
@@ -498,6 +544,7 @@ doesn't touch them. The codes are:
 | `roulette` | Live Lumora Roulette: `engine.py` (pure maths), `services.py` (bets, round changes), `runner.py` and `run_roulette` (the loop), `bots.py`, `feed.py` and `consumers.py` (WebSocket), `RouletteChain`, `RouletteRound`, `RouletteSlip`, `RouletteLine`, `RouletteBotBet`, `RouletteBotSettings`, `RoulettePageLabel` |
 | `slots` | Zeus Legacy: `engine.py` (pure maths), `services.py` (plays a round), `simulation.py`, `SlotSpin`, `SlotSymbol`, `SlotSymbolName`, `SlotSound`, `ZeusPageLabel` |
 | `leaderboard` | weekly leaderboard from the ledger |
+| `sports` | Football data: `Competition`, `Season`, `Team` (+ `TeamName`, `TeamAlias`), `Match`, `Standing`, `SyncRun`; `providers/` (football-data.org adapter, rate limiter, crests), `services.py` (the sync), `runner.py`, `sync_football` and `run_sports`; `SportsPageLabel` |
 
 `base/` holds the settings, the URLs (`OptionalSlashRouter`),
 `FilteredReadOnlyViewSet`, `LangFilteredViewSet`, `SingleObjectViewSet`, what the live
@@ -536,7 +583,9 @@ Set `DEBUG=False`, a real `SECRET_KEY`, `ALLOWED_HOSTS`,
 `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS`, `PUBLIC_BASE_URL` and `EMAIL_BACKEND`
 and `CHANNEL_REDIS_URL` in `.env`. `/media/` must be served by the web server, because
 Django serves it only in `DEBUG`. Serve the site with `daphne base.asgi:application`,
-because WSGI has no WebSocket, and keep one `run_crash` and one `run_roulette` running.
+because WSGI has no WebSocket, and keep one `run_crash`, one `run_roulette` and one
+`run_sports` running. Serve `/media/` with the same `Content-Security-Policy` as
+`base/media.py`.
 With `DEBUG=False` the browsable API is turned off and HTTPS, secure cookies
 and HSTS are enabled. Run `python manage.py check --deploy` and
 `python manage.py collectstatic` before deploying.

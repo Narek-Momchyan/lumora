@@ -1,0 +1,75 @@
+{
+  "standings": [
+    {
+      "stage": "LEAGUE_STAGE",
+      "type": "TOTAL",
+      "group": null,
+      "table": [
+        {
+          "position": 1,
+          "team": {
+            "id": 5,
+            "name": "FC Bayern M\u00fcnchen"
+          },
+          "playedGames": 4,
+          "form": "W,W,W,W",
+          "won": 4,
+          "draw": 0,
+          "lost": 0,
+          "points": 12,
+          "goalsFor": 12,
+          "goalsAgainst": 3,
+          "goalDifference": 9
+        },
+        {
+          "position": 2,
+          "team": {
+            "id": 524,
+            "name": "Paris Saint-Germain FC"
+          },
+          "playedGames": 4,
+          "form": "W,L,W,W",
+          "won": 3,
+          "draw": 0,
+          "lost": 1,
+          "points": 9,
+          "goalsFor": 9,
+          "goalsAgainst": 4,
+          "goalDifference": 5
+        },
+        {
+          "position": 3,
+          "team": {
+            "id": 57,
+            "name": "Arsenal FC"
+          },
+          "playedGames": 4,
+          "form": "W,D,L,W",
+          "won": 2,
+          "draw": 1,
+          "lost": 1,
+          "points": 7,
+          "goalsFor": 7,
+          "goalsAgainst": 5,
+          "goalDifference": 2
+        },
+        {
+          "position": 4,
+          "team": {
+            "id": 65,
+            "name": "Manchester City FC"
+          },
+          "playedGames": 4,
+          "form": "L,D,W,L",
+          "won": 1,
+          "draw": 1,
+          "lost": 2,
+          "points": 4,
+          "goalsFor": 5,
+          "goalsAgainst": 7,
+          "goalDifference": -2
+        }
+      ]
+    }
+  ]
+}

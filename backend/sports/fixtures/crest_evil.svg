@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10" onload="alert(1)">
+  <script>alert(document.cookie)</script>
+  <foreignObject width="10" height="10"><iframe xmlns="http://www.w3.org/1999/xhtml" src="https://evil.example"/></foreignObject>
+  <a xlink:href="javascript:alert(1)"><rect width="10" height="10"/></a>
+  <image href="https://evil.example/x.png" width="10" height="10"/>
+  <use xlink:href="https://evil.example/sprite.svg#x"/>
+  <rect width="10" height="10" fill="url(https://evil.example/p)" style="fill: url(https://evil.example/q)" onclick="alert(2)"/>
+  <circle cx="5" cy="5" r="3" fill="#1b4fa0"/>
+</svg>

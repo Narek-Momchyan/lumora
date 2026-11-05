@@ -1,0 +1,37 @@
+{
+  "count": 4,
+  "teams": [
+    {
+      "id": 5,
+      "name": "FC Bayern M\u00fcnchen",
+      "shortName": "Bayern",
+      "tla": "FCB",
+      "crest": "https://crests.football-data.org/5.svg",
+      "clubColors": "Red / White"
+    },
+    {
+      "id": 524,
+      "name": "Paris Saint-Germain FC",
+      "shortName": "PSG",
+      "tla": "PSG",
+      "crest": "https://crests.football-data.org/524.png",
+      "clubColors": "Navy Blue / Red"
+    },
+    {
+      "id": 57,
+      "name": "Arsenal FC",
+      "shortName": "Arsenal",
+      "tla": "ARS",
+      "crest": "https://crests.football-data.org/57.png",
+      "clubColors": "Red / White"
+    },
+    {
+      "id": 65,
+      "name": "Manchester City FC",
+      "shortName": "Man City",
+      "tla": "MCI",
+      "crest": "https://crests.football-data.org/65.svg",
+      "clubColors": "Sky Blue / White"
+    }
+  ]
+}

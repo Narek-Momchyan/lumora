@@ -1,0 +1,11 @@
+{
+  "id": 2001,
+  "name": "UEFA Champions League",
+  "code": "CL",
+  "currentSeason": {
+    "id": 2450,
+    "startDate": "2026-09-16",
+    "endDate": "2027-05-29",
+    "currentMatchday": 4
+  }
+}

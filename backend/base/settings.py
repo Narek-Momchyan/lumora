@@ -219,13 +219,17 @@ REST_FRAMEWORK = {
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
 }
 
+# Football data from football-data.org (sports app). The frontend never calls it.
+FOOTBALL_DATA_TOKEN = config("FOOTBALL_DATA_TOKEN", default="")
+FOOTBALL_DATA_URL = config("FOOTBALL_DATA_URL", default="https://api.football-data.org/v4")
+SPORTS_SYNC_INTERVAL_MINUTES = config("SPORTS_SYNC_INTERVAL_MINUTES", cast=int, default=5)
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=config("ACCESS_TOKEN_MINUTES", cast=int, default=30)),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=config("REFRESH_TOKEN_DAYS", cast=int, default=7)),
 }
 
 # The JWTs live only in these httpOnly cookies. Their lifetimes come from SIMPLE_JWT.
-
 AUTH_ACCESS_COOKIE = config("AUTH_ACCESS_COOKIE", default="lumora_access")
 AUTH_REFRESH_COOKIE = config("AUTH_REFRESH_COOKIE", default="lumora_refresh")
 AUTH_COOKIE_SECURE = config("AUTH_COOKIE_SECURE", cast=bool, default=not DEBUG)
