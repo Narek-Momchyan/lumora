@@ -8,6 +8,11 @@
 - Claude Code writes the frontend one page at a time and Narek reviews every step.
   Before a page, show the plan (routes, files, components) and wait for his OK. After
   it, explain briefly what each new file does, so he understands and can defend the code.
+- Keep every reply short: no step-by-step narration. Report only: what changed (files),
+  test/lint/build result, open problems. Max ~15 lines unless Narek asks for detail.
+- Do not take browser screenshots or seed data unless Narek asks. He checks the visuals himself.
+- Run the full backend test suite only before a commit; run only the touched app's tests
+  while working.
 
 ## What Lumora is
 
