@@ -1,0 +1,81 @@
+import type { Team } from './sports'
+
+// Mirrors backend forums/models.py ForumLabel: every text of the forum pages.
+export interface ForumLabels {
+  page_text: string
+  clubs_title: string
+  topics_count: string // "{count} topics"
+  posts_count: string // "{count} posts"
+  fans: string // "{club} fans"
+  all_topics: string
+  tag_match_talk: string
+  tag_transfers: string
+  tag_tactics: string
+  tag_predictions: string
+  tag_off_topic: string
+  sort_latest: string
+  sort_replies: string
+  sort_views: string
+  pinned: string
+  locked: string
+  replies: string
+  views: string
+  by_author: string // "by {name}"
+  new_topic: string
+  topic_title: string
+  topic_body: string
+  topic_tag: string
+  create_topic: string
+  cancel: string
+  no_topics: string
+  no_clubs: string
+  next_match: string
+  open_match: string
+  rules_title: string
+  rule_respect: string
+  rule_on_topic: string
+  rule_no_betting: string
+  rule_no_personal: string
+  rules_note: string
+  breadcrumb_forums: string
+  author_tag: string
+  top_predictor: string
+  anonymous_player: string // "Player #{n}"
+  reply: string
+  report: string
+  like: string
+  hidden_by_moderator: string
+  hidden_rule: string // "rule: {rule}"
+  rule_insult_hate: string
+  rule_spam_ads: string
+  rule_real_money: string
+  rule_other: string
+  report_title: string
+  send_report: string
+  report_sent: string
+  write_reply: string
+  reply_hint: string
+  post_reply: string
+  posting: string
+  attach_prediction: string
+  prediction_in_post: string // "Prediction · {home} {score} {away}"
+  about_topic: string
+  stat_replies: string
+  stat_views: string
+  stat_age: string
+  the_match: string
+  predict_score: string
+  load_more: string
+  topic_locked_note: string
+  banned_note: string // "You cannot post until {until}."
+  set_display_name: string
+}
+
+// One club's forum in the list (GET /api/forums). Its id is the club's id: the URL is /forums/<id>.
+export interface ForumClub {
+  id: number
+  team: Team
+  competition: string | null // the club's league code
+  topics: number
+  posts: number // posts a moderator hid are not counted
+}
