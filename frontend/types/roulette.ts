@@ -1,4 +1,6 @@
-export interface RoulettePageLabels {
+import type { SoundLabels } from './sound'
+
+export interface RoulettePageLabels extends SoundLabels {
   id: number
   lang: string
   page_title: string

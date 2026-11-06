@@ -1,4 +1,6 @@
-export interface CrashPageLabels {
+import type { SoundLabels } from './sound'
+
+export interface CrashPageLabels extends SoundLabels {
   id: number
   lang: string
   page_title: string

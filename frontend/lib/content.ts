@@ -4,6 +4,7 @@ import type { Game, GameCategory, LobbyPageLabels } from '@/types/game'
 import type { HeaderLabels, Language, Logo, SidebarItem } from '@/types/header'
 import type { ForumClub, ForumLabels, ForumPost, ForumTopic } from '@/types/forums'
 import type { LiveLabels, LiveRow } from '@/types/live'
+import type { GameSound } from '@/types/sound'
 import type {
   Leaderboard,
   Matchday,
@@ -229,4 +230,9 @@ export function getTopic(id: string, lang: string) {
 
 export function getPosts(topic: string, lang: string) {
   return fetchOrNull<ForumPost[]>(`/posts?topic=${topic}&lang=${lang}`)
+}
+
+// The sounds of Neon Crash and Lumora Roulette: only the ones with an uploaded file.
+export function getGameSounds() {
+  return fetchOrNull<GameSound[]>('/game_sounds')
 }

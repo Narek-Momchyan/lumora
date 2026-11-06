@@ -1,10 +1,13 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import SoundButton from '@/components/SoundButton'
 import { ApiError, apiFetch, errorDetail } from '@/lib/api'
+import useGameSounds from '@/lib/useGameSounds'
 import type { CrashBet, CrashBetResult, CrashPageLabels } from '@/types/crash'
 import type { Game } from '@/types/game'
+import type { GameSound } from '@/types/sound'
 import type { Wallet } from '@/types/wallet'
 import BetPanel from './BetPanel'
 import CrashChart from './CrashChart'
@@ -19,9 +22,10 @@ interface CrashGameProps {
   lastBet: CrashBet | null
   currency: string
   labels: CrashPageLabels
+  sounds: GameSound[]
 }
 
-export default function CrashGame({ game, balance, lastBet, currency, labels }: CrashGameProps) {
+export default function CrashGame({ game, balance, lastBet, currency, labels, sounds }: CrashGameProps) {
   const router = useRouter()
   const { round, history, bets, connected, clockOffset } = useCrashFeed()
 
@@ -34,6 +38,40 @@ export default function CrashGame({ game, balance, lastBet, currency, labels }: 
   const live = bets.find(({ id }) => id === `player-${bet?.id}`)
   const cashedAt = live?.multiplier ?? bet?.multiplier ?? null
   const error = failure.round === round?.number ? failure.text : ''
+
+  // Sounds: only files uploaded in the admin play, and the player starts with the sound off.
+  const { muted, volume, play, stop, toggleMuted, setVolume } = useGameSounds(sounds)
+  const openBet = useRef(false) // a bet that has not cashed out: read when the crash comes
+  useEffect(() => {
+    openBet.current = bet !== null && cashedAt === null
+  })
+
+  // The round's sounds. The first state the page sees (a snapshot) announces nothing, so opening the page in
+  // the middle of a round is quiet; the flight sound is the exception, it just follows the round.
+  const seen = useRef<{ number: number; status: string } | null>(null)
+  useEffect(() => {
+    if (!round) return
+    const before = seen.current
+    seen.current = { number: round.number, status: round.status }
+    const changed = !before || before.number !== round.number || before.status !== round.status
+    if (round.status !== 'flying') stop('crash_flight')
+    else if (changed) play('crash_flight', true) // a reconnect mid-flight does not restart the sound
+    if (!before || !changed) return
+    if (round.status === 'betting') play('round_start')
+    if (round.status === 'crashed') {
+      play('crash_boom')
+      if (openBet.current) play('lose')
+    }
+  }, [round, play, stop])
+  useEffect(() => () => stop('crash_flight'), [stop])
+
+  // My cash-out, by hand or automatic: both show up as `cashedAt`. One that is already there when the page
+  // opens is not announced.
+  const announced = useRef(cashedAt)
+  useEffect(() => {
+    if (cashedAt && announced.current !== cashedAt) play('cash_out')
+    announced.current = cashedAt
+  }, [cashedAt, play])
 
   // The feed also tells about an auto cash-out, which no request of ours started.
   useEffect(() => {
@@ -52,6 +90,7 @@ export default function CrashGame({ game, balance, lastBet, currency, labels }: 
       const result = await apiFetch<CrashBetResult>(path, { method: 'POST', body })
       setMyBet(result)
       setWallet(result.balance)
+      if (path === '/crash_bets') play('bet_placed')
       router.refresh()
     } catch (exception) {
       if (!(exception instanceof ApiError)) throw exception
@@ -76,6 +115,7 @@ export default function CrashGame({ game, balance, lastBet, currency, labels }: 
       </div>
 
       <div className="flex min-h-0 min-w-0 flex-col gap-4">
+        <SoundButton muted={muted} volume={volume} onToggle={toggleMuted} onVolume={setVolume} labels={labels} />
         <BetPanel
           game={game}
           round={round}
