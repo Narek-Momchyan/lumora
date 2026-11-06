@@ -11,12 +11,14 @@ entry and a post go through the same steps, so they meet in the same form:
    (`ԱՐՍԵՆԱԼ` and `արսենալ` are the same). Nothing is transliterated.
 2. Zero-width and format characters and combining marks are dropped.
 3. Look-alike letters are folded to one shape (Cyrillic `а` and Latin `a`, Greek `ο`, Armenian `օ`)
-   and common leetspeak (`0 1 3 4 5 7 @ $`) to letters.
+   and `@ $` to letters. Leetspeak digits (`0 1 3 4 5 7`) become letters only inside a word that already has a
+   letter in it (`idi0t`, `1xbet`): a number alone (a score, `4-5-5`, `455`) stays a number.
 4. The words are compared whole (so "class" never trips "ass"), also when the letters are spaced out
    (`f u c k`, `f.u.c.k`) or stretched (`fuuuck`). An entry marked `inside_words` is also looked for
    inside longer words, for the stems of heavily inflected languages.
 
-Not caught, and said so: other creative spellings, a language written in another script
+Not caught, and said so: a digit used as a letter inside a spaced-out word (`i d 1 o t`: a single digit never
+joins a run of single letters, or `4 5 5` would spell "ass"), other creative spellings, a language written in another script
 (Armenian in Latin letters) unless that spelling is its own entry, images. The Report button and the
 moderators are the backstop.
 """
@@ -27,16 +29,20 @@ import unicodedata
 CONTROL = {ord(c) for c in map(chr, range(32)) if c not in "\n"} | {0x7F}
 INVISIBLE = {ord(c): None for c in "​‌‍‎‏⁠﻿­‪‫‬‭‮"}
 
-# Letters that look like another script's letter, and leetspeak, folded to one shape. Applied to the
-# entry and to the post alike, so only the shape has to agree, not the "right" letter.
+# Letters that look like another script's letter, and the symbols @ and $, folded to one shape. Applied to
+# the entry and to the post alike, so only the shape has to agree, not the "right" letter.
 LOOKALIKES = str.maketrans(
     {
         "а": "a", "е": "e", "о": "o", "р": "p", "с": "c", "х": "x", "у": "y", "і": "i", "ј": "j",  # Cyrillic
         "α": "a", "ο": "o", "ρ": "p", "ε": "e", "ι": "i",  # Greek
         "օ": "o", "ս": "u", "ո": "n",  # Armenian
-        "0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "@": "a", "$": "s",  # leetspeak
+        "@": "a", "$": "s",
     }
 )
+# Leetspeak digits become letters only inside a word that has a letter in it ("idi0t", "1xbet"). A number
+# on its own (a score, a formation, "455") stays a number, and a single digit never joins a run of single
+# letters, so "4 5 5" can never spell "ass".
+LEET = str.maketrans({"0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t"})
 
 # A bare domain: a name, a dot and one of these endings ("site . com" too).
 TLDS = (
@@ -69,23 +75,27 @@ def has_link(text):
     return bool(LINK.search(plain))
 
 
-def fold(text):
-    """Steps 1-3: one shape for look-alikes, no case, no marks, no invisible characters."""
+def shape(text):
+    """Steps 1-3 without the digits: one shape for look-alikes, no case, no marks, no invisible characters."""
     text = unicodedata.normalize("NFKC", text).casefold().translate(INVISIBLE)
     text = "".join(char for char in unicodedata.normalize("NFD", text) if unicodedata.category(char) != "Mn")
     return text.translate(LOOKALIKES)
 
 
+def leet(word):
+    return word if word.isdigit() else word.translate(LEET)
+
+
 def key_of(word):
     """An admin entry as the matcher stores it: folded, words joined by single spaces."""
-    return " ".join(WORDS.findall(fold(word)))
+    return " ".join(leet(part) for part in WORDS.findall(shape(word)))
 
 
 def tokens(text):
-    """The words of a post. Runs of single letters ("f u c k", "f.u.c.k") become one word."""
+    """The words of a post. Runs of single letters ("f u c k", "f.u.c.k") become one word; digits never join them."""
     words, single = [], []
-    for word in WORDS.findall(fold(text)):
-        if len(word) == 1:
+    for word in WORDS.findall(shape(text)):
+        if len(word) == 1 and word.isalpha():
             single.append(word)
             continue
         if single:
@@ -94,7 +104,7 @@ def tokens(text):
         words.append(word)
     if single:
         words.append("".join(single))
-    return words
+    return [leet(word) for word in words]
 
 
 def variants(words):

@@ -1,3 +1,4 @@
+import importlib
 from datetime import UTC, date, datetime, timedelta
 import time
 from threading import Thread
@@ -109,6 +110,85 @@ class BannedWordTests(SimpleTestCase):
     def test_key_of_folds_the_same_way_as_the_text(self):
         self.assertEqual(text.key_of("1xBET"), text.key_of("ixbet"))
         self.assertEqual(text.key_of("Real  Money"), "real money")
+
+
+class FalsePositiveTests(SimpleTestCase):
+    """Ordinary text must never be flagged, however many short words follow each other. The entries are the real
+    starter list from the migration plus short ones a moderator might add (the risky kind)."""
+
+    @classmethod
+    def entries(cls):
+        starter = importlib.import_module("forums.migrations.0002_starter_banned_words").WORDS
+        extra = [("ass", False), ("scam", False), ("sex", False), ("дурак", True), ("сука", False), ("ապուշ", True)]
+        return [(text.key_of(word), inside) for _, word, inside in [("", w, i) for w, i in [(w, i) for _, w, i in starter]] + [("", w, i) for w, i in extra]]
+
+    def flagged(self, sample):
+        return text.banned_hit(sample, self.entries())
+
+    SENTENCES = {
+        "en": [
+            "I am a big fan of the club and I do not go to a game at all.",
+            "As it was, a 4-3-3 with a 5-1 away win; a b c plan, no?",
+            "Is it a go? I see a man in a hat at the pub at 5 or so.",
+            "We lost 1-0 so I am sad, a 0-0 would be fine, as I said.",
+            "Go on, be a man, do it by 9 or we are up a creek.",
+            "He is on a run: 3-5-2, 5-4-1, 4-5-1 and 4-4-2 all in a row. 4 5 5 is not a formation.",
+            "Class assist passes, a bass line and a classic Arsenal assistant coach in Sussex.",
+            "A 10 man team, 1 1 0 0 1 and 2 0 3 3, then 5 5 5 5.",
+        ],
+        "ru": [
+            "Я в клубе с 5 лет, а он у нас с 2010, и я не в обиде.",
+            "Я и ты, а он с нами в этом году, и я в это верю.",
+            "А я и не знал, что в 1-0 так обидно, а в 0-0 ещё хуже.",
+            "Мы с ним в 5 раз сильнее, и у нас с вами я не против.",
+            "Он на поле, а я у телевизора с братом: я и он, он и я.",
+            "Играем 4-3-3, потом 3-5-2, а в конце 5-4-1: это не дурачок и не сукно.",
+            "Сукновальня — просто слово, а Сухов тут не при чём, и дурачок тоже нет.",
+        ],
+        "am": [
+            "Ես եմ և դու ես, մի՛ գնա մեզ հետ։",
+            "Դա լավ խաղ էր, և ես ուրախ եմ, որ մենք հաղթեցինք 2-1։",
+            "Ու ես էլ եմ ուզում, որ նա գա մեզ հետ, և դու էլ։",
+            "Նա է, ով ինձ ասաց, որ դու կգաս, իսկ ես ու դու կմնանք։",
+            "Ես ու դու, մենք էլ և նրանք էլ, այս և այդ խաղին։",
+            "4-3-3, հետո 3-5-2, իսկ վերջում 5-4-1 կազմավորում։",
+        ],
+    }
+
+    def test_ordinary_sentences_are_not_flagged(self):
+        for lang, sentences in self.SENTENCES.items():
+            for sentence in sentences:
+                with self.subTest(lang=lang, sentence=sentence):
+                    self.assertFalse(self.flagged(sentence))
+
+    def test_short_words_in_a_row_are_never_flagged(self):
+        words = {
+            "en": ["a", "i", "as", "is", "it", "to", "go", "he", "we", "me", "on", "at", "or", "so", "no", "up", "an", "be", "do", "my", "by"],
+            "ru": ["я", "и", "в", "с", "к", "у", "а", "о", "на", "не", "он", "мы", "ты", "да", "но", "по", "за", "из", "до", "от"],
+            "am": ["ու", "ես", "դու", "եմ", "է", "ա", "մի", "նա", "մեզ", "ինձ", "որ", "և", "էլ", "թե", "այս", "այդ"],
+        }
+        entries = self.entries()
+        for lang, row in words.items():
+            checked = 0
+            for first in row:
+                for second in row:
+                    for third in row:
+                        sample = f"{first} {second} {third}"
+                        checked += 1
+                        self.assertFalse(text.banned_hit(sample, entries), (lang, sample))
+            self.assertGreater(checked, 4000)
+
+    def test_football_numbers_are_never_flagged(self):
+        # leetspeak folding turns 4 5 7 into letters; scores, formations and ages must not become words
+        for sample in ["4-3-3", "3-5-2", "5-4-1", "4-5-1", "4 5 5", "5 5 5", "3 0", "7 7 7", "1-1", "10-0", "2024/25", "u21 and u19"]:
+            with self.subTest(sample=sample):
+                self.assertFalse(self.flagged(sample))
+
+    def test_the_real_words_are_still_caught_in_the_same_run(self):
+        # the other side of the coin: the list still works on the same kind of text
+        for sample in ["I a m a scam", "he is an ass, a 4-3-3 fan", "я в клубе, ты дурак", "ապուշ է նա, ես ու դու"]:
+            with self.subTest(sample=sample):
+                self.assertTrue(self.flagged(sample))
 
 
 # ------------------------------------------------------------------ the rules in services.py

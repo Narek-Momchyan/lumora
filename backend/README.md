@@ -694,10 +694,11 @@ is in `forums/services.py`; the browser never decides one.
   the 10-topics rule (`ParallelPostTests`, which fail without the lock).
 - **Banned words** per language (`en`, `am`, `ru`) in the admin; every language's list is checked on every
   post, title and display name. Entries and posts are folded the same way: NFKC, case folding (also Armenian),
-  no zero-width characters or marks, look-alike letters and leetspeak to one shape; words are compared whole
+  no zero-width characters or marks, look-alike letters and leetspeak to one shape (a number on its own, like a
+  score or `4-5-5`, stays a number); words are compared whole
   (so "class" never trips "ass"), also when spaced out (`f u c k`) or stretched (`fuuuck`). An entry with
   "inside words" also matches inside longer words, for the stems of Armenian and Russian. Not caught: other
-  creative spellings, Armenian written in Latin letters (add that spelling as its own entry), images; the
+  creative spellings, a digit used as a letter inside a spaced-out word (`i d 1 o t`), Armenian written in Latin letters (add that spelling as its own entry), images; the
   Report button and the moderators are the backstop. The refusal never names the word.
 - **Display name:** the forum shows `display_name`, never the email. A player without one, or with one that
   contains `@`, a link or a banned word, cannot post.
