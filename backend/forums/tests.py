@@ -664,6 +664,16 @@ class ForumApiTests(ForumTestCase):
         self.assertEqual(keys[0], keys[1])
         self.assertEqual(keys[0], keys[2])
 
+    def test_the_no_clubs_text_exists_in_every_language(self):
+        texts = {}
+        for lang in ("en", "am", "ru"):
+            row = self.client.get(f"/api/forum_labels?lang={lang}").json()[0]
+            texts[lang] = row["no_clubs"]
+            self.assertTrue(row["no_clubs"].strip(), lang)
+        self.assertEqual(len(set(texts.values())), 3)  # three different texts, none copied from English
+        self.assertTrue(texts["am"].startswith("Այստեղ ակումբներ դեռ չկան"))
+        self.assertIn("Клубов", texts["ru"])
+
     def test_the_forums_sidebar_item_is_no_longer_soon(self):
         items = self.client.get("/api/sidebar_items?lang=en").json()
         self.assertFalse([item for item in items if item["url"] == "/forums" and item["is_soon"]])

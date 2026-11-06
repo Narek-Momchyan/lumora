@@ -194,6 +194,7 @@ class ForumLabel(models.Model):
     create_topic = models.CharField(max_length=120)
     cancel = models.CharField(max_length=60)
     no_topics = models.CharField(max_length=160)
+    no_clubs = models.CharField(max_length=160, help_text="Shown when a league has no forums yet")
     next_match = models.CharField(max_length=120)
     open_match = models.CharField(max_length=160)
     rules_title = models.CharField(max_length=120)
