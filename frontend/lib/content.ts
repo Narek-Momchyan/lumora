@@ -2,6 +2,7 @@ import type { LoginPageLabels, Player } from '@/types/account'
 import type { CrashBet, CrashPageLabels } from '@/types/crash'
 import type { Game, GameCategory, LobbyPageLabels } from '@/types/game'
 import type { HeaderLabels, Language, Logo, SidebarItem } from '@/types/header'
+import type { LiveLabels, LiveRow } from '@/types/live'
 import type {
   Leaderboard,
   Matchday,
@@ -193,4 +194,12 @@ export function getStandings(code: string, lang: string) {
 
 export function getStandingZones(code: string) {
   return fetchOrNull<StandingZone[]>(`/standing_zones?competition=${code}`)
+}
+
+export function getLiveLabels(lang: string) {
+  return firstRow<LiveLabels>(`/live_labels?lang=${lang}`)
+}
+
+export function getLiveMatches(lang: string) {
+  return fetchOrNull<LiveRow[]>(`/live_matches?lang=${lang}`)
 }

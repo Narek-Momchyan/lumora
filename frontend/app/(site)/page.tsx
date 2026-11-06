@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { connection } from 'next/server'
 import Card from '@/components/ui/Card'
-import SectionTitle from '@/components/ui/SectionTitle'
 import BetSlip from '@/components/sports/BetSlip'
 import DayChips from '@/components/sports/DayChips'
 import FeaturedMatch from '@/components/sports/FeaturedMatch'
+import LiveBoard from '@/components/sports/LiveBoard'
 import LumoraModelCard from '@/components/sports/LumoraModelCard'
 import MatchRow from '@/components/sports/MatchRow'
 import PopularPicks from '@/components/sports/PopularPicks'
@@ -15,6 +15,8 @@ import {
   getCompetitions,
   getMarkets,
   getMatch,
+  getLiveLabels,
+  getLiveMatches,
   getMatches,
   getPopularPicks,
   getPredictionLabels,
@@ -37,7 +39,7 @@ export default async function FootballPage({ searchParams }: { searchParams: Pro
   const { date } = await searchParams
   const day = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : utcDay(0)
 
-  const [ui, bet, competitions, matches, markets, scheduled, openMarkets, live, popular, predict] = await Promise.all([
+  const [ui, bet, competitions, matches, markets, scheduled, openMarkets, live, popular, predict, liveLabels] = await Promise.all([
     getSportsUiLabels(lang),
     getBetLabels(lang),
     getCompetitions(lang),
@@ -45,9 +47,10 @@ export default async function FootballPage({ searchParams }: { searchParams: Pro
     getMarkets(`date=${day}&kind=1x2`),
     getMatches('status=scheduled', lang),
     getMarkets('kind=1x2'),
-    getMatches('status=live', lang),
+    getLiveMatches(lang),
     getPopularPicks(lang),
     getPredictionLabels(lang),
+    getLiveLabels(lang),
   ])
 
   // The featured match: the nearest scheduled one that has prices (matches come in kickoff order).
@@ -78,25 +81,12 @@ export default async function FootballPage({ searchParams }: { searchParams: Pro
           />
         )}
 
-        {(live ?? []).length > 0 && (
-          <section className="space-y-3">
-            <SectionTitle title={ui.live_now} aside={fill(ui.matches_count, { count: live!.length })} large />
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {live!.map((match) => (
-                <li key={match.id}>
-                  <Card padding="md" className="flex items-center justify-between gap-3 text-sm">
-                    <span className="min-w-0 truncate">
-                      {match.home.name} – {match.away.name}
-                    </span>
-                    <span className="font-heading font-bold tabular-nums">
-                      {match.home_score ?? 0} – {match.away_score ?? 0}
-                    </span>
-                  </Card>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+        <LiveBoard
+          rows={live ?? []}
+          competitions={Object.fromEntries((competitions ?? []).map((item) => [item.code, item.name]))}
+          labels={liveLabels}
+          compact
+        />
 
         <DayChips selected={day} labels={ui} />
 
