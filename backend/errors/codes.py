@@ -67,6 +67,7 @@ FORUM_CODES = [
 
 FIELD_CODES = [
     "email_taken",
+    "display_name_has_at",
     "required",
     "blank",
     "null",

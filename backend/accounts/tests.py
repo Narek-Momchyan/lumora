@@ -230,3 +230,56 @@ class PublicIdTests(TestCase):
         me = client.get("/api/me").json()
         self.assertRegex(me["public_id"], r"^[0-9a-f]{12}$")
         self.assertNotEqual(me["public_id"], str(me["id"]))
+
+
+class DisplayNameAtSignTests(TestCase):
+    """A display name is shown to other players, so it can never contain an @ (an email address)."""
+
+    client_class = APIClient
+
+    @classmethod
+    def setUpTestData(cls):
+        from base.sample import load_sample, read_sample
+
+        load_sample(read_sample())
+
+    def register(self, display_name, email="new@lumora.dev"):
+        return self.client.post("/api/register", {"email": email, "password": PASSWORD, "display_name": display_name})
+
+    def test_a_name_with_an_at_sign_is_refused_with_a_code_in_every_language(self):
+        for lang, text in (("en", "cannot contain the @"), ("am", "@ նշանը"), ("ru", "знак @")):
+            self.client.cookies["lang"] = lang
+            response = self.register("me@lumora.dev", email=f"{lang}@lumora.dev")
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json()["field_codes"]["display_name"], ["display_name_has_at"])
+            self.assertIn(text, response.json()["display_name"][0])
+        self.assertEqual(User.objects.count(), 0)
+
+    def test_look_alike_at_signs_are_refused_too(self):
+        for name in ["me＠lumora.dev", "me﹫lumora", "@", "a@"]:
+            with self.subTest(name=name):
+                self.assertEqual(self.register(name).status_code, 400)
+
+    def test_ordinary_names_still_work(self):
+        for index, name in enumerate(["Narek", "Նարեկ", "Нарек", "kite_88", ""]):
+            with self.subTest(name=name):
+                self.assertEqual(self.register(name, email=f"ok{index}@lumora.dev").status_code, 201)
+
+    def test_the_admin_form_and_full_clean_refuse_it_as_well(self):
+        from django.core.exceptions import ValidationError
+
+        with self.assertRaises(ValidationError) as caught:
+            User(email="x@lumora.dev", username="x", display_name="a@b.c").clean_fields(exclude=["password"])
+        self.assertEqual(caught.exception.error_dict["display_name"][0].code, "display_name_has_at")
+
+    def test_the_migration_clears_existing_names_with_an_at_sign_and_keeps_the_rest(self):
+        import importlib
+
+        from django.apps import apps
+
+        bad = User.objects.create_user(username="bad@lumora.dev", email="bad@lumora.dev", display_name="bad@lumora.dev")
+        good = User.objects.create_user(username="good@lumora.dev", email="good@lumora.dev", display_name="Good")
+        importlib.import_module("accounts.migrations.0004_display_name_no_at").clear_names_with_at(apps, None)
+        bad.refresh_from_db()
+        good.refresh_from_db()
+        self.assertEqual((bad.display_name, good.display_name), ("", "Good"))

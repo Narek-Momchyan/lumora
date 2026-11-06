@@ -1,4 +1,7 @@
 from django.contrib.auth.models import AbstractUser, UserManager
+import unicodedata
+
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from base.constants import LANG_CHOICES
@@ -10,11 +13,17 @@ class PlayerManager(UserManager):
         return self.get(email__iexact=username)
 
 
+def no_at_sign(value):
+    """A display name is shown to other players, so it can never be an email address (or look like one)."""
+    if "@" in unicodedata.normalize("NFKC", value):  # also the full-width ＠ and the small ﹫
+        raise ValidationError("A display name cannot contain the @ sign.", code="display_name_has_at")
+
+
 class User(AbstractUser):
     """Lumora player. Logs in with email; username is kept equal to the email."""
 
     email = models.EmailField(unique=True)
-    display_name = models.CharField(max_length=40, blank=True)
+    display_name = models.CharField(max_length=40, blank=True, validators=[no_at_sign])
 
     objects = PlayerManager()
 

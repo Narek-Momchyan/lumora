@@ -3656,6 +3656,24 @@
       "code": "no_prediction",
       "lang": "ru",
       "text": "У вас нет прогноза на этот матч, чтобы его прикрепить."
+    },
+    {
+      "id": 220,
+      "code": "display_name_has_at",
+      "lang": "en",
+      "text": "A display name cannot contain the @ sign."
+    },
+    {
+      "id": 221,
+      "code": "display_name_has_at",
+      "lang": "am",
+      "text": "Ցուցադրվող անունը չի կարող պարունակել @ նշանը։"
+    },
+    {
+      "id": 222,
+      "code": "display_name_has_at",
+      "lang": "ru",
+      "text": "Отображаемое имя не может содержать знак @."
     }
   ],
   "prediction_labels": [

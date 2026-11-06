@@ -718,3 +718,8 @@ show an email, a part of one, or a user id. A player is shown by `display_name`,
 `Player a1b2c3` and `player-<public_id>`: short keyed hashes of the id made with `SECRET_KEY`
 (`base/names.py`), so they are stable but cannot be computed from an id. The player's own `public_id` is in
 `/api/me`. The forums send only the name (null without one) and `is_mine` / `is_author` flags.
+
+**`SECRET_KEY` must not change** once players exist: `public_id`, the `Player a1b2c3` names and the roulette
+seats are derived from it, so a new key gives every player a new one (nothing is lost, but seats and names in
+running rounds and open pages stop matching). A display name cannot contain `@` (checked by the model, so by
+the API and the admin alike).
