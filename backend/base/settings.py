@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "leaderboard",
     "header",
     "sports",
+    "forums",
     "errors",
 ]
 

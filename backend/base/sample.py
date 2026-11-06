@@ -8,6 +8,7 @@ from django.db import connection, models
 from accounts.models import LoginPageLabel
 from crash.models import CrashPageLabel
 from errors.models import ErrorMessage
+from forums.models import ForumLabel
 from games.models import GameCategory, LobbyPageLabel
 from header.models import HeaderLabel, Language, Logo, SidebarItem
 from roulette.models import RoulettePageLabel
@@ -36,6 +37,7 @@ COLLECTIONS = {
     "sports_ui_labels": SportsUiLabel,
     "prediction_labels": PredictionLabel,
     "live_labels": LiveLabel,
+    "forum_labels": ForumLabel,
     "error_messages": ErrorMessage,
 }
 
@@ -60,6 +62,7 @@ NATURAL_KEYS = {
     "sports_ui_labels": ["lang"],
     "prediction_labels": ["lang"],
     "live_labels": ["lang"],
+    "forum_labels": ["lang"],
     "error_messages": ["lang", "code"],
 }
 

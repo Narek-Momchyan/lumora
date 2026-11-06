@@ -1,7 +1,7 @@
 import json
 import shutil
 import tempfile
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 from decimal import ROUND_DOWN, Decimal
 from pathlib import Path
 from threading import Thread
@@ -426,7 +426,10 @@ class RunnerTests(SyncTestCase):
         self.assertEqual(runner.step(), SyncRun.Kind.FULL)
         self.assertNotEqual(runner.step(), SyncRun.Kind.FULL)
 
-        tomorrow = self.runner(datetime(2026, 11, 6, 3, 1, tzinfo=UTC))
+        # "Tomorrow" is the day after the run above really started: SyncRun.started_at is the real clock,
+        # so a fixed date would stop working the day the real date reaches it.
+        started = SyncRun.objects.filter(kind=SyncRun.Kind.FULL, ok=True).latest("started_at").started_at
+        tomorrow = self.runner(datetime.combine(started.date() + timedelta(days=1), time(3, 1), tzinfo=UTC))
         self.assertEqual(tomorrow.step(), SyncRun.Kind.FULL)
 
     @override_settings(SPORTS_SYNC_INTERVAL_MINUTES=5)

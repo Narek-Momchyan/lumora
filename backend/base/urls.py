@@ -27,6 +27,7 @@ from base.media import serve_media
 from crash.urls import crash_router
 from errors.urls import errors_router
 from fairness.urls import fairness_router
+from forums.urls import forums_router
 from games.urls import games_router
 from header.urls import header_router
 from leaderboard.urls import leaderboard_router
@@ -57,6 +58,7 @@ router.registry.extend(games_router.registry)
 router.registry.extend(crash_router.registry)
 router.registry.extend(roulette_router.registry)
 router.registry.extend(slots_router.registry)
+router.registry.extend(forums_router.registry)
 router.registry.extend(leaderboard_router.registry)
 router.registry.extend(header_router.registry)
 router.registry.extend(errors_router.registry)

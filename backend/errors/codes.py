@@ -41,6 +41,30 @@ SPORTS_CODES = [
     "match_not_found",
 ]
 
+FORUM_CODES = [
+    "forum_banned",
+    "display_name_required",
+    "display_name_invalid",
+    "post_empty",
+    "post_too_long",
+    "title_invalid",
+    "post_has_link",
+    "post_banned_word",
+    "post_too_fast",
+    "too_many_topics",
+    "topic_locked",
+    "post_hidden",
+    "already_reported",
+    "own_post_report",
+    "forum_not_found",
+    "topic_not_found",
+    "post_not_found",
+    "invalid_tag",
+    "invalid_report_reason",
+    "invalid_match",
+    "no_prediction",
+]
+
 FIELD_CODES = [
     "email_taken",
     "required",
@@ -67,4 +91,4 @@ REQUEST_CODES = [
     "throttled",
 ]
 
-ERROR_CODES = AUTH_CODES + GAME_CODES + SPORTS_CODES + FIELD_CODES + REQUEST_CODES
+ERROR_CODES = AUTH_CODES + GAME_CODES + SPORTS_CODES + FORUM_CODES + FIELD_CODES + REQUEST_CODES

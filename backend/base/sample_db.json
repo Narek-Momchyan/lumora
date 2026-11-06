@@ -295,7 +295,7 @@
       "icon": "/media/images/sidebar/forums.svg",
       "category": "",
       "order": 11,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 18,
@@ -523,7 +523,7 @@
       "icon": "/media/images/sidebar/forums.svg",
       "category": "",
       "order": 11,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 37,
@@ -751,7 +751,7 @@
       "icon": "/media/images/sidebar/forums.svg",
       "category": "",
       "order": 11,
-      "is_soon": true
+      "is_soon": false
     },
     {
       "id": 56,
@@ -3278,6 +3278,384 @@
       "code": "match_not_found",
       "lang": "ru",
       "text": "Такого матча нет."
+    },
+    {
+      "id": 157,
+      "code": "forum_banned",
+      "lang": "en",
+      "text": "You cannot post in the forum until {until}."
+    },
+    {
+      "id": 158,
+      "code": "forum_banned",
+      "lang": "am",
+      "text": "Դուք չեք կարող գրառում անել ֆորումում մինչև {until}։"
+    },
+    {
+      "id": 159,
+      "code": "forum_banned",
+      "lang": "ru",
+      "text": "Вы не можете писать на форуме до {until}."
+    },
+    {
+      "id": 160,
+      "code": "display_name_required",
+      "lang": "en",
+      "text": "Set a display name in your profile before you post."
+    },
+    {
+      "id": 161,
+      "code": "display_name_required",
+      "lang": "am",
+      "text": "Գրառում անելուց առաջ պրոֆիլում նշեք ցուցադրվող անուն։"
+    },
+    {
+      "id": 162,
+      "code": "display_name_required",
+      "lang": "ru",
+      "text": "Прежде чем писать, укажите отображаемое имя в профиле."
+    },
+    {
+      "id": 163,
+      "code": "display_name_invalid",
+      "lang": "en",
+      "text": "Your display name cannot be used in the forum. Change it first."
+    },
+    {
+      "id": 164,
+      "code": "display_name_invalid",
+      "lang": "am",
+      "text": "Ձեր ցուցադրվող անունը չի կարող օգտագործվել ֆորումում։ Նախ փոխեք այն։"
+    },
+    {
+      "id": 165,
+      "code": "display_name_invalid",
+      "lang": "ru",
+      "text": "Ваше отображаемое имя нельзя использовать на форуме. Сначала измените его."
+    },
+    {
+      "id": 166,
+      "code": "post_empty",
+      "lang": "en",
+      "text": "Write something first."
+    },
+    {
+      "id": 167,
+      "code": "post_empty",
+      "lang": "am",
+      "text": "Նախ ինչ-որ բան գրեք։"
+    },
+    {
+      "id": 168,
+      "code": "post_empty",
+      "lang": "ru",
+      "text": "Сначала напишите что-нибудь."
+    },
+    {
+      "id": 169,
+      "code": "post_too_long",
+      "lang": "en",
+      "text": "A post can have at most {max} characters."
+    },
+    {
+      "id": 170,
+      "code": "post_too_long",
+      "lang": "am",
+      "text": "Գրառումը կարող է ունենալ առավելագույնը {max} նիշ։"
+    },
+    {
+      "id": 171,
+      "code": "post_too_long",
+      "lang": "ru",
+      "text": "В сообщении может быть не больше {max} символов."
+    },
+    {
+      "id": 172,
+      "code": "title_invalid",
+      "lang": "en",
+      "text": "A title has {min} to {max} characters."
+    },
+    {
+      "id": 173,
+      "code": "title_invalid",
+      "lang": "am",
+      "text": "Վերնագիրը պետք է ունենա {min}-ից {max} նիշ։"
+    },
+    {
+      "id": 174,
+      "code": "title_invalid",
+      "lang": "ru",
+      "text": "Заголовок должен содержать от {min} до {max} символов."
+    },
+    {
+      "id": 175,
+      "code": "post_has_link",
+      "lang": "en",
+      "text": "Links are not allowed in the forum."
+    },
+    {
+      "id": 176,
+      "code": "post_has_link",
+      "lang": "am",
+      "text": "Ֆորումում հղումներ չեն թույլատրվում։"
+    },
+    {
+      "id": 177,
+      "code": "post_has_link",
+      "lang": "ru",
+      "text": "Ссылки на форуме запрещены."
+    },
+    {
+      "id": 178,
+      "code": "post_banned_word",
+      "lang": "en",
+      "text": "This text contains words the forum does not allow."
+    },
+    {
+      "id": 179,
+      "code": "post_banned_word",
+      "lang": "am",
+      "text": "Այս տեքստը պարունակում է բառեր, որոնք ֆորումը չի թույլատրում։"
+    },
+    {
+      "id": 180,
+      "code": "post_banned_word",
+      "lang": "ru",
+      "text": "В этом тексте есть слова, которые форум не разрешает."
+    },
+    {
+      "id": 181,
+      "code": "post_too_fast",
+      "lang": "en",
+      "text": "Wait {seconds} seconds between posts."
+    },
+    {
+      "id": 182,
+      "code": "post_too_fast",
+      "lang": "am",
+      "text": "Գրառումների միջև սպասեք {seconds} վայրկյան։"
+    },
+    {
+      "id": 183,
+      "code": "post_too_fast",
+      "lang": "ru",
+      "text": "Между сообщениями подождите {seconds} секунд."
+    },
+    {
+      "id": 184,
+      "code": "too_many_topics",
+      "lang": "en",
+      "text": "You can start {max} topics a day."
+    },
+    {
+      "id": 185,
+      "code": "too_many_topics",
+      "lang": "am",
+      "text": "Օրական կարող եք սկսել առավելագույնը {max} թեմա։"
+    },
+    {
+      "id": 186,
+      "code": "too_many_topics",
+      "lang": "ru",
+      "text": "В день можно создать не больше {max} тем."
+    },
+    {
+      "id": 187,
+      "code": "topic_locked",
+      "lang": "en",
+      "text": "This topic is locked."
+    },
+    {
+      "id": 188,
+      "code": "topic_locked",
+      "lang": "am",
+      "text": "Այս թեման փակված է։"
+    },
+    {
+      "id": 189,
+      "code": "topic_locked",
+      "lang": "ru",
+      "text": "Эта тема закрыта."
+    },
+    {
+      "id": 190,
+      "code": "post_hidden",
+      "lang": "en",
+      "text": "This post was hidden by a moderator."
+    },
+    {
+      "id": 191,
+      "code": "post_hidden",
+      "lang": "am",
+      "text": "Այս գրառումը թաքցվել է մոդերատորի կողմից։"
+    },
+    {
+      "id": 192,
+      "code": "post_hidden",
+      "lang": "ru",
+      "text": "Это сообщение скрыто модератором."
+    },
+    {
+      "id": 193,
+      "code": "already_reported",
+      "lang": "en",
+      "text": "You already reported this post."
+    },
+    {
+      "id": 194,
+      "code": "already_reported",
+      "lang": "am",
+      "text": "Դուք արդեն բողոքել եք այս գրառման դեմ։"
+    },
+    {
+      "id": 195,
+      "code": "already_reported",
+      "lang": "ru",
+      "text": "Вы уже пожаловались на это сообщение."
+    },
+    {
+      "id": 196,
+      "code": "own_post_report",
+      "lang": "en",
+      "text": "You cannot report your own post."
+    },
+    {
+      "id": 197,
+      "code": "own_post_report",
+      "lang": "am",
+      "text": "Չեք կարող բողոքել ձեր իսկ գրառման դեմ։"
+    },
+    {
+      "id": 198,
+      "code": "own_post_report",
+      "lang": "ru",
+      "text": "Нельзя пожаловаться на своё сообщение."
+    },
+    {
+      "id": 199,
+      "code": "forum_not_found",
+      "lang": "en",
+      "text": "This forum does not exist."
+    },
+    {
+      "id": 200,
+      "code": "forum_not_found",
+      "lang": "am",
+      "text": "Այս ֆորումը գոյություն չունի։"
+    },
+    {
+      "id": 201,
+      "code": "forum_not_found",
+      "lang": "ru",
+      "text": "Такого форума нет."
+    },
+    {
+      "id": 202,
+      "code": "topic_not_found",
+      "lang": "en",
+      "text": "This topic does not exist."
+    },
+    {
+      "id": 203,
+      "code": "topic_not_found",
+      "lang": "am",
+      "text": "Այս թեման գոյություն չունի։"
+    },
+    {
+      "id": 204,
+      "code": "topic_not_found",
+      "lang": "ru",
+      "text": "Такой темы нет."
+    },
+    {
+      "id": 205,
+      "code": "post_not_found",
+      "lang": "en",
+      "text": "This post does not exist."
+    },
+    {
+      "id": 206,
+      "code": "post_not_found",
+      "lang": "am",
+      "text": "Այս գրառումը գոյություն չունի։"
+    },
+    {
+      "id": 207,
+      "code": "post_not_found",
+      "lang": "ru",
+      "text": "Такого сообщения нет."
+    },
+    {
+      "id": 208,
+      "code": "invalid_tag",
+      "lang": "en",
+      "text": "Choose a tag for the topic."
+    },
+    {
+      "id": 209,
+      "code": "invalid_tag",
+      "lang": "am",
+      "text": "Ընտրեք թեմայի պիտակը։"
+    },
+    {
+      "id": 210,
+      "code": "invalid_tag",
+      "lang": "ru",
+      "text": "Выберите метку для темы."
+    },
+    {
+      "id": 211,
+      "code": "invalid_report_reason",
+      "lang": "en",
+      "text": "Choose a reason for the report."
+    },
+    {
+      "id": 212,
+      "code": "invalid_report_reason",
+      "lang": "am",
+      "text": "Ընտրեք բողոքի պատճառը։"
+    },
+    {
+      "id": 213,
+      "code": "invalid_report_reason",
+      "lang": "ru",
+      "text": "Выберите причину жалобы."
+    },
+    {
+      "id": 214,
+      "code": "invalid_match",
+      "lang": "en",
+      "text": "This match is not one of the club's matches."
+    },
+    {
+      "id": 215,
+      "code": "invalid_match",
+      "lang": "am",
+      "text": "Այս խաղը ակումբի խաղերից չէ։"
+    },
+    {
+      "id": 216,
+      "code": "invalid_match",
+      "lang": "ru",
+      "text": "Этот матч не относится к матчам клуба."
+    },
+    {
+      "id": 217,
+      "code": "no_prediction",
+      "lang": "en",
+      "text": "You have no prediction for this match to attach."
+    },
+    {
+      "id": 218,
+      "code": "no_prediction",
+      "lang": "am",
+      "text": "Այս խաղի համար կցելու կանխատեսում չունեք։"
+    },
+    {
+      "id": 219,
+      "code": "no_prediction",
+      "lang": "ru",
+      "text": "У вас нет прогноза на этот матч, чтобы его прикрепить."
     }
   ],
   "prediction_labels": [
@@ -3513,6 +3891,218 @@
       "no_live": "Сейчас матчей нет.",
       "live_count": "Идёт: {count}",
       "reconnecting": "Переподключаемся…"
+    }
+  ],
+  "forum_labels": [
+    {
+      "id": 1,
+      "lang": "en",
+      "page_text": "A forum for every club of our leagues. Talk football, matches and predictions.",
+      "clubs_title": "Clubs",
+      "topics_count": "{count} topics",
+      "posts_count": "{count} posts",
+      "fans": "{club} fans",
+      "all_topics": "All topics",
+      "tag_match_talk": "Match talk",
+      "tag_transfers": "Transfers",
+      "tag_tactics": "Tactics",
+      "tag_predictions": "Predictions",
+      "tag_off_topic": "Off-topic",
+      "sort_latest": "Latest",
+      "sort_replies": "Most replies",
+      "sort_views": "Most views",
+      "pinned": "Pinned",
+      "locked": "Locked",
+      "replies": "replies",
+      "views": "views",
+      "by_author": "by {name}",
+      "new_topic": "New topic",
+      "topic_title": "Title",
+      "topic_body": "What do you want to say?",
+      "topic_tag": "Tag",
+      "create_topic": "Start topic",
+      "cancel": "Cancel",
+      "no_topics": "No topics yet. Be the first.",
+      "next_match": "Next match",
+      "open_match": "Open match · predict the score",
+      "rules_title": "Forum rules",
+      "rule_respect": "Be respectful to fans of every club",
+      "rule_on_topic": "Stay on topic: football, matches, predictions",
+      "rule_no_betting": "No real-money betting talk, links or ads",
+      "rule_no_personal": "No personal data, spam or insults",
+      "rules_note": "See something wrong? Press Report on the post. Moderators check every report, and repeated breaks lead to a posting ban.",
+      "breadcrumb_forums": "Club forums",
+      "author_tag": "Author",
+      "top_predictor": "Top predictor",
+      "anonymous_player": "Player #{n}",
+      "reply": "Reply",
+      "report": "Report",
+      "like": "Like",
+      "hidden_by_moderator": "This post was hidden by a moderator",
+      "hidden_rule": "rule: {rule}",
+      "rule_insult_hate": "insult or hate",
+      "rule_spam_ads": "spam or ads",
+      "rule_real_money": "real-money betting talk",
+      "rule_other": "something else",
+      "report_title": "Report this post",
+      "send_report": "Send report",
+      "report_sent": "Thanks, the moderators will look at it.",
+      "write_reply": "Write a reply…",
+      "reply_hint": "Be respectful · one post every 30 seconds",
+      "post_reply": "Post reply",
+      "posting": "Posting…",
+      "attach_prediction": "Attach my prediction for this match",
+      "prediction_in_post": "Prediction · {home} {score} {away}",
+      "about_topic": "About this topic",
+      "stat_replies": "replies",
+      "stat_views": "views",
+      "stat_age": "old",
+      "the_match": "The match",
+      "predict_score": "Predict the score",
+      "load_more": "Load more",
+      "topic_locked_note": "This topic is locked. No new posts.",
+      "banned_note": "You cannot post until {until}.",
+      "set_display_name": "Set a display name in your profile to post in the forum."
+    },
+    {
+      "id": 2,
+      "lang": "am",
+      "page_text": "Ֆորում մեր լիգաների յուրաքանչյուր ակումբի համար։ Խոսեք ֆուտբոլից, խաղերից և կանխատեսումներից։",
+      "clubs_title": "Ակումբներ",
+      "topics_count": "{count} թեմա",
+      "posts_count": "{count} գրառում",
+      "fans": "{club}-ի երկրպագուներ",
+      "all_topics": "Բոլոր թեմաները",
+      "tag_match_talk": "Խաղի քննարկում",
+      "tag_transfers": "Տրանսֆերներ",
+      "tag_tactics": "Մարտավարություն",
+      "tag_predictions": "Կանխատեսումներ",
+      "tag_off_topic": "Այլ թեմաներ",
+      "sort_latest": "Վերջինները",
+      "sort_replies": "Ամենաշատ պատասխաններ",
+      "sort_views": "Ամենաշատ դիտումներ",
+      "pinned": "Ամրացված",
+      "locked": "Փակված է",
+      "replies": "պատասխան",
+      "views": "դիտում",
+      "by_author": "հեղինակ՝ {name}",
+      "new_topic": "Նոր թեմա",
+      "topic_title": "Վերնագիր",
+      "topic_body": "Ի՞նչ եք ուզում ասել",
+      "topic_tag": "Պիտակ",
+      "create_topic": "Սկսել թեման",
+      "cancel": "Չեղարկել",
+      "no_topics": "Թեմաներ դեռ չկան։ Եղեք առաջինը։",
+      "next_match": "Հաջորդ խաղը",
+      "open_match": "Բացել խաղը · կանխատեսել հաշիվը",
+      "rules_title": "Ֆորումի կանոններ",
+      "rule_respect": "Հարգեք յուրաքանչյուր ակումբի երկրպագուներին",
+      "rule_on_topic": "Մնացեք թեմայի շրջանակում՝ ֆուտբոլ, խաղեր, կանխատեսումներ",
+      "rule_no_betting": "Իրական գումարով խաղադրույքների, հղումների և գովազդի քննարկում չի թույլատրվում",
+      "rule_no_personal": "Անձնական տվյալներ, սպամ կամ վիրավորանք չի թույլատրվում",
+      "rules_note": "Սխալ բան տեսնո՞ւմ եք։ Սեղմեք «Բողոքել» գրառման վրա։ Մոդերատորները ստուգում են ամեն բողոք, իսկ կրկնվող խախտումները հանգեցնում են գրառումների արգելքի։",
+      "breadcrumb_forums": "Ակումբների ֆորումներ",
+      "author_tag": "Հեղինակ",
+      "top_predictor": "Լավագույն կանխատեսող",
+      "anonymous_player": "Խաղացող #{n}",
+      "reply": "Պատասխանել",
+      "report": "Բողոքել",
+      "like": "Հավանել",
+      "hidden_by_moderator": "Այս գրառումը թաքցվել է մոդերատորի կողմից",
+      "hidden_rule": "կանոն՝ {rule}",
+      "rule_insult_hate": "վիրավորանք կամ ատելություն",
+      "rule_spam_ads": "սպամ կամ գովազդ",
+      "rule_real_money": "իրական գումարով խաղադրույքների քննարկում",
+      "rule_other": "այլ բան",
+      "report_title": "Բողոքել այս գրառման դեմ",
+      "send_report": "Ուղարկել բողոքը",
+      "report_sent": "Շնորհակալություն, մոդերատորները կուսումնասիրեն։",
+      "write_reply": "Գրեք պատասխան…",
+      "reply_hint": "Եղեք հարգալից · մեկ գրառում 30 վայրկյանը մեկ",
+      "post_reply": "Ուղարկել",
+      "posting": "Ուղարկվում է…",
+      "attach_prediction": "Կցել իմ կանխատեսումն այս խաղի համար",
+      "prediction_in_post": "Կանխատեսում · {home} {score} {away}",
+      "about_topic": "Այս թեմայի մասին",
+      "stat_replies": "պատասխան",
+      "stat_views": "դիտում",
+      "stat_age": "տարիք",
+      "the_match": "Խաղը",
+      "predict_score": "Կանխատեսել հաշիվը",
+      "load_more": "Ցույց տալ ավելին",
+      "topic_locked_note": "Այս թեման փակված է։ Նոր գրառումներ չեն թույլատրվում։",
+      "banned_note": "Դուք չեք կարող գրառում անել մինչև {until}։",
+      "set_display_name": "Գրառումներ անելու համար պրոֆիլում նշեք ցուցադրվող անուն։"
+    },
+    {
+      "id": 3,
+      "lang": "ru",
+      "page_text": "Форум для каждого клуба наших лиг. Говорите о футболе, матчах и прогнозах.",
+      "clubs_title": "Клубы",
+      "topics_count": "Тем: {count}",
+      "posts_count": "Сообщений: {count}",
+      "fans": "Болельщики {club}",
+      "all_topics": "Все темы",
+      "tag_match_talk": "Обсуждение матча",
+      "tag_transfers": "Трансферы",
+      "tag_tactics": "Тактика",
+      "tag_predictions": "Прогнозы",
+      "tag_off_topic": "Не по теме",
+      "sort_latest": "Новые",
+      "sort_replies": "Больше ответов",
+      "sort_views": "Больше просмотров",
+      "pinned": "Закреплено",
+      "locked": "Закрыта",
+      "replies": "ответов",
+      "views": "просмотров",
+      "by_author": "автор: {name}",
+      "new_topic": "Новая тема",
+      "topic_title": "Заголовок",
+      "topic_body": "Что вы хотите сказать?",
+      "topic_tag": "Метка",
+      "create_topic": "Создать тему",
+      "cancel": "Отмена",
+      "no_topics": "Тем пока нет. Будьте первым.",
+      "next_match": "Следующий матч",
+      "open_match": "Открыть матч · спрогнозировать счёт",
+      "rules_title": "Правила форума",
+      "rule_respect": "Уважайте болельщиков любого клуба",
+      "rule_on_topic": "Оставайтесь в теме: футбол, матчи, прогнозы",
+      "rule_no_betting": "Никаких разговоров о ставках на реальные деньги, ссылок и рекламы",
+      "rule_no_personal": "Никаких личных данных, спама и оскорблений",
+      "rules_note": "Увидели нарушение? Нажмите «Пожаловаться» под сообщением. Модераторы проверяют каждую жалобу, а повторные нарушения ведут к запрету писать.",
+      "breadcrumb_forums": "Форумы клубов",
+      "author_tag": "Автор",
+      "top_predictor": "Лучший прогнозист",
+      "anonymous_player": "Игрок #{n}",
+      "reply": "Ответить",
+      "report": "Пожаловаться",
+      "like": "Нравится",
+      "hidden_by_moderator": "Это сообщение скрыто модератором",
+      "hidden_rule": "правило: {rule}",
+      "rule_insult_hate": "оскорбление или ненависть",
+      "rule_spam_ads": "спам или реклама",
+      "rule_real_money": "разговоры о ставках на реальные деньги",
+      "rule_other": "другое",
+      "report_title": "Пожаловаться на сообщение",
+      "send_report": "Отправить жалобу",
+      "report_sent": "Спасибо, модераторы посмотрят.",
+      "write_reply": "Напишите ответ…",
+      "reply_hint": "Будьте вежливы · одно сообщение в 30 секунд",
+      "post_reply": "Отправить",
+      "posting": "Отправляем…",
+      "attach_prediction": "Прикрепить мой прогноз на этот матч",
+      "prediction_in_post": "Прогноз · {home} {score} {away}",
+      "about_topic": "Об этой теме",
+      "stat_replies": "ответов",
+      "stat_views": "просмотров",
+      "stat_age": "возраст",
+      "the_match": "Матч",
+      "predict_score": "Спрогнозировать счёт",
+      "load_more": "Показать ещё",
+      "topic_locked_note": "Тема закрыта. Новые сообщения недоступны.",
+      "banned_note": "Вы не можете писать до {until}.",
+      "set_display_name": "Чтобы писать на форуме, укажите отображаемое имя в профиле."
     }
   ]
 }

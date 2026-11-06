@@ -283,6 +283,16 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
 | WS | `/ws/sports` | – | the matches in play, read-only, public, see [Live scores](#live-scores) |
 | GET | `/api/live_matches` | – | the matches in play now: the match (`?lang=` names), `status` (`live`, `half_time`, `ended`), `minute`, `home_score`, `away_score`, `source`, `delayed`, `goal_at` |
 | GET | `/api/live_labels` | – | every text of the live page; `?lang=` |
+| GET | `/api/forums` | cookie | the clubs' forums: `id` (the club's id), `team`, `competition` (its league), `topics`, `posts`; `?competition=PL`; `?lang=` for club names |
+| GET | `/api/forums/<club id>` | cookie | one club's forum |
+| GET | `/api/topics` | cookie | `?forum=<club id>` (required), `?tag=match_talk\|transfers\|tactics\|predictions\|off_topic`, `?sort=latest\|replies\|views`: at most 50, pinned first. `?before=<last_post_at>_<id>` (the cursor of your last row) gives the next 50 of `latest`; the other sorts return their top 50 only |
+| GET | `/api/topics/<id>` | cookie | one topic; counts the player's view once |
+| POST | `/api/topics` | cookie | `{forum, title, tag, body, match?, attach_prediction?}`: a topic with its opening post, `201`. Refusals (`code`): `forum_banned`, `display_name_required`, `display_name_invalid`, `title_invalid`, `post_empty`, `post_too_long`, `post_has_link`, `post_banned_word`, `post_too_fast`, `too_many_topics`, `invalid_tag`, `invalid_match`, `no_prediction`, `forum_not_found` |
+| GET | `/api/posts` | cookie | `?topic=<id>` (required): oldest first, at most 100; `?after=<last post id>` gives the next ones. Each post has `author` (`id`, `name`: the display name, never the email), `is_author`, `is_mine`, `top_predictor`, `likes`, `liked_by_me`, `prediction`, and `hidden` + `hidden_rule` with `body: null` when a moderator hid it |
+| POST | `/api/posts` | cookie | `{topic, body, attach_prediction?}`: a reply, `201`; the same refusals as a topic, plus `topic_locked`, `topic_not_found` |
+| POST, DELETE | `/api/posts/<id>/like` | cookie | like / unlike (repeating either changes nothing); `{id, likes, liked_by_me}`; `post_hidden`, `forum_banned`, `post_not_found` |
+| POST | `/api/post_reports` | cookie | `{post, reason}` with `insult_hate`, `spam_ads`, `real_money`, `other`; `201`; `already_reported`, `own_post_report`, `post_hidden`, `invalid_report_reason`, `forum_banned` |
+| GET | `/api/forum_labels` | – | every text of the forum pages; `?lang=` |
 
 `bonus_available_at` is `null` before the first bonus; a time in the past means
 the bonus can be claimed now.
@@ -611,6 +621,7 @@ doesn't touch them. The codes are:
 | `slots` | Zeus Legacy: `engine.py` (pure maths), `services.py` (plays a round), `simulation.py`, `SlotSpin`, `SlotSymbol`, `SlotSymbolName`, `SlotSound`, `ZeusPageLabel` |
 | `leaderboard` | weekly leaderboard from the ledger |
 | `sports` | Football: `Competition`, `Season`, `Team` (+ `TeamName`, `TeamAlias`), `Match`, `Standing`, `SyncRun`; `providers/` (football-data.org adapter, rate limiter, crests), `services.py` (the sync), `runner.py`, `sync_football` and `run_sports`; `engine.py` (the odds model), `odds.py` (pricing), `betting.py` (bets and settlement), `ModelRun`, `Market`, `Selection`, `Bet`, `BetSelection`, `price_football`, `backtest_football`; `SportsPageLabel`, `BetLabel`; live scores: `providers/api_football.py`, `live_matching.py`, `live_runner.py` and `run_live`, `feed.py` and `consumers.py` (WebSocket), `LiveScore`, `ApiUsage`, `LiveLabel` |
+| `forums` | Club forums: `text.py` (pure: cleaning, links, banned words), `services.py` (every rule, the limits as constants), `Forum`, `Topic`, `Post`, `PostLike`, `TopicView`, `PostReport`, `ForumBan`, `BannedWord`, `ForumLabel` |
 
 `base/` holds the settings, the URLs (`OptionalSlashRouter`),
 `FilteredReadOnlyViewSet`, `LangFilteredViewSet`, `SingleObjectViewSet`, what the live
@@ -670,3 +681,29 @@ page's translated names come from `/api/live_matches`.
 
 Settings (`backend/.env`, all in `.env.example`): `API_FOOTBALL_KEY`, `API_FOOTBALL_ENABLED`,
 `LIVE_POLL_SECONDS`, `LIVE_WINDOW_MINUTES`, `LIVE_DAILY_LIMIT`.
+
+## Club forums
+
+One forum per club of our competitions, made by the football sync (`ensure_forums`, idempotent). Topics have a
+tag, posts are plain text, players like and report posts, and moderators work in the Django admin. Every rule
+is in `forums/services.py`; the browser never decides one.
+
+- **Limits** (constants in `services.py`): one post every 30 s (across all topics), 10 topics in any 24 hours,
+  1-2,000 characters (counted after trimming), titles 1-120, no links (a scheme, `www.`, an email or a bare
+  domain). A player's own row is locked while they write, so two parallel requests cannot both pass the 30 s or
+  the 10-topics rule (`ParallelPostTests`, which fail without the lock).
+- **Banned words** per language (`en`, `am`, `ru`) in the admin; every language's list is checked on every
+  post, title and display name. Entries and posts are folded the same way: NFKC, case folding (also Armenian),
+  no zero-width characters or marks, look-alike letters and leetspeak to one shape; words are compared whole
+  (so "class" never trips "ass"), also when spaced out (`f u c k`) or stretched (`fuuuck`). An entry with
+  "inside words" also matches inside longer words, for the stems of Armenian and Russian. Not caught: other
+  creative spellings, Armenian written in Latin letters (add that spelling as its own entry), images; the
+  Report button and the moderators are the backstop. The refusal never names the word.
+- **Display name:** the forum shows `display_name`, never the email. A player without one, or with one that
+  contains `@`, a link or a banned word, cannot post.
+- **Moderation** (admin, group "Forum moderators"): reports with "hide the post" / "dismiss"; posts: hide by
+  rule, unhide, ban the author for 7 days; topics: pin, unpin, lock, unlock; bans until a date; banned words;
+  labels. A banned player cannot post, like or report; a locked topic takes no posts; a hidden post is sent
+  with `body: null` (its text never leaves the server) and its rule.
+- **Plain text only:** the API returns the text as stored; the page renders it as text, never as HTML.
+- **Lists** are plain arrays: topics 50 per request (`before` cursor), posts 100 (`after`).
