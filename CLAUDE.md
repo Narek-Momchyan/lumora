@@ -286,4 +286,6 @@ Each phase ends with something that works and can be shown.
 - [x] S5 Live scores (API-Football, budget guard) over `/ws/sports`, live page
       (`run_live`, `LiveScore`, `/ws/sports`, `/live`; display only, never settle anything; free plan: only
       `fixtures?live=all` works; still to see on a real match day: `unmatched_live_fixture` in the log -> add `TeamAlias`)
-- [ ] S6 Club forums with moderation (designs 11–12)
+- [x] S6 Club forums with moderation (designs 11–12)
+      (`forums` app: limits and banned-word filter in `services.py` / `text.py`, moderation in the admin;
+      public feeds show no email or user id, see `base/names.py`; not built: members, online, follow)
