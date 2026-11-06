@@ -278,6 +278,7 @@ Each phase ends with something that works and can be shown.
 - [x] S3 Frontend: Football home, match page, bet slip, My bets (designs 06–08) +
       animations 1–4
 - [x] S4 Predictions and leaderboards (design 09), league pages (design 10)
-- [ ] S5 Live scores (API-Football, budget guard) over `/ws/sports`, live page
-      (backend done: `run_live`, `LiveScore`, `/ws/sports`; live scores are display only, never settle anything)
+- [x] S5 Live scores (API-Football, budget guard) over `/ws/sports`, live page
+      (`run_live`, `LiveScore`, `/ws/sports`, `/live`; display only, never settle anything; free plan: only
+      `fixtures?live=all` works; still to see on a real match day: `unmatched_live_fixture` in the log -> add `TeamAlias`)
 - [ ] S6 Club forums with moderation (designs 11–12)
