@@ -40,7 +40,7 @@ export interface ForumLabels {
   breadcrumb_forums: string
   author_tag: string
   top_predictor: string
-  anonymous_player: string // "Player #{n}"
+  anonymous_player: string // "Player": an author without a display name
   reply: string
   report: string
   like: string
@@ -78,4 +78,31 @@ export interface ForumClub {
   competition: string | null // the club's league code
   topics: number
   posts: number // posts a moderator hid are not counted
+}
+
+export type TopicTag = 'match_talk' | 'transfers' | 'tactics' | 'predictions' | 'off_topic'
+export type TopicSort = 'latest' | 'replies' | 'views'
+
+// The author of a topic or post: the display name only (null when the player has none). The API sends no
+// user id and no email.
+export interface ForumAuthor {
+  name: string | null
+}
+
+// One topic in a club's list (GET /api/topics).
+export interface ForumTopic {
+  id: number
+  forum: number
+  title: string
+  tag: TopicTag
+  match: number | null
+  is_pinned: boolean
+  is_locked: boolean
+  author: ForumAuthor
+  replies: number
+  views: number // distinct players who opened the topic page
+  post_count: number
+  created_at: string
+  last_post_at: string
+  last_author: string | null
 }

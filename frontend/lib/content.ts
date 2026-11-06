@@ -2,7 +2,7 @@ import type { LoginPageLabels, Player } from '@/types/account'
 import type { CrashBet, CrashPageLabels } from '@/types/crash'
 import type { Game, GameCategory, LobbyPageLabels } from '@/types/game'
 import type { HeaderLabels, Language, Logo, SidebarItem } from '@/types/header'
-import type { ForumClub, ForumLabels } from '@/types/forums'
+import type { ForumClub, ForumLabels, ForumTopic } from '@/types/forums'
 import type { LiveLabels, LiveRow } from '@/types/live'
 import type {
   Leaderboard,
@@ -211,4 +211,13 @@ export function getForumLabels(lang: string) {
 
 export function getForums(code: string, lang: string) {
   return fetchOrNull<ForumClub[]>(`/forums?competition=${encodeURIComponent(code)}&lang=${lang}`)
+}
+
+export function getForum(id: string, lang: string) {
+  return fetchOrNull<ForumClub>(`/forums/${id}?lang=${lang}`)
+}
+
+export function getTopics(forum: string, tag: string, sort: string) {
+  const query = new URLSearchParams({ forum, sort, ...(tag && { tag }) })
+  return fetchOrNull<ForumTopic[]>(`/topics?${query}`)
 }
