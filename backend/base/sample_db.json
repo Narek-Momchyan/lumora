@@ -1772,7 +1772,10 @@
       "seed_hash_label": "Seed hash",
       "commitment_label": "Chain commitment",
       "connecting": "Connecting...",
-      "server_unreachable": "Can't reach the server. Trying again..."
+      "server_unreachable": "Can't reach the server. Trying again...",
+      "sound_on": "Turn sound on",
+      "sound_off": "Mute sound",
+      "sound_volume": "Volume"
     },
     {
       "id": 2,
@@ -1807,7 +1810,10 @@
       "seed_hash_label": "Seed-ի հեշ",
       "commitment_label": "Շղթայի commitment",
       "connecting": "Միանում ենք...",
-      "server_unreachable": "Սերվերը հասանելի չէ։ Նորից ենք փորձում..."
+      "server_unreachable": "Սերվերը հասանելի չէ։ Նորից ենք փորձում...",
+      "sound_on": "Միացնել ձայնը",
+      "sound_off": "Անջատել ձայնը",
+      "sound_volume": "Ձայնի ուժգնություն"
     },
     {
       "id": 3,
@@ -1842,7 +1848,10 @@
       "seed_hash_label": "Хеш seed",
       "commitment_label": "Commitment цепочки",
       "connecting": "Подключение...",
-      "server_unreachable": "Сервер недоступен. Пробуем снова..."
+      "server_unreachable": "Сервер недоступен. Пробуем снова...",
+      "sound_on": "Включить звук",
+      "sound_off": "Выключить звук",
+      "sound_volume": "Громкость"
     }
   ],
   "roulette_page_labels": [
@@ -1906,7 +1915,10 @@
       "bet_dozen_2": "2nd 12",
       "bet_dozen_3": "3rd 12",
       "bet_column": "Column {number}",
-      "bet_column_short": "2 to 1"
+      "bet_column_short": "2 to 1",
+      "sound_on": "Turn sound on",
+      "sound_off": "Mute sound",
+      "sound_volume": "Volume"
     },
     {
       "id": 2,
@@ -1968,7 +1980,10 @@
       "bet_dozen_2": "Երկրորդ 12",
       "bet_dozen_3": "Երրորդ 12",
       "bet_column": "Սյունակ {number}",
-      "bet_column_short": "2-ը 1-ի դեմ"
+      "bet_column_short": "2-ը 1-ի դեմ",
+      "sound_on": "Միացնել ձայնը",
+      "sound_off": "Անջատել ձայնը",
+      "sound_volume": "Ձայնի ուժգնություն"
     },
     {
       "id": 3,
@@ -2030,7 +2045,10 @@
       "bet_dozen_2": "Вторая дюжина",
       "bet_dozen_3": "Третья дюжина",
       "bet_column": "Колонка {number}",
-      "bet_column_short": "2 к 1"
+      "bet_column_short": "2 к 1",
+      "sound_on": "Включить звук",
+      "sound_off": "Выключить звук",
+      "sound_volume": "Громкость"
     }
   ],
   "sports_page_labels": [

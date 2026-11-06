@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from base.admin import ImagePreviewMixin
-from .models import Game, GameCategory, LobbyPageLabel
+from .models import Game, GameCategory, GameSound, LobbyPageLabel
 
 
 @admin.register(Game)
@@ -22,3 +22,12 @@ class GameCategoryAdmin(admin.ModelAdmin):
 class LobbyPageLabelAdmin(admin.ModelAdmin):
     list_display = ["lang", "bonus_title", "section_popular"]
     list_filter = ["lang"]
+
+
+@admin.register(GameSound)
+class GameSoundAdmin(admin.ModelAdmin):
+    """Upload a file for each key: Neon Crash and Lumora Roulette play only the sounds that have one."""
+
+    list_display = ["code", "file", "is_active"]
+    list_editable = ["is_active"]
+    list_filter = ["is_active"]

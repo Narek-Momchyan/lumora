@@ -166,6 +166,10 @@ class CrashPageLabel(models.Model):
     connecting = models.CharField(max_length=100)
     server_unreachable = models.CharField(max_length=255)
 
+    sound_on = models.CharField(max_length=60, help_text="The sound button while the sound is off: turn it on (label and tooltip)")
+    sound_off = models.CharField(max_length=60, help_text="The sound button while the sound is on: mute it (label and tooltip)")
+    sound_volume = models.CharField(max_length=60, help_text="Label of the volume slider")
+
     class Meta:
         verbose_name_plural = "Crash page labels"
         ordering = ["id"]

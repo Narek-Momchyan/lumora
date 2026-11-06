@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db import models
 
 from base.constants import LANG_CHOICES
-from base.fields import IMAGE_VALIDATORS
+from base.fields import AUDIO_VALIDATORS, IMAGE_VALIDATORS
 
 
 class Game(models.Model):
@@ -84,3 +84,35 @@ class LobbyPageLabel(models.Model):
 
     def __str__(self):
         return f"Lobby page labels ({self.lang})"
+
+
+class GameSound(models.Model):
+    """A sound of Neon Crash or Lumora Roulette, uploaded in the admin. The pages play only the sounds that
+    have a file; a code without one is silently skipped. A key shared by both games (round start, bet placed,
+    win, lose) has one file for both."""
+
+    class Code(models.TextChoices):
+        CRASH_FLIGHT = "crash_flight", "Crash: the multiplier climbs (loops during the flight)"
+        CRASH_BOOM = "crash_boom", "Crash: the crash"
+        CASH_OUT = "cash_out", "Crash: my cash-out"
+        BET_PLACED = "bet_placed", "My bet is placed (both games)"
+        ROUND_START = "round_start", "Betting opens (both games)"
+        ROULETTE_SPIN = "roulette_spin", "Roulette: the wheel starts"
+        ROULETTE_BALL_DROP = "roulette_ball_drop", "Roulette: the ball drops (last 1.6 s of the spin)"
+        WIN = "win", "I won (both games)"
+        LOSE = "lose", "I lost (both games)"
+
+    code = models.CharField(max_length=30, choices=Code.choices)
+    file = models.FileField(
+        upload_to="sounds/games/", max_length=255, blank=True, validators=AUDIO_VALIDATORS,
+        help_text="MP3, OGG or WAV, at most 10 MB. Without a file the sound is skipped",
+    )
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name_plural = "Game sounds"
+        ordering = ["id"]
+        constraints = [models.UniqueConstraint(fields=["code"], name="unique_game_sound_code")]
+
+    def __str__(self):
+        return self.get_code_display()

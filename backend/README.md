@@ -194,7 +194,7 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
   `logout`, `games`, `leaderboard`, `error_messages` and the site content: `logos`,
   `languages`, `sidebar_items`, `header_labels`, `sports_page_labels`, `sports_ui_labels`, `prediction_labels`, `bet_labels`, `login_page_labels`,
   `lobby_page_labels`, `game_categories`, `slot_symbols`, `slot_symbol_names`,
-  `slot_sounds`, `jackpot_pools`, `zeus_page_labels`, `crash_rounds`,
+  `slot_sounds`, `game_sounds`, `jackpot_pools`, `zeus_page_labels`, `crash_rounds`,
   `crash_page_labels`, `roulette_rounds` and `roulette_page_labels`, and the football
   data: `competitions`, `teams`, `matches`, `standings`, `standing_zones`, `matchdays`, `markets`, `popular_picks` and `prediction_leaderboard`.
 - The JWTs live only in httpOnly cookies, never in a response body and never in an
@@ -274,6 +274,7 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
 | GET | `/api/slot_spins/<id>` | cookie | one round with its `result` |
 | GET | `/api/slot_symbols` | – | slot symbols with their images |
 | GET | `/api/slot_symbol_names` | – | symbol names; `?lang=` |
+| GET | `/api/game_sounds` | – | the sounds of Neon Crash and Lumora Roulette that can be played: `{code, file}`, only active ones with an uploaded file. Upload them in the admin (Game sounds: `crash_flight`, `crash_boom`, `cash_out`, `bet_placed`, `round_start`, `roulette_spin`, `roulette_ball_drop`, `win`, `lose`); a migration creates the nine rows without files, so a missing sound is skipped |
 | GET | `/api/slot_sounds` | – | active sounds that have an uploaded file |
 | GET | `/api/jackpot_pools` | – | the current amount of each jackpot tier |
 | GET | `/api/zeus_page_labels` | – | every text of the Zeus Legacy page; `?lang=` |

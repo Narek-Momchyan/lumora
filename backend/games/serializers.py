@@ -1,5 +1,5 @@
 from base.serializers import ModelSerializer
-from .models import Game, GameCategory, LobbyPageLabel
+from .models import Game, GameCategory, GameSound, LobbyPageLabel
 
 
 class GameSerializer(ModelSerializer):
@@ -29,3 +29,9 @@ class LobbyPageLabelSerializer(ModelSerializer):
     class Meta:
         model = LobbyPageLabel
         fields = "__all__"
+
+
+class GameSoundSerializer(ModelSerializer):
+    class Meta:
+        model = GameSound
+        fields = ["code", "file"]

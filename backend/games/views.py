@@ -1,8 +1,8 @@
 from rest_framework.permissions import AllowAny
 
 from base.views import FilteredReadOnlyViewSet, LangFilteredViewSet
-from .models import Game, GameCategory, LobbyPageLabel
-from .serializers import GameCategorySerializer, GameSerializer, LobbyPageLabelSerializer
+from .models import Game, GameCategory, GameSound, LobbyPageLabel
+from .serializers import GameCategorySerializer, GameSerializer, GameSoundSerializer, LobbyPageLabelSerializer
 
 
 class GameViewSet(FilteredReadOnlyViewSet):
@@ -20,3 +20,11 @@ class GameCategoryViewSet(LangFilteredViewSet):
 class LobbyPageLabelViewSet(LangFilteredViewSet):
     queryset = LobbyPageLabel.objects.all()
     serializer_class = LobbyPageLabelSerializer
+
+
+class GameSoundViewSet(FilteredReadOnlyViewSet):
+    """Only sounds that can really be played: active, with an uploaded file."""
+
+    queryset = GameSound.objects.filter(is_active=True).exclude(file="")
+    serializer_class = GameSoundSerializer
+    permission_classes = [AllowAny]

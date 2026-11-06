@@ -202,6 +202,10 @@ class RoulettePageLabel(models.Model):
     bet_column = models.CharField(max_length=30, help_text="{number} is replaced with the column")
     bet_column_short = models.CharField(max_length=30)
 
+    sound_on = models.CharField(max_length=60, help_text="The sound button while the sound is off: turn it on (label and tooltip)")
+    sound_off = models.CharField(max_length=60, help_text="The sound button while the sound is on: mute it (label and tooltip)")
+    sound_volume = models.CharField(max_length=60, help_text="Label of the volume slider")
+
     class Meta:
         verbose_name_plural = "Roulette page labels"
         ordering = ["id"]
