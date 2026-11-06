@@ -1,5 +1,4 @@
-from django.db.models import Count, Exists, OuterRef, Q, Subquery, Sum
-from django.db.models.functions import Coalesce
+from django.db.models import Count, Exists, OuterRef, Q, Subquery
 from django.utils.dateparse import parse_datetime
 from rest_framework import status
 from rest_framework.decorators import action
@@ -28,7 +27,11 @@ class ForumViewSet(FilteredReadOnlyViewSet):
         Forum.objects.filter(team__in=Team.objects.filter(competitions__is_active=True))
         .select_related("team")
         .prefetch_related("team__names", "team__competitions")
-        .annotate(topic_total=Count("topics", distinct=True), post_total=Coalesce(Sum("topics__post_count"), 0))
+        .annotate(
+            topic_total=Count("topics", distinct=True),
+            # one query for every club; a post a moderator hid is not counted
+            post_total=Count("topics__posts", filter=Q(topics__posts__is_hidden=False), distinct=True),
+        )
         .order_by("team__name")
     )
     serializer_class = ForumSerializer
@@ -95,7 +98,8 @@ class TopicViewSet(FilteredReadOnlyViewSet):
         if "before" in params:
             if sort != "latest":
                 return qs.none()
-            qs = cut(qs, params["before"])
+            # Pinned topics are always on the first page, so a later page never repeats them.
+            qs = cut(qs.filter(is_pinned=False), params["before"])
         return qs.order_by(*SORTS[sort])
 
     def retrieve(self, request, *args, **kwargs):

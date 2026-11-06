@@ -497,6 +497,37 @@ class ForumApiTests(ForumTestCase):
         self.assertEqual(self.api.get(f"/api/forums/{self.arsenal.id}").json()["id"], self.arsenal.id)
         self.assertEqual(self.api.get("/api/forums?competition=SA").json(), [])
 
+    def test_hidden_posts_are_not_counted_in_the_clubs_posts(self):
+        topic = self.new_topic().json()
+        reply = self.api.post("/api/posts", {"topic": topic["id"], "body": "reply"}, format="json").json()
+        arsenal = lambda: next(row for row in self.api.get("/api/forums").json() if row["id"] == self.arsenal.id)  # noqa: E731
+        self.assertEqual((arsenal()["topics"], arsenal()["posts"]), (1, 2))
+        services.hide_post(Post.objects.get(pk=reply["id"]), "spam_ads", self.other, now=NOW)
+        self.assertEqual((arsenal()["topics"], arsenal()["posts"]), (1, 1))
+        services.unhide_post(Post.objects.get(pk=reply["id"]))
+        self.assertEqual(arsenal()["posts"], 2)
+
+    def test_the_club_list_costs_the_same_number_of_queries_for_any_number_of_clubs(self):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+
+        self.new_topic()
+        with CaptureQueriesContext(connection) as few:
+            rows = self.api.get("/api/forums").json()
+        self.assertEqual(len(rows), 2)
+        for index in range(30):  # thirty more clubs, some with topics
+            team = Team.objects.create(provider_id=100 + index, name=f"Club {index}", tla=f"C{index:02d}")
+            team.competitions.add(self.competition)
+        services.ensure_forums()
+        Topic.objects.bulk_create(
+            Topic(forum=forum, author=self.user, title="t", tag="tactics", post_count=1, last_post_at=NOW)
+            for forum in Forum.objects.exclude(team=self.arsenal)[:10]
+        )
+        with CaptureQueriesContext(connection) as many:
+            rows = self.api.get("/api/forums").json()
+        self.assertEqual(len(rows), 32)
+        self.assertEqual(len(many), len(few))  # no query per club
+
     def test_creating_and_reading_a_topic(self):
         response = self.new_topic()
         self.assertEqual(response.status_code, 201)
@@ -630,6 +661,21 @@ class ForumApiTests(ForumTestCase):
         self.assertFalse({row["id"] for row in page} & {row["id"] for row in rest})
         self.assertEqual(self.api.get("/api/topics", {"forum": self.arsenal.id, "before": "junk"}).json(), [])
         self.assertEqual(self.api.get("/api/topics", {"forum": self.arsenal.id, "sort": "views", "before": cursor}).json(), [])
+
+    def test_a_pinned_topic_is_on_the_first_page_only(self):
+        forum = Forum.objects.get(team=self.arsenal)
+        Topic.objects.bulk_create(
+            Topic(forum=forum, author=self.user, title=f"T{index}", tag="tactics", post_count=1,
+                  last_post_at=NOW - timedelta(minutes=index), is_pinned=index == 54)  # the oldest one is pinned
+            for index in range(55)
+        )
+        page = self.api.get(f"/api/topics?forum={self.arsenal.id}").json()
+        self.assertEqual((len(page), page[0]["title"], page[0]["is_pinned"]), (50, "T54", True))
+        last = page[-1]
+        rest = self.api.get("/api/topics", {"forum": self.arsenal.id, "before": f"{last['last_post_at']}_{last['id']}"}).json()
+        self.assertEqual(len(rest), 5)  # 55 topics, 50 on the first page, T54 is not repeated
+        self.assertNotIn("T54", [row["title"] for row in rest])
+        self.assertEqual(len({row["id"] for row in page + rest}), 55)
 
     def test_post_lists_are_limited_to_100_and_page_with_after(self):
         topic = self.new_topic().json()
