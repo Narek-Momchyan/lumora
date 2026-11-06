@@ -6,9 +6,10 @@ from .models import Forum, ForumLabel, Post, Topic
 
 
 def author_data(user):
-    """Who wrote it. The display name only, never the email or a part of it; `name` is null for a player who
-    has none (the page shows its own "Player #n" text from the labels)."""
-    return {"id": user.pk, "name": user.display_name or None}
+    """Who wrote it: the display name only, never the email or a part of it, and no user id (ids are
+    sequential, so they would show how many players there are and let anyone walk through them). `name` is
+    null for a player who has none; the page then shows the plain "Player" text from the labels."""
+    return {"name": user.display_name or None}
 
 
 class ForumLabelSerializer(ModelSerializer):

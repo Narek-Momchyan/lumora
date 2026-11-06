@@ -206,7 +206,7 @@ class ForumLabel(models.Model):
     breadcrumb_forums = models.CharField(max_length=120)
     author_tag = models.CharField(max_length=60)
     top_predictor = models.CharField(max_length=60)
-    anonymous_player = models.CharField(max_length=120, help_text="{n} is replaced")
+    anonymous_player = models.CharField(max_length=120, help_text="Shown for an author without a display name")
     reply = models.CharField(max_length=60)
     report = models.CharField(max_length=60)
     like = models.CharField(max_length=60)

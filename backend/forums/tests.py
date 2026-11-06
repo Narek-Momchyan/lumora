@@ -649,6 +649,18 @@ class ForumApiTests(ForumTestCase):
                 self.assertNotIn("lumora.dev", self.api.get(path).content.decode())
                 self.assertNotIn("gunner@", self.api.get(path).content.decode())
 
+    def test_no_user_id_leaves_the_server_in_an_author(self):
+        topic = self.new_topic().json()
+        self.api.post("/api/posts", {"topic": topic["id"], "body": "hi"}, format="json")
+        rows = self.api.get(f"/api/topics?forum={self.arsenal.id}").json() + [self.api.get(f"/api/topics/{topic['id']}").json()]
+        rows += self.api.get(f"/api/posts?topic={topic['id']}").json()
+        for row in rows:
+            self.assertEqual(set(row["author"]), {"name"})  # a name and nothing else, in particular no id
+        for row in rows[-2:]:
+            self.assertEqual(row["author"]["name"], "gunner")
+        for flag in ("is_author", "is_mine"):  # what the page needs is said with flags, not ids
+            self.assertIn(flag, rows[-1])
+
     def test_player_text_is_stored_and_returned_exactly_as_plain_text(self):
         evil = '<script>alert(1)</script> <img src=x onerror=alert(2)> & "quotes" \'single\''
         topic = self.new_topic(title="<b>bold</b>", body=evil).json()
