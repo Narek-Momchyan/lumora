@@ -8,6 +8,7 @@ export interface Player {
   id: number
   email: string
   display_name: string
+  public_id: string // how other players' screens tell this player apart (a roulette seat is player-<public_id>)
   date_joined: string
 }
 

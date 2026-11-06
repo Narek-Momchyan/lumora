@@ -19,6 +19,7 @@ from django.utils import timezone
 from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings, tag
 from rest_framework.test import APIClient
 
+from base import names
 from base.asgi import application
 from base.sample import load_sample, read_sample
 from base.svg import UnsafeSvg, is_safe_svg, sanitize_svg
@@ -1447,7 +1448,7 @@ class PredictionApiTests(PredictionTestCase):
         board = self.api.get("/api/prediction_leaderboard?competition=PL").json()
         self.assertEqual((board["players"], board["rows"][0]["points"], board["me"]["rank"]), (1, 3, 1))
         day = self.api.get("/api/prediction_leaderboard?competition=PL&matchday=11").json()
-        self.assertEqual(day["rows"][0]["player"], "fan")
+        self.assertEqual(day["rows"][0]["player"], names.public_name("", self.user.pk))  # no email prefix
         self.assertEqual(self.client.get("/api/prediction_leaderboard?competition=PL").json()["me"], None)
         self.assertEqual(self.api.get("/api/prediction_leaderboard?competition=PL&matchday=x").json()["rows"], [])
         stats = self.api.get("/api/prediction_stats?competition=PL").json()
@@ -1455,6 +1456,29 @@ class PredictionApiTests(PredictionTestCase):
         days = self.client.get("/api/matchdays?competition=PL").json()
         self.assertEqual(days, [{"matchday": 11, "matches": 3, "open": 2, "finished": 1, "current": True}])
         self.assertEqual(self.client.get("/api/matchdays?competition=XX").json(), [])
+
+    def test_the_leaderboard_sends_no_user_id_and_no_email_and_marks_my_row(self):
+        nameless = User.objects.create_user(username="hidden.address@lumora.dev", email="hidden.address@lumora.dev")
+        self.predict(self.user, self.matches[0], 2, 1)  # mine: exact
+        self.predict(nameless, self.matches[0], 1, 0)  # a player with no display name: right result
+        self.finish(self.matches[0], 2, 1)
+        predictions.score_predictions(self.now)
+        for matchday in ("", "&matchday=11"):
+            body = self.api.get(f"/api/prediction_leaderboard?competition=PL{matchday}")
+            data = body.json()
+            self.assertEqual(len(data["rows"]), 2)
+            for row in data["rows"] + [data["me"]]:
+                self.assertNotIn("user_id", row)
+                self.assertEqual(set(row), {"rank", "player", "points", "exact", "right", "played", "is_me"})
+            self.assertEqual([row["is_me"] for row in data["rows"]], [True, False])
+            self.assertTrue(data["me"]["is_me"])
+            self.assertRegex(data["rows"][1]["player"], r"^Player [0-9a-f]{6}$")
+            text = body.content.decode()
+            self.assertNotIn("hidden", text)
+            self.assertNotIn("lumora.dev", text)
+        anonymous = self.client.get("/api/prediction_leaderboard?competition=PL").json()  # a visitor
+        self.assertIsNone(anonymous["me"])
+        self.assertEqual([row["is_me"] for row in anonymous["rows"]], [False, False])
 
     def test_zones_come_from_the_database(self):
         zones = self.client.get("/api/standing_zones?competition=PL").json()

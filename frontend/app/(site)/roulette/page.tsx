@@ -29,7 +29,7 @@ export default async function RoulettePage() {
     <RouletteGame
       game={game}
       slips={slips ?? []}
-      mySeat={`player-${me?.id}`}
+      mySeat={`player-${me?.public_id}`}
       currency={header.currency}
       labels={labels}
     />

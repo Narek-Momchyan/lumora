@@ -37,3 +37,18 @@ class LeaderboardTests(TestCase):
     def test_api_is_public_and_returns_money_as_strings(self):
         rows = self.client.get("/api/leaderboard").json()
         self.assertEqual(rows[0], {"rank": 1, "player": "arman", "net": "200.00", "bets": 1})
+
+
+class NoEmailInTheLeaderboardTests(TestCase):
+    def test_a_player_without_a_display_name_is_never_shown_by_email_or_id(self):
+        user = User.objects.create_user(username="secret.person@lumora.dev", email="secret.person@lumora.dev")
+        wallet = services.open_wallet(user)
+        services.debit(wallet, "100.00", game="crash", round_id="r1", idempotency_key="b1")
+        services.credit(wallet, "300.00", game="crash", round_id="r1", idempotency_key="w1")
+        response = self.client.get("/api/leaderboard")
+        row = response.json()[0]
+        self.assertRegex(row["player"], r"^Player [0-9a-f]{6}$")
+        body = response.content.decode()
+        self.assertNotIn("secret", body)
+        self.assertNotIn("lumora.dev", body)
+        self.assertEqual(set(row), {"rank", "player", "net", "bets"})  # no id, no email

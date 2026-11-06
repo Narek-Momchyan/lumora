@@ -33,7 +33,7 @@ ORIGIN = [(b"origin", b"http://localhost:3000")]
 
 
 def make_player(name):
-    user = User.objects.create_user(username=f"{name}@lumora.dev", email=f"{name}@lumora.dev")
+    user = User.objects.create_user(username=f"{name}@lumora.dev", email=f"{name}@lumora.dev", display_name=name)
     open_wallet(user)
     return user
 
@@ -822,3 +822,16 @@ class WebSocketTests(TransactionTestCase):
         socket = await self.connect(ORIGIN + [(b"cookie", b"lumora_access=whatever")])
         await socket.receive_json_from()
         await socket.disconnect()
+
+
+class LiveBetNameTests(TestCase):
+    def test_a_live_bet_never_names_a_player_by_email(self):
+        user = User.objects.create_user(username="private.name@lumora.dev", email="private.name@lumora.dev")
+        open_wallet(user)
+        current = services.open_round()
+        bet = services.place_bet(user, "100")
+        data = feed.bet_data(RoundBet.objects.select_related("user", "round").get(pk=bet.pk))
+        self.assertRegex(data["player"], r"^Player [0-9a-f]{6}$")
+        self.assertNotIn("private", str(data))
+        self.assertNotIn(str(user.pk), data["player"])
+        self.assertEqual(current.number, data["round"])

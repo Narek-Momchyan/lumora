@@ -9,7 +9,7 @@ from decimal import Decimal
 
 from django.utils import timezone
 
-from base import live
+from base import live, names
 from . import engine
 from .models import RouletteBotBet, RouletteRound
 
@@ -54,7 +54,8 @@ def _line_data(bet_type, value, amount):
 
 
 def slip_seat(user_id):
-    return f"player-{user_id}"
+    """A seat at the table. The hash, not the user id: the id would be public and sequential."""
+    return f"player-{names.public_id(user_id)}"
 
 
 def slip_data(slip):

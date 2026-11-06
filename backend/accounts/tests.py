@@ -220,3 +220,13 @@ class CsrfTests(TestCase):
         for url in ["/api/token/refresh", "/api/logout"]:
             with self.subTest(url=url):
                 self.assertEqual(self.client.post(url, HTTP_X_CSRFTOKEN=self.csrf).status_code, 204)
+
+
+class PublicIdTests(TestCase):
+    def test_me_has_a_public_id_that_is_not_the_id(self):
+        user = User.objects.create_user(username="me@lumora.dev", email="me@lumora.dev")
+        client = APIClient()
+        client.force_authenticate(user)
+        me = client.get("/api/me").json()
+        self.assertRegex(me["public_id"], r"^[0-9a-f]{12}$")
+        self.assertNotEqual(me["public_id"], str(me["id"]))

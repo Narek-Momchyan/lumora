@@ -2,6 +2,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from rest_framework import serializers
 
+from base import names
 from base.serializers import ModelSerializer
 from wallet.services import open_wallet
 from .models import LoginPageLabel, User
@@ -35,9 +36,15 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class MeSerializer(serializers.ModelSerializer):
+    public_id = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "email", "display_name", "date_joined"]
+        fields = ["id", "email", "display_name", "public_id", "date_joined"]
+
+    def get_public_id(self, obj):
+        """How other players' screens tell this player apart (a roulette seat is `player-<public_id>`)."""
+        return names.public_id(obj.pk)
 
 
 class LoginPageLabelSerializer(ModelSerializer):

@@ -53,7 +53,7 @@ function Row({ row, labels, mine }: { row: LeaderboardRow; labels: PredictionLab
 export default function PredictionLeaderboard({ matchday, season, matchdayNumber, labels }: PredictionLeaderboardProps) {
   const [scope, setScope] = useState<Scope>('season')
   const board = scope === 'season' ? season : matchday
-  const inTop = board.me ? board.rows.some((row) => row.user_id === board.me!.user_id) : false
+  const inTop = board.rows.some((row) => row.is_me)
 
   return (
     <Card padding="md" className="space-y-4">
@@ -77,7 +77,7 @@ export default function PredictionLeaderboard({ matchday, season, matchdayNumber
       ) : (
         <ol className="space-y-0.5">
           {board.rows.map((row) => (
-            <Row key={row.user_id} row={row} labels={labels} mine={board.me?.user_id === row.user_id} />
+            <Row key={row.rank} row={row} labels={labels} mine={row.is_me} />
           ))}
           {board.me && !inTop && (
             <>

@@ -221,7 +221,7 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
 | POST | `/api/token` | – | `{email, password}` → the player (same as `/api/me`); sets the auth and CSRF cookies |
 | POST | `/api/token/refresh` | – | reads the refresh cookie → `204`, new access cookie; needs `X-CSRFToken` |
 | POST | `/api/logout` | – | `204`, deletes the auth cookies; needs `X-CSRFToken` |
-| GET | `/api/me` | cookie | the logged-in player |
+| GET | `/api/me` | cookie | the logged-in player, with `public_id`: how other players' screens tell them apart (a roulette seat is `player-<public_id>`) |
 | GET | `/api/wallet` | cookie | `{balance, last_bonus_at, bonus_available_at, updated_at}` |
 | GET | `/api/transactions` | cookie | the player's ledger, newest first |
 | POST | `/api/bonus` | cookie | daily bonus of 5,000 LC; `409` with `available_at` if claimed in the last 24 hours |
@@ -240,7 +240,7 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
 | GET | `/api/roulette_page_labels` | – | every text of the roulette page and the names of the bets; `?lang=` |
 | GET | `/api/seeds` | cookie | the player's provably fair seed pairs, the active one first |
 | POST | `/api/seeds` | cookie | `{client_seed?}` → reveals the active server seed and starts a new pair: `{revealed, active}` |
-| GET | `/api/leaderboard` | – | top 20 of the last 7 days by net game result |
+| GET | `/api/leaderboard` | – | top 20 of the last 7 days by net game result; `player` is the display name, or `Player a1b2c3` (a keyed hash) when there is none: never the email, never a user id |
 | GET | `/api/logos` | – | the logo as one object, `{}` before one is added |
 | GET | `/api/languages` | – | languages for the language switcher, in `order` |
 | GET | `/api/sidebar_items` | – | the navigation of both sections: `mode` (`sports`/`casino`), `group` (`leagues`, `my` or none), `icon`, `order`, `is_soon` and `category` (a casino item with a category opens `/casino?category=<code>` and is active on that category's game pages); `?lang=` |
@@ -257,7 +257,7 @@ server for testing needs its own `CHANNEL_REDIS_URL`, for example `.../1`. Use `
 | POST | `/api/predictions` | cookie | `{match, home_goals, away_goals}` (whole numbers 0–20): `201` new, `200` changed; free, no LC. `400` `prediction_locked` from kickoff (server time) or when the match is not scheduled, `prediction_invalid`, `404` `match_not_found` |
 | PUT | `/api/predictions/<match_id>` | cookie | `{home_goals, away_goals}`: the same save for that match |
 | POST | `/api/predictions/bulk` | cookie | `{predictions: [{match, home_goals, away_goals}]}` (1–50): saves all or none (the "Save predictions" button) |
-| GET | `/api/prediction_leaderboard` | – | `?competition=PL`, optional `?matchday=11` (without it: the season): `{players, rows (top 6: rank, player, points, exact, right, played), me}`; `me` (with my real rank) only for a logged-in player. Ties: more exact scores, then the earlier first save. Void matches do not count |
+| GET | `/api/prediction_leaderboard` | – | `?competition=PL`, optional `?matchday=11` (without it: the season): `{players, rows (top 6: rank, player, points, exact, right, played, is_me), me}` (no user id: `is_me` marks the viewer's row); `me` (with my real rank) only for a logged-in player. Ties: more exact scores, then the earlier first save. Void matches do not count |
 | GET | `/api/prediction_stats` | cookie | `?competition=PL`: my season `points`, `rank`, `exact`, `right_percent`, `played`, `players` |
 | GET | `/api/matchdays` | – | `?competition=PL`: the current season's matchdays `{matchday, matches, open, finished, current}` |
 | GET | `/api/standing_zones` | – | `?competition=PL`: the coloured bands of the table `{kind, from_position, to_position}`, edited in the admin |
@@ -542,7 +542,9 @@ at most 50 lines and 10,000 LC on a round (`engine.MIN_LINE`, `MAX_LINES`,
 `round` in a snapshot has the fields of the matching round event, and `bets` those of
 `bet.placed`, with their `payout` after the settlement. `payouts` has one row per seat:
 `seat`, `player`, `is_bot`, `amount`, `payout`. A player's slips share a `seat`, and
-`GET /api/roulette_bets` returns it too, so the frontend can find its own row. The
+`GET /api/roulette_bets` returns it too. The seat is `player-<public id>`, a keyed hash of the user id
+(`base/names.py`), not the id itself: ids are sequential and the feed is public. The player's own is
+`public_id` in `/api/me`, so the frontend can find its own row. The
 wheel's order is `engine.WHEEL`.
 
 The bots are like Neon Crash's: admin → Roulette bot settings. They live in
@@ -708,3 +710,11 @@ is in `forums/services.py`; the browser never decides one.
   with `body: null` (its text never leaves the server) and its rule.
 - **Plain text only:** the API returns the text as stored; the page renders it as text, never as HTML.
 - **Lists** are plain arrays: topics 50 per request (`before` cursor), posts 100 (`after`).
+
+## Public names
+
+Public feeds (`/ws/crash`, `/ws/roulette`, `/api/leaderboard`, `/api/prediction_leaderboard`, the forums) never
+show an email, a part of one, or a user id. A player is shown by `display_name`, or, without one, by
+`Player a1b2c3` and `player-<public_id>`: short keyed hashes of the id made with `SECRET_KEY`
+(`base/names.py`), so they are stable but cannot be computed from an id. The player's own `public_id` is in
+`/api/me`. The forums send only the name (null without one) and `is_mine` / `is_author` flags.

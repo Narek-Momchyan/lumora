@@ -94,7 +94,7 @@ export interface TableLine extends BetSpot {
   amount: string
 }
 
-// A slip at the table: `seat` is "player-<user id>" or "bot-<id>".
+// A slip at the table: `seat` is "player-<public id>" (a keyed hash, see /api/me) or "bot-<id>".
 export interface TableBet {
   id: string
   round: number

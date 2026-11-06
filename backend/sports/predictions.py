@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Count, Min, Q, Sum
 from django.utils import timezone
 
+from base import names
 from errors.exceptions import CodedError
 from . import betting
 from .models import Match, Prediction
@@ -99,7 +100,7 @@ def board(competition, matchday=None):
     if matchday is not None:
         rows = rows.filter(match__matchday=matchday)
     rows = (
-        rows.values("user_id", "user__display_name", "user__email")
+        rows.values("user_id", "user__display_name")
         .annotate(
             points=Sum("points"),
             exact=Count("id", filter=Q(outcome=Prediction.Outcome.EXACT)),
@@ -113,7 +114,7 @@ def board(competition, matchday=None):
         {
             "rank": rank,
             "user_id": row["user_id"],
-            "player": row["user__display_name"] or row["user__email"].split("@")[0],
+            "player": names.public_name(row["user__display_name"], row["user_id"]),
             "points": row["points"],
             "exact": row["exact"],
             "right": row["right"],
@@ -123,11 +124,21 @@ def board(competition, matchday=None):
     ]
 
 
+def public_row(row, user):
+    """A board row as the API sends it: no user id (it is sequential), `is_me` says which row is the viewer's."""
+    shown = {key: value for key, value in row.items() if key != "user_id"}
+    return {**shown, "is_me": user is not None and row["user_id"] == user.id}
+
+
 def leaderboard(competition, matchday=None, user=None, limit=6):
-    """{"players", "rows" (the top `limit`), "me" (my row with my rank, or None)}."""
+    """{"players", "rows" (the top `limit`), "me" (my row with my rank, or None)}; rows carry no user id."""
     table = board(competition, matchday)
     me = next((row for row in table if user is not None and row["user_id"] == user.id), None)
-    return {"players": len(table), "rows": table[:limit], "me": me}
+    return {
+        "players": len(table),
+        "rows": [public_row(row, user) for row in table[:limit]],
+        "me": public_row(me, user) if me else None,
+    }
 
 
 def my_stats(user, competition):

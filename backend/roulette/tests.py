@@ -19,6 +19,7 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import AccessToken
 
 from accounts.models import User
+from base import names
 from base.asgi import application
 from fairness.rng import first_float, hash_seed, walk_chain
 from games.models import Game
@@ -48,7 +49,7 @@ DESIGN_SLIP = [
 
 
 def make_player(name):
-    user = User.objects.create_user(username=f"{name}@lumora.dev", email=f"{name}@lumora.dev")
+    user = User.objects.create_user(username=f"{name}@lumora.dev", email=f"{name}@lumora.dev", display_name=name)
     open_wallet(user)
     return user
 
@@ -320,7 +321,7 @@ class BetTests(TestCase):
         body = response.json()
         self.assertEqual((body["amount"], body["balance"]), ("50.00", "9950.00"))
         self.assertEqual(body["round"], self.round.number)
-        self.assertEqual(body["seat"], f"player-{self.user.pk}")
+        self.assertEqual(body["seat"], f"player-{names.public_id(self.user.pk)}")
         self.assertEqual(len(body["lines"]), 5)
         self.assertEqual(body["lines"][1]["bet_type"], "split")
         self.assertEqual(body["lines"][1]["multiplier"], 18)
@@ -810,7 +811,7 @@ class WebSocketTests(TransactionTestCase):
         placed = await socket.receive_json_from()
         self.assertEqual(placed["type"], "bet.placed")
         self.assertEqual((placed["player"], placed["is_bot"], placed["amount"]), ("live", False, "50.00"))
-        self.assertEqual(placed["seat"], f"player-{user.pk}")
+        self.assertEqual(placed["seat"], f"player-{names.public_id(user.pk)}")
         self.assertEqual(placed["lines"][1], {"bet_type": "split", "value": [8, 11], "amount": "5.00"})
 
         await database_sync_to_async(spin)(23)
@@ -860,3 +861,29 @@ class WebSocketTests(TransactionTestCase):
         self.assertFalse(connected)
         await socket.disconnect()
 
+
+class SeatPrivacyTests(TestCase):
+    """A seat identifies a player to the other players: never by the sequential user id or the email."""
+
+    def setUp(self):
+        self.user = User.objects.create_user(username="seat.owner@lumora.dev", email="seat.owner@lumora.dev")
+        open_wallet(self.user)
+
+    def test_the_seat_is_a_keyed_hash_and_matches_my_public_id(self):
+        seat = feed.slip_seat(self.user.pk)
+        self.assertEqual(seat, f"player-{names.public_id(self.user.pk)}")
+        self.assertNotEqual(seat, f"player-{self.user.pk}")
+        api = APIClient()
+        api.force_authenticate(self.user)
+        me = api.get("/api/me").json()
+        self.assertEqual(f"player-{me['public_id']}", seat)  # what the page uses as "my seat"
+
+    def test_a_player_without_a_display_name_has_no_email_in_the_table(self):
+        current = services.open_round()
+        slip, _ = services.place_bet(self.user, "k1", DESIGN_SLIP)  # (the slip, created)
+        data = feed.slip_data(RouletteSlip.objects.select_related("user", "round").get(pk=slip.pk))
+        self.assertRegex(data["player"], r"^Player [0-9a-f]{6}$")
+        shown = str(data)
+        self.assertNotIn("seat.owner", shown)
+        self.assertNotIn(f"player-{self.user.pk}'", shown)
+        self.assertEqual(data["round"], current.number)

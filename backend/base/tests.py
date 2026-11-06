@@ -26,7 +26,7 @@ from roulette.models import RoulettePageLabel
 from slots import engine
 from slots.models import ZeusPageLabel
 from wallet.services import claim_daily_bonus, open_wallet
-from . import live
+from . import live, names
 from .fields import MAX_IMAGE_SIZE_MB
 from .management.commands import runserver
 from .sample import COLLECTIONS, LANGS, NATURAL_KEYS, load_sample, read_sample
@@ -499,3 +499,27 @@ class AdminTests(TestCase):
             with self.subTest(model=model_name):
                 self.assertFalse(model_admin.has_add_permission(request))
                 self.assertFalse(model_admin.has_change_permission(request))
+
+
+class PublicNamesTests(SimpleTestCase):
+    """How a player is shown to others: never by email, never by user id."""
+
+    def test_the_public_id_is_stable_short_hex_and_unique(self):
+        first = names.public_id(7)
+        self.assertEqual(first, names.public_id(7))
+        self.assertRegex(first, r"^[0-9a-f]{12}$")
+        self.assertNotEqual(first, names.public_id(8))
+        self.assertEqual(len({names.public_id(number) for number in range(1, 2000)}), 1999)  # no two players share one
+
+    def test_it_depends_on_the_secret_key_so_it_cannot_be_computed_from_an_id(self):
+        before = names.public_id(7)
+        with override_settings(SECRET_KEY="another-secret-key-for-this-test-only-1234567890"):
+            self.assertNotEqual(names.public_id(7), before)
+
+    def test_the_display_name_wins_and_the_fallback_has_no_email_and_no_id(self):
+        self.assertEqual(names.public_name("kite", 5), "kite")
+        anonymous = names.public_name("", 12345)
+        self.assertRegex(anonymous, r"^Player [0-9a-f]{6}$")
+        self.assertNotIn("12345", anonymous)
+        self.assertEqual(anonymous, names.public_name("", 12345))  # the same player keeps the same name
+        self.assertNotEqual(anonymous, names.public_name("", 12346))

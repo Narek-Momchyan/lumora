@@ -82,7 +82,7 @@ export interface PredictionEntry {
 
 export interface LeaderboardRow {
   rank: number
-  user_id: number
+  is_me: boolean // the API sends no user id; this says which row is the viewer's
   player: string
   points: number
   exact: number

@@ -7,6 +7,8 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.db import connection
 
+from . import names
+
 RETRY_SECONDS = 3
 
 logger = logging.getLogger(__name__)
@@ -44,4 +46,4 @@ def publish(group, event, data):
 
 
 def player_name(user):
-    return user.display_name or user.email.split("@")[0]
+    return names.public_name(user.display_name, user.pk)
