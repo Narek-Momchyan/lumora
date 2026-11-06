@@ -1,4 +1,4 @@
-import type { ForumLabels, ForumTopic, TopicSort, TopicTag } from '@/types/forums'
+import type { ForumLabels, ForumPost, ForumRule, ForumTopic, TopicSort, TopicTag } from '@/types/forums'
 
 // The same limits as backend forums/services.py. The backend checks them again on every post.
 export const TITLE_MAX = 120
@@ -42,4 +42,27 @@ export function cursor(topic: ForumTopic) {
 export function forumHref(club: number, tag: string, sort: string) {
   const query = new URLSearchParams({ ...(tag && { tag }), ...(sort !== 'latest' && { sort }) }).toString()
   return `/forums/${club}${query ? `?${query}` : ''}`
+}
+
+export const POSTS_PAGE = 100 // a post list never has more rows per request
+export const RULES: ForumRule[] = ['insult_hate', 'spam_ads', 'real_money', 'other']
+
+// "rule: spam or ads" for a post a moderator hid, and the reasons of the report dialog.
+export function ruleLabel(rule: ForumRule | '', labels: ForumLabels) {
+  const names: Record<ForumRule, string> = {
+    insult_hate: labels.rule_insult_hate,
+    spam_ads: labels.rule_spam_ads,
+    real_money: labels.rule_real_money,
+    other: labels.rule_other,
+  }
+  return rule ? names[rule] : names.other
+}
+
+// The posts shown, from the ones we have and some new ones: each post once (by id), oldest first. A reply
+// the player just posted and the same reply arriving in a later "Load more" page are one post, and a post
+// that arrives later than a newer one still lands before it.
+export function mergePosts(current: ForumPost[], incoming: ForumPost[]) {
+  const byId = new Map<number, ForumPost>()
+  for (const post of [...current, ...incoming]) byId.set(post.id, post)
+  return [...byId.values()].sort((a, b) => a.id - b.id)
 }

@@ -2,7 +2,7 @@ import type { LoginPageLabels, Player } from '@/types/account'
 import type { CrashBet, CrashPageLabels } from '@/types/crash'
 import type { Game, GameCategory, LobbyPageLabels } from '@/types/game'
 import type { HeaderLabels, Language, Logo, SidebarItem } from '@/types/header'
-import type { ForumClub, ForumLabels, ForumTopic } from '@/types/forums'
+import type { ForumClub, ForumLabels, ForumPost, ForumTopic } from '@/types/forums'
 import type { LiveLabels, LiveRow } from '@/types/live'
 import type {
   Leaderboard,
@@ -220,4 +220,13 @@ export function getForum(id: string, lang: string) {
 export function getTopics(forum: string, tag: string, sort: string) {
   const query = new URLSearchParams({ forum, sort, ...(tag && { tag }) })
   return fetchOrNull<ForumTopic[]>(`/topics?${query}`)
+}
+
+// Opening a topic counts the player's view (once per player), so only the topic page asks for this.
+export function getTopic(id: string, lang: string) {
+  return fetchOrNull<ForumTopic>(`/topics/${id}?lang=${lang}`)
+}
+
+export function getPosts(topic: string, lang: string) {
+  return fetchOrNull<ForumPost[]>(`/posts?topic=${topic}&lang=${lang}`)
 }

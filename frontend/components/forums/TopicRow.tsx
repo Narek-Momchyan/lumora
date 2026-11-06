@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import Badge from '@/components/ui/Badge'
 import { authorName, tagLabel } from '@/lib/forums'
 import { fill } from '@/lib/sports'
@@ -6,8 +7,7 @@ import type { ForumLabels, ForumTopic } from '@/types/forums'
 
 // One topic of a club's forum (design 11): an avatar initial in one accent tint for everyone, the title
 // with its tag, pinned and locked marks, who started it, and the counts. Player text (the title and the
-// names) is shown only as text, never as HTML. The topic's own page comes with the next step, so the title
-// is not a link yet.
+// names) is shown only as text, never as HTML. The title opens the topic.
 export default function TopicRow({ topic, labels }: { topic: ForumTopic; labels: ForumLabels }) {
   const author = authorName(topic.author.name, labels)
 
@@ -21,7 +21,9 @@ export default function TopicRow({ topic, labels }: { topic: ForumTopic; labels:
       </span>
 
       <div className="min-w-0 space-y-1">
-        <p className="truncate text-sm font-semibold">{topic.title}</p>
+        <Link href={`/forums/${topic.forum}/${topic.id}`} className="block truncate text-sm font-semibold hover:text-accent">
+          {topic.title}
+        </Link>
         <p className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
           {topic.is_pinned && <Badge small tone="lime">{labels.pinned}</Badge>}
           {topic.is_locked && <Badge small tone="danger">{labels.locked}</Badge>}

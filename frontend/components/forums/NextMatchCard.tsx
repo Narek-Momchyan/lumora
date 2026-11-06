@@ -12,17 +12,18 @@ interface NextMatchCardProps {
   main: Market | undefined // the 1X2 market
   labels: ForumLabels
   ui: Pick<SportsUiLabels, 'today' | 'tomorrow'>
+  title?: string // "The match" on a topic page; "Next match" by default
 }
 
 // The club's next match (design 11): the two clubs, the 1 X 2 odds as the model prices them, and a link to
 // the match page, where the bet slip and "predict the score" are. The odds here are only shown.
-export default function NextMatchCard({ match, main, labels, ui }: NextMatchCardProps) {
+export default function NextMatchCard({ match, main, labels, ui, title }: NextMatchCardProps) {
   const prices = ['home', 'draw', 'away'].map((code) => main?.selections.find((row) => row.code === code))
 
   return (
     <Card padding="md" className="space-y-4">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="truncate font-heading text-lg font-bold">{labels.next_match}</h2>
+        <h2 className="truncate font-heading text-lg font-bold">{title ?? labels.next_match}</h2>
         <p className="shrink-0 text-xs text-muted">
           <Kickoff kickoff={match.kickoff} labels={ui} />
         </p>

@@ -106,3 +106,30 @@ export interface ForumTopic {
   last_post_at: string
   last_author: string | null
 }
+
+export type ForumRule = 'insult_hate' | 'spam_ads' | 'real_money' | 'other'
+
+// A prediction a player attached to a post (their own, for the topic's match).
+export interface PostPrediction {
+  home_goals: number
+  away_goals: number
+  home: Team
+  away: Team
+}
+
+// One post of a topic (GET /api/posts). A post a moderator hid has `body: null`: its text is never sent.
+export interface ForumPost {
+  id: number
+  topic: number
+  author: ForumAuthor
+  is_author: boolean // wrote the topic ("Author" tag)
+  is_mine: boolean
+  top_predictor: boolean // in the top 3 of the club's league in the predictions table
+  created_at: string
+  hidden: boolean
+  hidden_rule: ForumRule | ''
+  body: string | null
+  likes: number
+  liked_by_me: boolean
+  prediction: PostPrediction | null
+}
