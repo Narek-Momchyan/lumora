@@ -641,6 +641,55 @@ class ForumApiTests(ForumTestCase):
         self.assertEqual((row["hidden"], row["hidden_rule"], row["body"]), (True, "insult_hate", None))
         self.assertNotIn("The big question", self.api.get(f"/api/posts?topic={topic['id']}").content.decode())
 
+    def test_a_hidden_posts_text_is_in_no_response_at_all(self):
+        secret = "SECRET-TEXT-OF-A-HIDDEN-POST"
+        topic = self.new_topic(body=secret, title="Visible title").json()
+        post = Post.objects.get(topic_id=topic["id"])
+        Prediction.objects.create(user=self.user, match=self.match, home_goals=2, away_goals=1)
+        Post.objects.filter(pk=post.pk).update(prediction=Prediction.objects.get(user=self.user, match=self.match))
+        services.hide_post(post, "insult_hate", self.other, now=NOW)
+        for lang in ("en", "am", "ru"):
+            self.api.cookies["lang"] = lang
+            for path in (
+                f"/api/posts?topic={topic['id']}", f"/api/posts?topic={topic['id']}&after=0",
+                f"/api/topics/{topic['id']}", f"/api/topics?forum={self.arsenal.id}", "/api/forums",
+            ):
+                with self.subTest(lang=lang, path=path):
+                    self.assertNotIn(secret, self.api.get(path).content.decode())
+        row = self.api.get(f"/api/posts?topic={topic['id']}").json()[0]
+        self.assertIsNone(row["body"])  # null, not an empty string and not a blurred copy
+        self.assertEqual((row["hidden"], row["hidden_rule"], row["prediction"]), (True, "insult_hate", None))
+        other = APIClient()
+        other.force_authenticate(self.other)
+        self.assertNotIn(secret, other.get(f"/api/posts?topic={topic['id']}").content.decode())  # nor for anyone else
+        liked = self.api.post(f"/api/posts/{post.id}/like")  # a hidden post takes no like, and the refusal has no text
+        self.assertEqual((liked.status_code, liked.json()["code"]), (400, "post_hidden"))
+        self.assertNotIn(secret, liked.content.decode())
+
+    def test_a_second_report_from_the_same_player_is_refused_clearly_in_every_language(self):
+        topic = self.new_topic().json()
+        post = Post.objects.get(topic_id=topic["id"])
+        other = APIClient()
+        other.force_authenticate(self.other)
+        self.assertEqual(other.post("/api/post_reports", {"post": post.id, "reason": "spam_ads"}, format="json").status_code, 201)
+        texts = {}
+        for lang in ("en", "am", "ru"):
+            other.cookies["lang"] = lang
+            again = other.post("/api/post_reports", {"post": post.id, "reason": "other"}, format="json")
+            self.assertEqual((again.status_code, again.json()["code"]), (400, "already_reported"))
+            texts[lang] = again.json()["detail"]
+        self.assertEqual(len(set(texts.values())), 3)  # three different texts, none left as the English one
+        self.assertEqual(PostReport.objects.filter(post=post).count(), 1)
+
+    def test_a_reply_has_the_badge_flag_and_a_double_like_counts_once(self):
+        topic = self.new_topic().json()
+        reply = self.api.post("/api/posts", {"topic": topic["id"], "body": "reply"}, format="json").json()
+        self.assertIn("top_predictor", reply)  # the API provides the badge for a new reply too
+        for _ in range(3):  # a double (or triple) click
+            self.assertEqual(self.api.post(f"/api/posts/{reply['id']}/like").status_code, 200)
+        self.assertEqual(PostLike.objects.filter(post_id=reply["id"], user=self.user).count(), 1)
+        self.assertEqual(self.api.post(f"/api/posts/{reply['id']}/like").json()["likes"], 1)
+
     def test_the_email_never_leaves_the_server(self):
         topic = self.new_topic().json()
         self.api.post("/api/posts", {"topic": topic["id"], "body": "hi"}, format="json")
@@ -979,6 +1028,12 @@ class ParallelPostTests(TransactionTestCase):
         self.assertEqual([result.detail.code for result in refused], [refused[0].detail.code])
         self.assertIn(refused[0].detail.code, ("too_many_topics", "post_too_fast"))
         self.assertEqual(Topic.objects.filter(author=self.user, created_at__gt=NOW - timedelta(hours=24)).count(), 10)
+
+    def test_the_same_like_many_times_at_once_makes_one_like_and_no_error(self):
+        post = self.topic.posts.get()
+        results = self.run_parallel([lambda: services.like_post(self.user, post.id, now=NOW) for _ in range(6)])
+        self.assertTrue(all(isinstance(result, Post) for result in results), results)  # nobody got an error
+        self.assertEqual(PostLike.objects.filter(post=post, user=self.user).count(), 1)
 
     def test_players_do_not_block_each_other(self):
         other = User.objects.create_user(username="q@lumora.dev", email="q@lumora.dev", display_name="other")
