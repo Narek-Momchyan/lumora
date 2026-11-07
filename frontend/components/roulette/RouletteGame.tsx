@@ -1,12 +1,15 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import SoundButton from '@/components/SoundButton'
 import Badge from '@/components/ui/Badge'
 import { ApiError, apiFetch, errorDetail } from '@/lib/api'
-import { FIRST_CHIP, PAUSE_MS, spotKey } from '@/lib/roulette'
+import { BALL_DROP_MS, FIRST_CHIP, PAUSE_MS, spotKey } from '@/lib/roulette'
+import useGameSounds from '@/lib/useGameSounds'
 import { fromCents, toCents } from '@/lib/wallet'
 import type { Game } from '@/types/game'
+import type { GameSound } from '@/types/sound'
 import type { LastRound, RoulettePageLabels, RouletteSlip, RouletteSlipResult } from '@/types/roulette'
 import BettingBoard from './BettingBoard'
 import LiveTable from './LiveTable'
@@ -25,9 +28,10 @@ interface RouletteGameProps {
   mySeat: string
   currency: string
   labels: RoulettePageLabels
+  sounds: GameSound[]
 }
 
-export default function RouletteGame({ game, slips, mySeat, currency, labels }: RouletteGameProps) {
+export default function RouletteGame({ game, slips, mySeat, currency, labels, sounds }: RouletteGameProps) {
   const router = useRouter()
   const { round, history, bets, payouts, connected, clockOffset } = useRouletteFeed()
   const slip = useBetSlip(round?.number)
@@ -69,6 +73,42 @@ export default function RouletteGame({ game, slips, mySeat, currency, labels }: 
 
   const payoutCents = placed.reduce((sum, line) => sum + toCents(line.payout), 0)
   const stakeCents = placed.reduce((sum, line) => sum + toCents(line.amount), 0)
+
+  // Sounds: only files uploaded in the admin play, and the player starts with the sound off.
+  const { muted, volume, play, toggleMuted, setVolume } = useGameSounds(sounds)
+  const heard = useRef({ rounds: new Set<number>(), announced: 0 }) // rounds seen before they settled; the last result announced
+  const before = useRef<{ number: number; status: string } | null>(null)
+
+  // Betting opens and the wheel starts. The first state the page sees (a snapshot) announces nothing, so
+  // opening the page in the middle of a round is quiet.
+  useEffect(() => {
+    if (!round) return
+    const previous = before.current
+    before.current = { number: round.number, status: round.status }
+    if (round.status !== 'settled') heard.current.rounds.add(round.number)
+    if (!previous || (previous.number === round.number && previous.status === round.status)) return
+    if (round.status === 'betting') play('round_start')
+    if (round.status === 'spinning') play('roulette_spin')
+  }, [round, play])
+
+  // The ball drops in the last 1.6 s of the spin, by the server's clock. Joining so late that it is almost over
+  // plays nothing.
+  useEffect(() => {
+    if (round?.status !== 'spinning' || !round.spin_ends_at) return
+    const delay = Date.parse(round.spin_ends_at) - BALL_DROP_MS - (Date.now() + (clockOffset.current ?? 0))
+    if (delay < 300 - BALL_DROP_MS) return
+    const timer = window.setTimeout(() => play('roulette_ball_drop'), Math.max(0, delay))
+    return () => window.clearTimeout(timer)
+  }, [round?.status, round?.spin_ends_at, clockOffset, play])
+
+  // After the settlement, once what each line paid has been read back: win or lose, only if I had a bet and
+  // was here for the round (a result that is already on the page when it opens is not announced).
+  useEffect(() => {
+    if (settledNumber === null || paidRound !== settledNumber || heard.current.announced === settledNumber) return
+    heard.current.announced = settledNumber
+    if (!heard.current.rounds.has(settledNumber) || !playedThisRound) return
+    play(payoutCents > 0 ? 'win' : 'lose')
+  }, [settledNumber, paidRound, playedThisRound, payoutCents, play])
   const won =
     round?.status === 'settled' && payoutCents > 0
       ? {
@@ -98,6 +138,7 @@ export default function RouletteGame({ game, slips, mySeat, currency, labels }: 
       })
       setMySlips((rows) => [result, ...rows])
       slip.clear()
+      play('bet_placed')
       router.refresh() // the balance in the header comes from the server
     } catch (exception) {
       fail(exception)
@@ -160,6 +201,7 @@ export default function RouletteGame({ game, slips, mySeat, currency, labels }: 
       </div>
 
       <div className="flex min-h-0 min-w-0 flex-col gap-4">
+        <SoundButton muted={muted} volume={volume} onToggle={toggleMuted} onVolume={setVolume} labels={labels} />
         <YourBets
           round={round}
           isOpen={isOpen}

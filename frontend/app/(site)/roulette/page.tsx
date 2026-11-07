@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { connection } from 'next/server'
 import RouletteGame from '@/components/roulette/RouletteGame'
-import { getGames, getHeaderLabels, getMe, getRouletteBets, getRoulettePageLabels } from '@/lib/content'
+import { getGameSounds, getGames, getHeaderLabels, getMe, getRouletteBets, getRoulettePageLabels } from '@/lib/content'
 import { displayLang } from '@/lib/lang'
 import { GAME_SLUG } from '@/lib/roulette'
 
@@ -14,12 +14,13 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RoulettePage() {
   const lang = await displayLang()
-  const [labels, header, games, me, slips] = await Promise.all([
+  const [labels, header, games, me, slips, sounds] = await Promise.all([
     getRoulettePageLabels(lang),
     getHeaderLabels(lang),
     getGames(),
     getMe(),
     getRouletteBets(),
+    getGameSounds(),
   ])
 
   const game = games?.find(({ slug }) => slug === GAME_SLUG)
@@ -32,6 +33,7 @@ export default async function RoulettePage() {
       mySeat={`player-${me?.public_id}`}
       currency={header.currency}
       labels={labels}
+      sounds={sounds ?? []}
     />
   )
 }

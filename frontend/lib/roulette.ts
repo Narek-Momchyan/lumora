@@ -6,6 +6,7 @@ export const CHIPS = [1, 5, 10, 25, 100, 500]
 export const FIRST_CHIP = 10
 export const PAUSE_MS = 4000
 export const BETTING_SECONDS = 18 // backend roulette/engine.py BETTING_SECONDS
+export const BALL_DROP_MS = 1600 // the ball drops in the last 1.6 s of the spin
 
 // The same as backend/roulette/engine.py: the wheel clockwise, and the red numbers.
 export const WHEEL = [
